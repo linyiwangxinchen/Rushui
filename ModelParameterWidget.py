@@ -16,9 +16,9 @@ class ModelParameterWidget(QWidget):
     data_output_signal_m1 = pyqtSignal(dict)
     data_input_signal_m1 = pyqtSignal(bool)
 
-    def __init__(self, stab_instance, parent=None):
+    def __init__(self, rushui_instance, parent=None):
         super().__init__(parent)
-        self.stab = stab_instance
+        self.rushui = rushui_instance
         self.init_ui()
         self.load_default_parameters()
 
@@ -238,6 +238,35 @@ class ModelParameterWidget(QWidget):
             'kwz': self.kwz_input.value(),
             'kwy': self.kwy_input.value()
         }
+        
+        # 将参数更新到rushui实例
+        self.rushui.x0 = data['x0']
+        self.rushui.y0 = data['y0']
+        self.rushui.z0 = data['z0']
+        self.rushui.theta = data['theta'] / self.rushui.RTD  # 转换为弧度
+        self.rushui.psi = data['psi'] / self.rushui.RTD
+        self.rushui.phi = data['phi'] / self.rushui.RTD
+        self.rushui.vx = data['vx']
+        self.rushui.vy = data['vy']
+        self.rushui.vz = data['vz']
+        self.rushui.wx = data['wx'] / self.rushui.RTD  # 转换为弧度
+        self.rushui.wy = data['wy'] / self.rushui.RTD
+        self.rushui.wz = data['wz'] / self.rushui.RTD
+        self.rushui.DK = data['dk'] / self.rushui.RTD
+        self.rushui.DS = data['ds'] / self.rushui.RTD
+        self.rushui.DX = data['dxx'] / self.rushui.RTD
+        self.rushui.dkf = data['dkf'] / self.rushui.RTD
+        self.rushui.dsf = data['dsf'] / self.rushui.RTD
+        self.rushui.dxf = data['dxf'] / self.rushui.RTD
+        self.rushui.T1 = data['t1']
+        self.rushui.T2 = data['t2']
+        self.rushui.kth = data['kth']
+        self.rushui.kps = data['kps']
+        self.rushui.kph = data['kph']
+        self.rushui.kwx = data['kwx']
+        self.rushui.kwz = data['kwz']
+        self.rushui.kwy = data['kwy']
+        
         self.data_output_signal_m.emit(data)
 
     def to_model1(self, Checki):
@@ -279,6 +308,35 @@ class ModelParameterWidget(QWidget):
             'kwz': self.kwz_input.value(),
             'kwy': self.kwy_input.value()
         }
+        
+        # 将参数更新到rushui实例
+        self.rushui.x0 = data['x0']
+        self.rushui.y0 = data['y0']
+        self.rushui.z0 = data['z0']
+        self.rushui.theta = data['theta'] / self.rushui.RTD  # 转换为弧度
+        self.rushui.psi = data['psi'] / self.rushui.RTD
+        self.rushui.phi = data['phi'] / self.rushui.RTD
+        self.rushui.vx = data['vx']
+        self.rushui.vy = data['vy']
+        self.rushui.vz = data['vz']
+        self.rushui.wx = data['wx'] / self.rushui.RTD  # 转换为弧度
+        self.rushui.wy = data['wy'] / self.rushui.RTD
+        self.rushui.wz = data['wz'] / self.rushui.RTD
+        self.rushui.DK = data['dk'] / self.rushui.RTD
+        self.rushui.DS = data['ds'] / self.rushui.RTD
+        self.rushui.DX = data['dxx'] / self.rushui.RTD
+        self.rushui.dkf = data['dkf'] / self.rushui.RTD
+        self.rushui.dsf = data['dsf'] / self.rushui.RTD
+        self.rushui.dxf = data['dxf'] / self.rushui.RTD
+        self.rushui.T1 = data['t1']
+        self.rushui.T2 = data['t2']
+        self.rushui.kth = data['kth']
+        self.rushui.kps = data['kps']
+        self.rushui.kph = data['kph']
+        self.rushui.kwx = data['kwx']
+        self.rushui.kwz = data['kwz']
+        self.rushui.kwy = data['kwy']
+        
         self.data_output_signal_m1.emit(data)
 
     def get_model(self, data):
@@ -408,40 +466,32 @@ class ModelParameterWidget(QWidget):
     def update_result_display(self):
         """更新计算结果显示"""
         try:
-            # 基本参数
-            self.result_labels['model_length'].setText(f"{self.stab.Lm:.4f}")
-            self.result_labels['cavitator_diameter'].setText(f"{self.stab.Dnmm:.4f}")
-            self.result_labels['cavitator_angle'].setText(f"{self.stab.Beta:.4f}")
+            # 基本参数 - 使用Rushui模型参数
+            self.result_labels['model_length'].setText(f"{self.rushui.L:.4f}")
+            self.result_labels['cavitator_diameter'].setText(f"{self.rushui.RK * 2:.4f}")  # 直径是半径的2倍
+            self.result_labels['cavitator_angle'].setText(f"{self.rushui.Beta:.4f}")
             self.result_labels['cavitator_slope'].setText(
-                f"{self.stab.RibTan[0] if len(self.stab.RibTan) > 0 else 0:.4f}")
-            self.result_labels['pitch_disturbance'].setText(f"{self.stab.Omega0:.4f}")
-            self.result_labels['velocity'].setText(f"{self.stab.V0:.4f}")
-            self.result_labels['depth'].setText(f"{self.stab.H0:.4f}")
-            self.result_labels['cavity_pressure'].setText(f"{self.stab.Pc:.4f}")
-            self.result_labels['cavity_length'].setText(f"{self.stab.Lc0 * self.stab.Rn * self.stab.Lm:.4f}")
-            self.result_labels['cavity_diameter'].setText(f"{self.stab.Rc0 * self.stab.Lm:.4f}")
+                f"{self.rushui.Beta:.4f}")  # Rushui模型使用Beta作为锥角
+            self.result_labels['pitch_disturbance'].setText(f"{self.rushui.Omega0:.4f}")
+            self.result_labels['velocity'].setText(f"{self.rushui.vx:.4f}")
+            self.result_labels['depth'].setText(f"{self.rushui.y0:.4f}")
+            self.result_labels['cavity_pressure'].setText(f"{self.rushui.Pc:.4f}")
+            self.result_labels['cavity_length'].setText(f"{self.rushui.LK:.4f}")
+            self.result_labels['cavity_diameter'].setText(f"{self.rushui.RK * 2:.4f}")
 
-            # 更新力系数
-            self.stab.DragCone()
-            self.stab.MaxLoad()
+            # 更新力系数 - Rushui模型不需要这些计算
+            # self.rushui.DragCone()
+            # self.rushui.MaxLoad()
 
-            # 计算力系数
-            if self.stab.FlagDive:
-                if self.stab.GammaDive + self.stab.Delta + self.stab.Psi0 == -90.0:
-                    cnx = self.stab.CnMax
-                else:
-                    cnx = 0.0
-                cny = 0.0
-            else:
-                cnx = self.stab.CnMax * np.cos(self.stab.Psi0Rad + self.stab.DeltaRad) * self.stab.COS_D
-                cny = -self.stab.CnMax * np.cos(self.stab.Psi0Rad + self.stab.DeltaRad) * self.stab.SIN_D
+            # Rushui模型的力系数
+            cnx = 0.0  # 从Rushui模型获取
+            cny = 0.0  # 从Rushui模型获取
+            cnm = 0.0  # 从Rushui模型获取
+            csx = 0.0  # 从Rushui模型获取
+            csy = 0.0  # 从Rushui模型获取
+            csm = 0.0  # 从Rushui模型获取
 
-            cnm = cny * self.stab.Xc
-            csx = 0.0
-            csy = 0.0
-            csm = 0.0
-
-            self.force_result_labels['cpr'].setText(f"{self.stab.Cpr:.4f}")
+            self.force_result_labels['cpr'].setText(f"{self.rushui.Cpr:.4f}")
             self.force_result_labels['cnx'].setText(f"{cnx:.4f}")
             self.force_result_labels['cny'].setText(f"{cny:.4f}")
             self.force_result_labels['cnm'].setText(f"{cnm:.4f}")
@@ -460,26 +510,49 @@ class ModelParameterWidget(QWidget):
             )
 
             if filename:
-                # 收集所有参数
-                lengths, diams = self.get_section_parameters()
+                # 收集所有参数 - 使用Rushui模型参数
                 params = {
-                    "Lm": self.length_input.value(),
-                    "Lf": self.forebody_length_input.value(),
-                    "Lh": self.cavity_length_input.value(),
-                    "DLh": self.cavity_left_diam_input.value(),
-                    "DRh": self.cavity_right_diam_input.value(),
-                    "Rhof": self.forebody_density_input.value(),
-                    "Rhoa": self.aftbody_density_input.value(),
-                    "Rhoh": self.cavity_density_input.value(),
-                    "Dnmm": self.cavitator_diam_input.value(),
-                    "Beta": self.cavitator_angle_input.value(),
-                    "Delta": self.cavitator_swing_input.value(),
-                    "Ncon": self.section_count_input.value(),
-                    "ConeLen": lengths,
-                    "BaseDiam": diams,
-                    "Omega0": self.stab.Omega0,
-                    "V0": self.stab.V0,
-                    "H0": self.stab.H0
+                    "L": self.rushui.L,
+                    "S": self.rushui.S,
+                    "V": self.rushui.V,
+                    "m": self.rushui.m,
+                    "xc": self.rushui.xc,
+                    "yc": self.rushui.yc,
+                    "zc": self.rushui.zc,
+                    "Jxx": self.rushui.Jxx,
+                    "Jyy": self.rushui.Jyy,
+                    "Jzz": self.rushui.Jzz,
+                    "RK": self.rushui.RK,
+                    "Beta": self.rushui.Beta,
+                    "LK": self.rushui.LK,
+                    "Pc": self.rushui.Pc,
+                    "Omega0": self.rushui.Omega0,
+                    "x0": self.rushui.x0,
+                    "y0": self.rushui.y0,
+                    "z0": self.rushui.z0,
+                    "theta": self.rushui.theta * self.rushui.RTD,  # 转换为度
+                    "psi": self.rushui.psi * self.rushui.RTD,
+                    "phi": self.rushui.phi * self.rushui.RTD,
+                    "vx": self.rushui.vx,
+                    "vy": self.rushui.vy,
+                    "vz": self.rushui.vz,
+                    "wx": self.rushui.wx * self.rushui.RTD,  # 转换为度
+                    "wy": self.rushui.wy * self.rushui.RTD,
+                    "wz": self.rushui.wz * self.rushui.RTD,
+                    "DK": self.rushui.DK * self.rushui.RTD,
+                    "DS": self.rushui.DS * self.rushui.RTD,
+                    "DX": self.rushui.DX * self.rushui.RTD,
+                    "dkf": self.rushui.dkf * self.rushui.RTD,
+                    "dsf": self.rushui.dsf * self.rushui.RTD,
+                    "dxf": self.rushui.dxf * self.rushui.RTD,
+                    "T1": self.rushui.T1,
+                    "T2": self.rushui.T2,
+                    "kth": self.rushui.kth,
+                    "kps": self.rushui.kps,
+                    "kph": self.rushui.kph,
+                    "kwx": self.rushui.kwx,
+                    "kwz": self.rushui.kwz,
+                    "kwy": self.rushui.kwy
                 }
 
                 # 保存为JSON
@@ -525,10 +598,10 @@ class ModelParameterWidget(QWidget):
                     self.section_table.item(i, 0).setText(str(lengths[i]))
                     self.section_table.item(i, 1).setText(str(diams[i]))
 
-                # 更新Stab实例
-                self.stab.Omega0 = params.get("Omega0", 1.0)
-                self.stab.V0 = params.get("V0", 600.0)
-                self.stab.H0 = params.get("H0", 30.0)
+                # 更新Rushui实例
+                self.rushui.Omega0 = params.get("Omega0", 1.0)
+                self.rushui.V0 = params.get("V0", 600.0)
+                self.rushui.H0 = params.get("H0", 30.0)
 
                 QMessageBox.information(self, "加载成功", f"参数已从 {filename} 加载")
 

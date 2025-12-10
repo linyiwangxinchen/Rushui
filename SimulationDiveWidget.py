@@ -13,9 +13,9 @@ class SimulationDiveWidget(QWidget):
     data_output_signal_f = pyqtSignal(dict)
     data_input_signal_f = pyqtSignal(bool)
 
-    def __init__(self, stab_instance, parent=None):
+    def __init__(self, rushui_instance, parent=None):
         super().__init__(parent)
-        self.stab = stab_instance
+        self.rushui = rushui_instance
         self.calc_thread = None
         self.init_ui()
 
@@ -146,54 +146,49 @@ class SimulationDiveWidget(QWidget):
         """启动仿真计算"""
         try:
             # 重置状态
-            self.stab.FlagSurface = False
-            self.stab.FlagWashed = False
-            self.stab.FlagBroken = False
-            self.stab.FlagFinish = False
+            # Rushui模型不需要设置这些标志，因为计算流程不同
+            # self.rushui.FlagSurface = False
+            # self.rushui.FlagWashed = False
+            # self.rushui.FlagBroken = False
+            # self.rushui.FlagFinish = False
 
-            # 设置参数
-            self.stab.FlagDive = True
-            self.stab.V0 = self.v0_input.value()
-            self.stab.Psi0Dive = self.psi0_input.value()
-            self.stab.Omega0dive = self.omega0_input.value()
-            self.stab.Xfin = self.xfin_input.value()
-            self.stab.HX = self.hx_input.value()
-            self.stab.HXdive = self.hx_input.value()
-            self.stab.Scale = self.scale_input.value()
-            self.stab.GammaDive = self.gamma0_input.value()
-            self.stab.Pc = self.pc0_input.value()
-
+            # 设置参数 - Rushui模型使用不同的参数设置方式
+            # 这里我们使用ModelParameterWidget中的参数设置
             self.ask_model()
 
-            self.stab.Lm = self.model_data['Lm']
-            self.stab.Lmm = self.model_data['Lmm']
-            self.stab.Lf = self.model_data['Lf']
-            self.stab.Lh = self.model_data['Lh']
-            self.stab.DLh = self.model_data['DLh']
-            self.stab.DRh = self.model_data['DRh']
-            self.stab.Rhof = self.model_data['Rhof']
-            self.stab.Rhoa = self.model_data['Rhoa']
-            self.stab.Rhoh = self.model_data['Rhoh']
-            self.stab.Dnmm = self.model_data['Dnmm']
-            self.stab.Beta = self.model_data['Beta']
-            self.stab.Delta = self.model_data['Delta']
-            self.stab.Ncon = self.model_data['Ncon']
+            # 设置Rushui特定参数
+            # 弹体参数
+            if hasattr(self.model_data, 'L'):
+                self.rushui.L = self.model_data['L']
+            if hasattr(self.model_data, 'S'):
+                self.rushui.S = self.model_data['S']
+            if hasattr(self.model_data, 'V'):
+                self.rushui.V = self.model_data['V']
+            if hasattr(self.model_data, 'm'):
+                self.rushui.m = self.model_data['m']
+            if hasattr(self.model_data, 'xc'):
+                self.rushui.xc = self.model_data['xc']
+            if hasattr(self.model_data, 'yc'):
+                self.rushui.yc = self.model_data['yc']
+            if hasattr(self.model_data, 'zc'):
+                self.rushui.zc = self.model_data['zc']
+            if hasattr(self.model_data, 'Jxx'):
+                self.rushui.Jxx = self.model_data['Jxx']
+            if hasattr(self.model_data, 'Jyy'):
+                self.rushui.Jyy = self.model_data['Jyy']
+            if hasattr(self.model_data, 'Jzz'):
+                self.rushui.Jzz = self.model_data['Jzz']
 
-            self.stab.ConeLen = self.model_data['ConeLen']
-            self.stab.BaseDiam = self.model_data['BaseDiam']
+            # 从当前界面获取参数
+            # 设置积分参数
+            self.rushui.dt = self.hx_input.value()  # 使用hx_input作为dt
+            self.rushui.t0 = self.psi0_input.value()  # 使用psi0_input作为t0
+            self.rushui.tend = self.xfin_input.value()  # 使用xfin_input作为tend
 
-            # 设置扰动类型
-            perturbation_map = {0: 4, 1: 1, 2: 2, 3: 3}  # UI索引到Stab内部值的映射
-            self.stab.SwPert = perturbation_map[self.perturbation_combo.currentIndex()]
-
-            # 设置手动设置步长
-            Nview_map = {0: 0, 1: 1}
-            ifNview = self.nview_combo.currentIndex()
-            if not ifNview:
-                aa = 1
-            else:
-                self.stab.input_Nview = True
-                self.stab.Nview = int(self.Nview_input.value())
+            # 设置初始条件
+            self.rushui.y0 = self.v0_input.value()  # 使用v0_input作为y0
+            self.rushui.Omega0 = self.omega0_input.value()
+            # 注意：倾斜入水的参数设置需要根据Rushui模型的具体参数进行调整
 
             # 如果已有线程，先停止
             if self.calc_thread and self.calc_thread.isRunning():
@@ -201,7 +196,7 @@ class SimulationDiveWidget(QWidget):
                 self.calc_thread.wait(2000)  # 等待2秒
 
             # 创建并启动计算线程
-            self.calc_thread = CalculationThread(self.stab)
+            self.calc_thread = CalculationThread(self.rushui)
             self.calc_thread.progress.connect(self.update_progress)
             self.calc_thread.realtime_update.connect(self.handle_realtime_update)
             self.calc_thread.finished.connect(self.simulation_finished)
@@ -215,9 +210,7 @@ class SimulationDiveWidget(QWidget):
             self.progress_bar.setValue(0)
 
             # 重置计算状态
-            self.stab.Jend = 0
-            self.stab.Ihis = 1
-            self.stab.Nhis = -1
+            # Rushui模型不需要手动设置这些状态
 
             self.calc_thread.start()
 
@@ -295,7 +288,7 @@ class SimulationDiveWidget(QWidget):
 
             # 仅在确定线程已终止后重置模型
             try:
-                self.stab.__init__()
+                self.rushui.__init__()
             except Exception as e:
                 logging.error(f"重置模型时出错: {str(e)}")
 

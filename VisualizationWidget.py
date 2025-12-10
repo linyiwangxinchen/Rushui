@@ -14,9 +14,9 @@ from CompactParameterDisplayWidget import CompactParameterDisplayWidget
 class VisualizationWidget(QWidget):
     """结果可视化界面 """
 
-    def __init__(self, stab_instance, parent=None):
+    def __init__(self, rushui_instance, parent=None):
         super().__init__(parent)
-        self.stab = stab_instance
+        self.rushui = rushui_instance
         self.init_ui()
 
     def init_ui(self):
@@ -30,7 +30,7 @@ class VisualizationWidget(QWidget):
         self.cavity_tab = QWidget()
         cavity_layout = QVBoxLayout()
         cavity_layout.setContentsMargins(0, 0, 0, 0)
-        self.cavity_visualization = CavityVisualizationWidget(self.stab)
+        self.cavity_visualization = CavityVisualizationWidget(self.rushui)
         cavity_layout.addWidget(self.cavity_visualization)
         self.cavity_tab.setLayout(cavity_layout)
 
@@ -109,7 +109,7 @@ class VisualizationWidget(QWidget):
         self.tab_widget.addTab(dynamics_tab, "动力学参数")
 
         # 实时参数显示
-        self.param_display = CompactParameterDisplayWidget(self.stab)
+        self.param_display = CompactParameterDisplayWidget(self.rushui)
 
         # 控制按钮
         button_layout = QHBoxLayout()
@@ -150,23 +150,41 @@ class VisualizationWidget(QWidget):
     def update_plots(self):
         """更新所有图表"""
         try:
-            # 获取结果
-            results = self.stab.get_results()
+            # 获取结果 - Rushui模型可能有不同的结果获取方式
+            # 由于Rushui和Stab模型的接口不同，这里需要适配
+            if hasattr(self.rushui, 'ts') and hasattr(self.rushui, 'ys'):
+                # Rushui模型使用ts和ys存储时间序列和状态
+                t = self.rushui.ts
+                y = self.rushui.ys
+                if len(y) > 0:
+                    x_data = y[:, 9]  # x坐标在第9列
+                    y_data = y[:, 10]  # y坐标在第10列
+                    vx = y[:, 0]
+                    vy = y[:, 1]
+                    vz = y[:, 2]
+                    v = np.sqrt(vx ** 2 + vy ** 2 + vz ** 2)
+                    alpha = -np.arctan(vy / (vx + 1e-10))  # 防止除零
+                else:
+                    return
+            else:
+                # 如果没有计算结果，显示提示信息
+                QMessageBox.warning(self, "警告", "暂无计算结果，请先运行仿真")
+                return
 
             # 更新轨迹图
-            if len(results['x']) > 1 and len(results['y']) > 1:
-                self.trajectory_data.setData(np.array(results['x'][1:]), np.array(results['y'][1:]))
+            if len(x_data) > 1 and len(y_data) > 1:
+                self.trajectory_data.setData(x_data, y_data)
                 self.trajectory_plot.autoRange()
 
             # 更新动力学参数图
-            if len(results['x']) > 1:
+            if len(x_data) > 1:
                 # 攻角
-                alpha_deg = np.degrees(np.array(results['alpha'][1:]))
-                self.alpha_data.setData(np.array(results['x'][1:]), alpha_deg)
+                alpha_deg = np.degrees(alpha)
+                self.alpha_data.setData(x_data, alpha_deg)
                 self.alpha_plot.autoRange()
 
                 # 速度
-                self.velocity_data.setData(np.array(results['x'][1:]), np.array(results['V'][1:]))
+                self.velocity_data.setData(x_data, v)
                 self.velocity_plot.autoRange()
 
             logging.info("图表已更新")
@@ -181,16 +199,57 @@ class VisualizationWidget(QWidget):
                 self, "导出数据", "", "CSV Files (*.csv);;Excel Files (*.xlsx);;All Files (*)"
             )
             if filename:
-                results = self.stab.get_results()
-                df = pd.DataFrame({
-                    'x_m': results['x'],
-                    'y_m': results['y'],
-                    'psi_rad': results['psi'],
-                    'alpha_rad': results['alpha'][:len(results['x'])],
-                    'V_m_s': results['V'][:len(results['x'])],
-                    't_s': results['t'][:len(results['x'])],
-                    'SG': results['SG'][:len(results['x'])],
-                })
+                # Rushui模型使用ts和ys存储时间序列和状态
+                if hasattr(self.rushui, 'ts') and hasattr(self.rushui, 'ys'):
+                    t = self.rushui.ts
+                    y = self.rushui.ys
+                    if len(y) > 0:
+                        x_data = y[:, 9]  # x坐标
+                        y_data = y[:, 10]  # y坐标
+                        z_data = y[:, 11]  # z坐标
+                        vx = y[:, 0]
+                        vy = y[:, 1]
+                        vz = y[:, 2]
+                        v = np.sqrt(vx ** 2 + vy ** 2 + vz ** 2)
+                        alpha = -np.arctan(vy / (vx + 1e-10))  # 攻角
+                        beta = np.arctan(vz / (np.sqrt(vx ** 2 + vy ** 2) + 1e-10))  # 侧滑角
+                        wx = y[:, 3]  # 角速度
+                        wy = y[:, 4]
+                        wz = y[:, 5]
+                        theta = y[:, 6]  # 姿态角
+                        psi = y[:, 7]
+                        phi = y[:, 8]
+                        
+                        df = pd.DataFrame({
+                            'time_s': t,
+                            'x_m': x_data,
+                            'y_m': y_data,
+                            'z_m': z_data,
+                            'vx_m_s': vx,
+                            'vy_m_s': vy,
+                            'vz_m_s': vz,
+                            'v_total_m_s': v,
+                            'alpha_rad': alpha,
+                            'alpha_deg': np.degrees(alpha),
+                            'beta_rad': beta,
+                            'beta_deg': np.degrees(beta),
+                            'wx_rad_s': wx,
+                            'wy_rad_s': wy,
+                            'wz_rad_s': wz,
+                            'theta_rad': theta,
+                            'psi_rad': psi,
+                            'phi_rad': phi,
+                            'theta_deg': np.degrees(theta),
+                            'psi_deg': np.degrees(psi),
+                            'phi_deg': np.degrees(phi)
+                        })
+                    else:
+                        QMessageBox.warning(self, "警告", "暂无计算结果，无法导出数据")
+                        return
+                else:
+                    QMessageBox.warning(self, "警告", "暂无计算结果，无法导出数据")
+                    return
+                    
                 if filename.endswith('.csv'):
                     df.to_csv(filename, index=False)
                 elif filename.endswith('.xlsx'):
