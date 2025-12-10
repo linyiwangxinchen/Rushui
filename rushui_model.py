@@ -2068,6 +2068,11 @@ class Rushui:
                     # self.plot_pao_down_x = cav2[:, 0]
                     # self.plot_pao_down_y = cav2[:, 1]
                     data = {
+                        'motions': {
+                            't': self.t,
+                            'alphat': self.alphat,
+                            'y': self.y
+                        },
                         'points': {
                             'plot_dan_x': self.plot_dan_x,
                             'plot_dan_y': self.plot_dan_y,
@@ -2077,6 +2082,9 @@ class Rushui:
                             'plot_pao_up_y': self.plot_pao_up_y,
                             'plot_pao_down_x': self.plot_pao_down_x,
                             'plot_pao_down_y': self.plot_pao_down_y
+                        },
+                        'forces': {
+                            'AFM': self.AFM
                         }
                     }
                     # 调用回调函数

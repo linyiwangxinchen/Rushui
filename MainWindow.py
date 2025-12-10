@@ -54,10 +54,6 @@ class MainWindow(QMainWindow):
         self.sim_control_widget = SimulationControlWidget(self.rushui)
         control_panel.addTab(self.sim_control_widget, "积分参量")
 
-        # 添加倾斜入水界面
-        self.sim_dive_widget = SimulationDiveWidget(self.rushui)
-        control_panel.addTab(self.sim_dive_widget, "倾斜入水")
-
 
         # 创建右侧面板
         right_panel = QVBoxLayout()
@@ -77,7 +73,7 @@ class MainWindow(QMainWindow):
 
         # 连接信号
         self.sim_control_widget.realtime_update.connect(self.visualization_widget.handle_realtime_update)
-        self.sim_dive_widget.realtime_update.connect(self.visualization_widget.handle_realtime_update1)
+
         # 连接模型跟仿真两个界面的信号
         self.model_param_widget.data_input_signal_m.connect(self.sim_control_widget.to_model)
         self.sim_control_widget.data_input_signal_f.connect(self.model_param_widget.to_model)
@@ -85,12 +81,6 @@ class MainWindow(QMainWindow):
         self.model_param_widget.data_output_signal_m.connect(self.sim_control_widget.get_model)
         self.sim_control_widget.data_output_signal_f.connect(self.model_param_widget.get_model)
 
-        # 倾斜入水跟模型的信号
-        self.model_param_widget.data_input_signal_m1.connect(self.sim_dive_widget.to_model)
-        self.sim_dive_widget.data_input_signal_f.connect(self.model_param_widget.to_model1)
-
-        self.model_param_widget.data_output_signal_m1.connect(self.sim_dive_widget.get_model)
-        self.sim_dive_widget.data_output_signal_f.connect(self.model_param_widget.get_model1)
 
         # 组合布局
         main_layout.addWidget(control_panel, 1)

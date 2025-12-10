@@ -66,7 +66,7 @@ class CompactParameterDisplayWidget(QWidget):
         # 添加攻角
         alpha_layout = QVBoxLayout()
         alpha_layout.addWidget(QLabel("攻角:"))
-        self.alpha_label = QLabel("Alpha = 0.0000 °/s")
+        self.alpha_label = QLabel("Alpha = 0.0000 °")
         self.alpha_label.setMinimumWidth(180)
         alpha_layout.addWidget(self.alpha_label)
         row1.addLayout(alpha_layout)
@@ -128,31 +128,30 @@ class CompactParameterDisplayWidget(QWidget):
 
         # 第一行
         group_layout.addWidget(QLabel("Fx:"), 1, 0)
-        self.cpr_label = QLabel("0.0000")
-        group_layout.addWidget(self.cpr_label, 1, 1)
+        self.fx_label = QLabel("0.0000")
+        group_layout.addWidget(self.fx_label, 1, 1)
 
         group_layout.addWidget(QLabel("Mx:"), 1, 2)
-        self.cnx_label = QLabel("0.0000")
-        group_layout.addWidget(self.cnx_label, 1, 3)
+        self.mx_label = QLabel("0.0000")
+        group_layout.addWidget(self.mx_label, 1, 3)
 
         # 第二行
         group_layout.addWidget(QLabel("Fy:"), 2, 0)
-        self.cny_label = QLabel("0.0000")
-        group_layout.addWidget(self.cny_label, 2, 1)
+        self.fy_label = QLabel("0.0000")
+        group_layout.addWidget(self.fy_label, 2, 1)
 
         group_layout.addWidget(QLabel("My:"), 2, 2)
-        self.cnm_label = QLabel("0.0000")
-        group_layout.addWidget(self.cnm_label, 2, 3)
+        self.my_label = QLabel("0.0000")
+        group_layout.addWidget(self.my_label, 2, 3)
 
         # 第三行
         group_layout.addWidget(QLabel("Fz:"), 3, 0)
-        self.csx_label = QLabel("0.0000")
-        group_layout.addWidget(self.csx_label, 3, 1)
+        self.fz_label = QLabel("0.0000")
+        group_layout.addWidget(self.fz_label, 3, 1)
 
         group_layout.addWidget(QLabel("Mz:"), 3, 2)
-        self.csy_label = QLabel("0.0000")
-        group_layout.addWidget(self.csy_label, 3, 3)
-
+        self.mz_label = QLabel("0.0000")
+        group_layout.addWidget(self.mz_label, 3, 3)
 
         force_group.setLayout(group_layout)
         layout.addWidget(force_group)
@@ -206,33 +205,49 @@ class CompactParameterDisplayWidget(QWidget):
     def update_parameters(self, data):
         """更新显示的参数"""
         self.current_data = data
-
+        # data = {
+        #     'motions': {
+        #         't': self.t,
+        #         'alphat': self.alphat,
+        #         'y': self.y
+        #     },
+        #     'points': {
+        #         'plot_dan_x': self.plot_dan_x,
+        #         'plot_dan_y': self.plot_dan_y,
+        #         'plot_zhou_x': self.plot_zhou_x,
+        #         'plot_zhou_y': self.plot_zhou_y,
+        #         'plot_pao_up_x': self.plot_pao_up_x,
+        #         'plot_pao_up_y': self.plot_pao_up_y,
+        #         'plot_pao_down_x': self.plot_pao_down_x,
+        #         'plot_pao_down_y': self.plot_pao_down_y
+        #     },
+        #     'forces': {
+        #         'AFM': self.AFM
+        #     }
+        # }
         # 运动参数
-        if 'motion' in data:
-            xc, yc = self.stab.TurnPointOnGamma(-self.stab.Xabs, self.stab.Yabs)
-            motion = data['motion']
+        if 'motions' in data:
+
+            motion = data['motions']
             if 't' in motion:
-                self.time_label.setText(f"{motion['t'] * 1000 * motion['lm'] / self.stab.V0:.2f} ms")
-            if 'x' in motion and 'y' in motion:
-                self.pos_label.setText(f"X={(xc) * motion['lm']:.4f} m, Y={yc * motion['lm'] :.4f} m")
-            if 'vx' in motion and 'vy' in motion:
-                self.vel_label.setText(f"Vx/V0={motion['vx']:.4f}, Vy={motion['vy']:.2f} m/s")
-            if 'psi' in motion and 'alpha' in motion:
-                self.angle_label.setText(
-                    f"Psi={np.degrees(motion['psi']):.2f}°, Alpha={np.degrees(motion['alpha']):.2f}°")
-            if 'omega' in motion:
-                self.omega_label.setText(f"{motion['omega'] * self.stab.V0 / self.stab.Lm:.4f} rad/s")
+                self.time_label.setText(f"{motion['t']:.4f} s")
+            if 'alphat' in motion:
+                self.alpha_label.setText(f"Alpha = {motion['alphat']:.4f} °")
+            if 'y' in motion:
+                self.pos_label.setText(f"X = {motion['y'][9]:.4f} m, Y = {motion['y'][10]:.4f} m, Z = {motion['y'][11]:.4f} m")
+                self.vel_label.setText(f"Vx = {motion['y'][0]:.4f} m/s, Vy = {motion['y'][1]:.4f} m/s, Vz = {motion['y'][2]:.4f} m/s")
+                self.angle_label.setText(f"Theta = {motion['y'][6] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7] * self.rushui.RTD:.4f}°, {motion['y'][8] * self.rushui.RTD:.4f}°")
+                self.omega_label.setText(f"wx = {motion['y'][3] * self.rushui.RTD:.4f} °/s, wy = {motion['y'][4] * self.rushui.RTD:.4f} °/s, wz = {motion['y'][5] * self.rushui.RTD:.4f} °/s")
 
         # 力系数
         if 'forces' in data:
-            forces = data['forces']
-            self.cpr_label.setText(f"{forces.get('cpr', 0.0):.4f}")
-            self.cnx_label.setText(f"{forces.get('cnx', 0.0):.4f}")
-            self.cny_label.setText(f"{forces.get('cny', 0.0):.4f}")
-            self.cnm_label.setText(f"{forces.get('cnm', 0.0):.4f}")
-            self.csx_label.setText(f"{forces.get('csx', 0.0):.4f}")
-            self.csy_label.setText(f"{forces.get('csy', 0.0):.4f}")
-            self.csm_label.setText(f"{forces.get('csm', 0.0):.4f}")
+            forces = data['forces']['AFM']
+            self.fx_label.setText(f"{forces[0]:.4f}")
+            self.fy_label.setText(f"{forces[1]:.4f}")
+            self.fz_label.setText(f"{forces[2]:.4f}")
+            self.mx_label.setText(f"{forces[3]:.4f}")
+            self.my_label.setText(f"{forces[4]:.4f}")
+            self.mz_label.setText(f"{forces[5]:.4f}")
 
         # 接触与应力
         if 'contact' in data:
