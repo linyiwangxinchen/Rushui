@@ -2035,7 +2035,7 @@ class Rushui:
                 if self.update_callback:
                     # 准备实时数据
                     data = {
-                        'motion': 1
+                        'motionsss': 1
                     }
                     # 调用回调函数
                     self.update_callback(data)

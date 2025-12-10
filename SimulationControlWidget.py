@@ -159,6 +159,50 @@ class SimulationControlWidget(QWidget):
         """启动仿真计算"""
         try:
             # 设置参数
+            self.rushui.L = self.L_input.value()
+            self.rushui.S = self.S_input.value()
+            self.rushui.V = self.V_input.value()
+            self.rushui.m = self.m_input.value()
+            self.rushui.xc = self.xc_input.value()
+            self.rushui.yc = self.yc_input.value()
+            self.rushui.zc = self.zc_input.value()
+            self.rushui.Jxx = self.jxx_input.value()
+            self.rushui.Jyy = self.jyy_input.value()
+            self.rushui.Jzz = self.jzz_input.value()
+            self.rushui.dt = self.dt_input.value()
+            self.rushui.t0 = self.t0_input.value()
+            self.rushui.tend = self.tend_input.value()
+            self.rushui.YCS = self.ycs_input.value()
+            self.rushui.THETACS = self.thetacs_input.value() / self.rushui.RTD
+            self.rushui.VYCS = self.yvcs_input.value()
+            self.rushui.PSICS = self.psics_input.value() / self.rushui.RTD
+            self.ask_model()
+            self.rushui.x0 = self.model_data['x0']
+            self.rushui.y0 = self.model_data['y0']
+            self.rushui.z0 = self.model_data['z0']
+            self.rushui.theta = self.model_data['theta'] / self.rushui.RTD
+            self.rushui.psi = self.model_data['psi'] / self.rushui.RTD
+            self.rushui.phi = self.model_data['phi'] / self.rushui.RTD
+            self.rushui.vx = self.model_data['vx']
+            self.rushui.vy = self.model_data['vy']
+            self.rushui.vz = self.model_data['vz']
+            self.rushui.wx = self.model_data['wx'] / self.rushui.RTD
+            self.rushui.wy = self.model_data['wy'] / self.rushui.RTD
+            self.rushui.wz = self.model_data['wz'] / self.rushui.RTD
+            self.rushui.DK = self.model_data['dk'] / self.rushui.RTD
+            self.rushui.DS = self.model_data['ds'] / self.rushui.RTD
+            self.rushui.DX = self.model_data['dxx'] / self.rushui.RTD
+            self.rushui.dkf = self.model_data['dkf'] / self.rushui.RTD
+            self.rushui.dsf = self.model_data['dsf'] / self.rushui.RTD
+            self.rushui.dxf = self.model_data['dxf'] / self.rushui.RTD
+            self.rushui.t1 = self.model_data['t1']
+            self.rushui.t2 = self.model_data['t2']
+            self.rushui.kth = self.model_data['kth']
+            self.rushui.kps = self.model_data['kps']
+            self.rushui.kph = self.model_data['kph']
+            self.rushui.kwx = self.model_data['kwx']
+            self.rushui.kwz = self.model_data['kwz']
+            self.rushui.kwy = self.model_data['kwy']
 
             # 如果已有线程，先停止
             if self.calc_thread and self.calc_thread.isRunning():
@@ -180,7 +224,6 @@ class SimulationControlWidget(QWidget):
             self.progress_bar.setValue(0)
 
             # 重置计算状态
-
 
             self.calc_thread.start()
 

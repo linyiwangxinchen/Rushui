@@ -6,7 +6,7 @@ class CompactParameterDisplayWidget(QWidget):
     """参数显示面板"""
     def __init__(self, stab_instance, parent=None):
         super().__init__(parent)
-        self.stab = stab_instance
+        self.rushui = stab_instance
         self.init_ui()
         self.current_data = {}
 
@@ -203,116 +203,59 @@ class CompactParameterDisplayWidget(QWidget):
         """更新显示的参数"""
         self.current_data = data
 
-        if self.stab.FlagDive:
-            # 运动参数
-            if 'motion' in data:
-                xc, yc = self.stab.TurnPointOnGamma(-self.stab.Xabs, self.stab.Yabs)
-                motion = data['motion']
-                if 't' in motion:
-                    self.time_label.setText(f"{motion['t'] * 1000 * motion['lm'] / self.stab.V0:.2f} ms")
-                if 'x' in motion and 'y' in motion:
-                    self.pos_label.setText(f"X={(xc) * motion['lm']:.4f} m, Y={yc * motion['lm'] :.4f} m")
-                if 'vx' in motion and 'vy' in motion:
-                    self.vel_label.setText(f"Vx/V0={motion['vx']:.4f}, Vy={motion['vy']:.2f} m/s")
-                if 'psi' in motion and 'alpha' in motion:
-                    self.angle_label.setText(
-                        f"Psi={np.degrees(motion['psi']):.2f}°, Alpha={np.degrees(motion['alpha']):.2f}°")
-                if 'omega' in motion:
-                    self.omega_label.setText(f"{motion['omega'] * self.stab.V0 / self.stab.Lm:.4f} rad/s")
+        # 运动参数
+        if 'motion' in data:
+            xc, yc = self.stab.TurnPointOnGamma(-self.stab.Xabs, self.stab.Yabs)
+            motion = data['motion']
+            if 't' in motion:
+                self.time_label.setText(f"{motion['t'] * 1000 * motion['lm'] / self.stab.V0:.2f} ms")
+            if 'x' in motion and 'y' in motion:
+                self.pos_label.setText(f"X={(xc) * motion['lm']:.4f} m, Y={yc * motion['lm'] :.4f} m")
+            if 'vx' in motion and 'vy' in motion:
+                self.vel_label.setText(f"Vx/V0={motion['vx']:.4f}, Vy={motion['vy']:.2f} m/s")
+            if 'psi' in motion and 'alpha' in motion:
+                self.angle_label.setText(
+                    f"Psi={np.degrees(motion['psi']):.2f}°, Alpha={np.degrees(motion['alpha']):.2f}°")
+            if 'omega' in motion:
+                self.omega_label.setText(f"{motion['omega'] * self.stab.V0 / self.stab.Lm:.4f} rad/s")
 
-            # 力系数
-            if 'forces' in data:
-                forces = data['forces']
-                self.cpr_label.setText(f"{forces.get('cpr', 0.0):.4f}")
-                self.cnx_label.setText(f"{forces.get('cnx', 0.0):.4f}")
-                self.cny_label.setText(f"{forces.get('cny', 0.0):.4f}")
-                self.cnm_label.setText(f"{forces.get('cnm', 0.0):.4f}")
-                self.csx_label.setText(f"{forces.get('csx', 0.0):.4f}")
-                self.csy_label.setText(f"{forces.get('csy', 0.0):.4f}")
-                self.csm_label.setText(f"{forces.get('csm', 0.0):.4f}")
+        # 力系数
+        if 'forces' in data:
+            forces = data['forces']
+            self.cpr_label.setText(f"{forces.get('cpr', 0.0):.4f}")
+            self.cnx_label.setText(f"{forces.get('cnx', 0.0):.4f}")
+            self.cny_label.setText(f"{forces.get('cny', 0.0):.4f}")
+            self.cnm_label.setText(f"{forces.get('cnm', 0.0):.4f}")
+            self.csx_label.setText(f"{forces.get('csx', 0.0):.4f}")
+            self.csy_label.setText(f"{forces.get('csy', 0.0):.4f}")
+            self.csm_label.setText(f"{forces.get('csm', 0.0):.4f}")
 
-            # 接触与应力
-            if 'contact' in data:
-                contact = data['contact']
-                self.n_contacts_label.setText(str(contact.get('n_contacts', 0)))
-                self.pressure_label.setText(f"{contact.get('pressure', 0.0):.4f} MPa")
-                self.h2_label.setText(f"{contact.get('h2', 0.0) * self.stab.Lmm:.4f} mm")
-                self.h1_label.setText(f"{contact.get('h1', 0.0) * self.stab.Lmm:.4f} mm")
+        # 接触与应力
+        if 'contact' in data:
+            contact = data['contact']
+            self.n_contacts_label.setText(str(contact.get('n_contacts', 0)))
+            self.pressure_label.setText(f"{contact.get('pressure', 0.0):.4f} MPa")
+            self.h2_label.setText(f"{contact.get('h2', 0.0) * self.stab.Lmm:.4f} mm")
+            self.h1_label.setText(f"{contact.get('h1', 0.0) * self.stab.Lmm:.4f} mm")
 
-                if 'stress' in contact:
-                    stress = contact['stress']
-                    sigma_val = abs(stress.get('sigma_max', 0.0))
-                    tau_val = abs(stress.get('tau_max', 0.0))
+            if 'stress' in contact:
+                stress = contact['stress']
+                sigma_val = abs(stress.get('sigma_max', 0.0))
+                tau_val = abs(stress.get('tau_max', 0.0))
 
-                    # 超过阈值时高亮显示
-                    SIGMA_LIMIT = 500  # MPa
-                    TAU_LIMIT = 300  # MPa
+                # 超过阈值时高亮显示
+                SIGMA_LIMIT = 500  # MPa
+                TAU_LIMIT = 300  # MPa
 
-                    self.sigma_label.setText(f"{sigma_val:.2f} MPa")
-                    if sigma_val > SIGMA_LIMIT:
-                        self.sigma_label.setStyleSheet("color: red; font-weight: bold;")
-                    else:
-                        self.sigma_label.setStyleSheet("")
+                self.sigma_label.setText(f"{sigma_val:.2f} MPa")
+                if sigma_val > SIGMA_LIMIT:
+                    self.sigma_label.setStyleSheet("color: red; font-weight: bold;")
+                else:
+                    self.sigma_label.setStyleSheet("")
 
-                    self.tau_label.setText(f"{tau_val:.2f} MPa")
-                    if tau_val > TAU_LIMIT:
-                        self.tau_label.setStyleSheet("color: red; font-weight: bold;")
-                    else:
-                        self.tau_label.setStyleSheet("")
+                self.tau_label.setText(f"{tau_val:.2f} MPa")
+                if tau_val > TAU_LIMIT:
+                    self.tau_label.setStyleSheet("color: red; font-weight: bold;")
+                else:
+                    self.tau_label.setStyleSheet("")
 
-        else:
-            # 运动参数
-            if 'motion' in data:
-                motion = data['motion']
-                if 't' in motion:
-                    self.time_label.setText(f"{motion['t'] * 1000 * motion['lm'] / self.stab.V0:.2f} ms")
-                if 'x' in motion and 'y' in motion:
-                    self.pos_label.setText(f"X={motion['x'] * motion['lm']:.4f} m, Y={motion['y'] * 100 * motion['lm']:.2f} cm")
-                if 'vx' in motion and 'vy' in motion:
-                    self.vel_label.setText(f"Vx/V0={motion['vx']:.4f}, Vy={motion['vy'] * self.stab.V0:.2f} m/s")
-                if 'psi' in motion and 'alpha' in motion:
-                    self.angle_label.setText(
-                        f"Psi={np.degrees(motion['psi']):.2f}°, Alpha={np.degrees(motion['alpha']):.2f}°")
-                if 'omega' in motion:
-                    self.omega_label.setText(
-                        f"{motion['omega'] * self.stab.V0 / self.stab.Lm:.4f} rad/s")
-
-            # 力系数
-            if 'forces' in data:
-                forces = data['forces']
-                self.cpr_label.setText(f"{forces.get('cpr', 0.0):.4f}")
-                self.cnx_label.setText(f"{forces.get('cnx', 0.0):.4f}")
-                self.cny_label.setText(f"{forces.get('cny', 0.0):.4f}")
-                self.cnm_label.setText(f"{forces.get('cnm', 0.0):.4f}")
-                self.csx_label.setText(f"{forces.get('csx', 0.0):.4f}")
-                self.csy_label.setText(f"{forces.get('csy', 0.0):.4f}")
-                self.csm_label.setText(f"{forces.get('csm', 0.0):.4f}")
-
-            # 接触与应力
-            if 'contact' in data:
-                contact = data['contact']
-                self.n_contacts_label.setText(str(contact.get('n_contacts', 0)))
-                self.pressure_label.setText(f"{contact.get('pressure', 0.0):.4f} MPa")
-                self.h2_label.setText(f"{contact.get('h2', 0.0) * self.stab.Lmm:.4f} mm")
-                self.h1_label.setText(f"{contact.get('h1', 0.0) * self.stab.Lmm:.4f} mm")
-
-                if 'stress' in contact:
-                    stress = contact['stress']
-                    sigma_val = abs(stress.get('sigma_max', 0.0))
-                    tau_val = abs(stress.get('tau_max', 0.0))
-
-                    # 超过阈值时高亮显示
-                    SIGMA_LIMIT = 500  # MPa
-                    TAU_LIMIT = 300  # MPa
-
-                    self.sigma_label.setText(f"{sigma_val:.2f} MPa")
-                    if sigma_val > SIGMA_LIMIT:
-                        self.sigma_label.setStyleSheet("color: red; font-weight: bold;")
-                    else:
-                        self.sigma_label.setStyleSheet("")
-
-                    self.tau_label.setText(f"{tau_val:.2f} MPa")
-                    if tau_val > TAU_LIMIT:
-                        self.tau_label.setStyleSheet("color: red; font-weight: bold;")
-                    else:
-                        self.tau_label.setStyleSheet("")

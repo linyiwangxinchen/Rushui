@@ -13,7 +13,7 @@ class CalculationThread(QThread):
 
     def __init__(self, stab_instance, parent=None):
         super().__init__(parent)
-        self.stab = stab_instance
+        self.rushui = stab_instance
         self.is_running = True
         self.is_paused = False
         self.update_interval = 0.05  # 最小更新间隔（秒）
@@ -25,30 +25,21 @@ class CalculationThread(QThread):
         try:
             # 准备计算
             self.progress.emit(0, "初始化计算参数...")
-            self.stab.CalcParameters()
-
-            self.progress.emit(0, "计算模型几何与质量分布...")
-            self.stab.CalcModel()
-            self.update_model_parameters()
-
-            self.progress.emit(0, "准备动力学仿真...")
 
             # 设置回调函数
-            self.stab.update_callback = self.send_update
-            self.stab.progress_callback = self.send_progress
+            self.rushui.update_callback = self.send_update
+            self.rushui.progress_callback = self.send_progress
+
 
             # 启动主计算
-            self.stab.Dynamics()
+            self.rushui.main()
 
             if not self.is_running:
                 self.progress.emit(100, "计算已中止")
                 return
 
-            self.progress.emit(95, "处理结果数据...")
-            results = self.stab.get_results()
-
             self.progress.emit(100, "计算完成")
-            self.finished.emit(results)
+
 
         except Exception as e:
             logging.exception("计算过程中发生错误")
