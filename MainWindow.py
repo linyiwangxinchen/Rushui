@@ -15,7 +15,7 @@ from SimulationControlWidget import SimulationControlWidget
 from VisualizationWidget import VisualizationWidget
 from rushui_model import Rushui
 from SimulationDiveWidget import SimulationDiveWidget
-from stab_model import Stab
+
 
 
 from PyQt5.QtGui import QPainter, QLinearGradient, QColor, QPalette, QBrush, QPixmap
