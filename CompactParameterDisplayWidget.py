@@ -58,46 +58,58 @@ class CompactParameterDisplayWidget(QWidget):
 
         time_layout = QVBoxLayout()
         time_layout.addWidget(QLabel("时间:"))
-        self.time_label = QLabel("0.0000 ms")
-        self.time_label.setMinimumWidth(100)
+        self.time_label = QLabel("T = 0.0000 s")
+        self.time_label.setMinimumWidth(180)
         time_layout.addWidget(self.time_label)
         row1.addLayout(time_layout)
 
-        pos_layout = QVBoxLayout()
-        pos_layout.addWidget(QLabel("位置:"))
-        self.pos_label = QLabel("X=0.0000 m, Y=0.0000 m")
-        self.pos_label.setMinimumWidth(180)
-        pos_layout.addWidget(self.pos_label)
-        row1.addLayout(pos_layout)
+        # 添加攻角
+        alpha_layout = QVBoxLayout()
+        alpha_layout.addWidget(QLabel("攻角:"))
+        self.alpha_label = QLabel("Alpha = 0.0000 °/s")
+        self.alpha_label.setMinimumWidth(180)
+        alpha_layout.addWidget(self.alpha_label)
+        row1.addLayout(alpha_layout)
 
         # 第二行：速度 + 角度
         row2 = QHBoxLayout()
         row2.setContentsMargins(0, 0, 0, 0)
 
+        pos_layout = QVBoxLayout()
+        pos_layout.addWidget(QLabel("位置:"))
+        self.pos_label = QLabel("X = 0.0000 m, Y = 0.0000 m, Z = 0.0000 m")
+        self.pos_label.setMinimumWidth(180)
+        pos_layout.addWidget(self.pos_label)
+        row2.addLayout(pos_layout)
+
         vel_layout = QVBoxLayout()
         vel_layout.addWidget(QLabel("速度:"))
-        self.vel_label = QLabel("Vx/V0=0.0000, Vy=0.0000 m/s")
-        self.vel_label.setMinimumWidth(200)
+        self.vel_label = QLabel("Vx = 0.0000 m/s, Vy = 0.0000 m/s, Vz = 0.0000 m/s")
+        self.vel_label.setMinimumWidth(180)
         vel_layout.addWidget(self.vel_label)
         row2.addLayout(vel_layout)
-
-        angle_layout = QVBoxLayout()
-        angle_layout.addWidget(QLabel("姿态:"))
-        self.angle_label = QLabel("Psi=0.0000°, Alpha=0.0000°")
-        self.angle_label.setMinimumWidth(160)
-        angle_layout.addWidget(self.angle_label)
-        row2.addLayout(angle_layout)
 
         # 第三行：角速度
         row3 = QHBoxLayout()
         row3.setContentsMargins(0, 0, 0, 0)
 
+        angle_layout = QVBoxLayout()
+        angle_layout.addWidget(QLabel("姿态:"))
+        self.angle_label = QLabel("Theta = 0.0000°, Psi = 0.0000°, Phi = 0.0000°")
+        self.angle_label.setMinimumWidth(180)
+        angle_layout.addWidget(self.angle_label)
+        row3.addLayout(angle_layout)
+
         omega_layout = QVBoxLayout()
         omega_layout.addWidget(QLabel("角速度:"))
-        self.omega_label = QLabel("0.0000 rad/s")
-        self.omega_label.setMinimumWidth(100)
+        self.omega_label = QLabel("wx = 0.0000 °/s, wy = 0.0000 °/s, wz = 0.0000 °/s")
+        self.omega_label.setMinimumWidth(180)
         omega_layout.addWidget(self.omega_label)
         row3.addLayout(omega_layout)
+
+
+
+
 
         group_layout.addLayout(row1)
         group_layout.addLayout(row2)

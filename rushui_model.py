@@ -9,6 +9,14 @@ import pandas as pd
 
 class Rushui:
     def __init__(self):
+        self.plot_pao_down_y = None
+        self.plot_pao_down_x = None
+        self.plot_pao_up_y = None
+        self.plot_pao_up_x = None
+        self.plot_zhou_y = None
+        self.plot_zhou_x = None
+        self.plot_dan_y = None
+        self.plot_dan_x = None
         self.update_callback = None
         self.progress_callback = None
         self.min_callback_interval = 0.05
@@ -1026,24 +1034,31 @@ class Rushui:
             cav3 = (Cb0 @ cav3.T).T
             cav4 = (Cb0 @ cav4.T).T
 
-            # # 创建图形
+            # 准备绘图数据
+            self.plot_dan_x = posb[0, :]
+            self.plot_dan_y = posb[1, :]
+            self.plot_zhou_x = cav0[:, 0]
+            self.plot_zhou_y = cav0[:, 1]
+            self.plot_pao_up_x = cav1[:, 0]
+            self.plot_pao_up_y = cav1[:, 1]
+            self.plot_pao_down_x = cav2[:, 0]
+            self.plot_pao_down_y = cav2[:, 1]
+
+
+
+            # 创建图形
             # plt.figure(figsize=(12, 10))
-            #
-            # # 前视图（y-z平面投影）
+            # 前视图（y-z平面投影）
             # plt.subplot(2, 1, 1)
-            #
-            # # 绘制弹体轮廓
+            # 绘制弹体轮廓
             # plt.plot(posb[0, :], posb[1, :], 'b-', linewidth=2, label='Body')
-            #
-            # # 绘制空泡轴线
+            # 绘制空泡轴线
             # plt.plot(cav0[:, 0], cav0[:, 1], 'k-', linewidth=1, label='Cavity Axis')
-            #
-            # # 绘制空泡轮廓（上半部分）
+            # 绘制空泡轮廓（上半部分）
             # plt.plot(cav1[:, 0], cav1[:, 1], 'r--', linewidth=1, label='Upper Cavity')
-            #
-            # # 绘制空泡轮廓（下半部分）
+            # 绘制空泡轮廓（下半部分）
             # plt.plot(cav2[:, 0], cav2[:, 1], 'r--', linewidth=1, label='Lower Cavity')
-            #
+
             # plt.grid(True)
             # plt.axis('equal')
             # plt.xlim([-3, 3])
@@ -1052,7 +1067,7 @@ class Rushui:
             # plt.ylabel('y/m')
             # plt.title(f'Front View')
             # plt.legend()
-            #
+
             # # 俯视图（x-z平面投影）
             # plt.subplot(2, 1, 2)
             #
@@ -1948,6 +1963,7 @@ class Rushui:
             Myk + Myb + Myw + MG[1],
             Mzk + Mzb + Mzw + MG[2]
         ])  # 坐标原点建立在浮心，所以只有重力矩没有浮力矩
+        self.AFM = AFM
 
         # 初始化导数向量
         dydt = np.zeros(15)
@@ -2013,6 +2029,7 @@ class Rushui:
         dt = self.dt
         y = y1.copy()
         t = t0
+        self.t = t
         self.y = y.copy()
         self.t = t
         current_time = time.time()
@@ -2034,8 +2051,33 @@ class Rushui:
                 # ========== 实时数据准备 ==========
                 if self.update_callback:
                     # 准备实时数据
+
+
+
+
+
+
+
+
+                    # self.plot_dan_x = posb[0, :]
+                    # self.plot_dan_y = posb[1, :]
+                    # self.plot_zhou_x = cav0[:, 0]
+                    # self.plot_zhou_y = cav0[:, 1]
+                    # self.plot_pao_up_x = cav1[:, 0]
+                    # self.plot_pao_up_y = cav1[:, 1]
+                    # self.plot_pao_down_x = cav2[:, 0]
+                    # self.plot_pao_down_y = cav2[:, 1]
                     data = {
-                        'motionsss': 1
+                        'points': {
+                            'plot_dan_x': self.plot_dan_x,
+                            'plot_dan_y': self.plot_dan_y,
+                            'plot_zhou_x': self.plot_zhou_x,
+                            'plot_zhou_y': self.plot_zhou_y,
+                            'plot_pao_up_x': self.plot_pao_up_x,
+                            'plot_pao_up_y': self.plot_pao_up_y,
+                            'plot_pao_down_x': self.plot_pao_down_x,
+                            'plot_pao_down_y': self.plot_pao_down_y
+                        }
                     }
                     # 调用回调函数
                     self.update_callback(data)
@@ -2107,6 +2149,21 @@ class Rushui:
         # 保存弹道数据
         trajectory_data = np.column_stack([t, y, v, alpha])
         np.savetxt('tra.txt', trajectory_data, fmt='%9.5f')
+
+    def get_results(self):
+        data = {
+            'points': {
+                'plot_dan_x': self.plot_dan_x,
+                'plot_dan_y': self.plot_dan_y,
+                'plot_zhou_x': self.plot_zhou_x,
+                'plot_zhou_y': self.plot_zhou_y,
+                'plot_pao_up_x': self.plot_pao_up_x,
+                'plot_pao_up_y': self.plot_pao_up_y,
+                'plot_pao_down_x': self.plot_pao_down_x,
+                'plot_pao_down_y': self.plot_pao_down_y
+            }
+        }
+        return data
 
 
     def main(self):
