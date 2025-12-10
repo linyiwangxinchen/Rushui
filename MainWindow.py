@@ -163,7 +163,6 @@ class MainWindow(QMainWindow):
                 return
 
             # 收集模型参数
-            lengths, diams = self.model_param_widget.get_section_parameters()
             model_params = {
                 "Lm": self.model_param_widget.length_input.value(),
                 "Lf": self.model_param_widget.forebody_length_input.value(),
@@ -177,25 +176,27 @@ class MainWindow(QMainWindow):
                 "Beta": self.model_param_widget.cavitator_angle_input.value(),
                 "Delta": self.model_param_widget.cavitator_swing_input.value(),
                 "Ncon": self.model_param_widget.section_count_input.value(),
-                "ConeLen": lengths,
-                "BaseDiam": diams,
-                "Omega0": self.stab.Omega0
             }
 
             # 收集仿真参数
             sim_params = {
-                "V0": self.sim_control_widget.v0_input.value(),
-                "H0": self.sim_control_widget.h0_input.value(),
-                "Psi0": self.sim_control_widget.psi0_input.value(),
-                "Omega0": self.sim_control_widget.omega0_input.value(),
-                "Gamma0": self.sim_control_widget.gamma0_input.value(),
-                "Pc0": self.sim_control_widget.pc0_input.value(),
-                "Xfin": self.sim_control_widget.xfin_input.value(),
-                "HX": self.sim_control_widget.hx_input.value(),
-                "Scale": self.sim_control_widget.scale_input.value(),
-                "PerturbationType": self.sim_control_widget.perturbation_combo.currentIndex(),
-                "NviewSetting": self.sim_control_widget.nview_combo.currentIndex(),
-                "Nview": self.sim_control_widget.Nview_input.value()
+                "L": self.sim_control_widget.L_input.value(),
+                "S": self.sim_control_widget.S_input.value(),
+                "V": self.sim_control_widget.V_input.value(),
+                "m": self.sim_control_widget.m_input.value(),
+                "xc": self.sim_control_widget.xc_input.value(),
+                "yc": self.sim_control_widget.yc_input.value(),
+                "zc": self.sim_control_widget.zc_input.value(),
+                "Jxx": self.sim_control_widget.jxx_input.value(),
+                "Jyy": self.sim_control_widget.jyy_input.value(),
+                "Jzz": self.sim_control_widget.jzz_input.value(),
+                "dt": self.sim_control_widget.dt_input.value(),
+                "t0": self.sim_control_widget.t0_input.value(),
+                "tend": self.sim_control_widget.tend_input.value(),
+                "ycs": self.sim_control_widget.ycs_input.value(),
+                "thetacs": self.sim_control_widget.thetacs_input.value(),
+                "yvcs": self.sim_control_widget.yvcs_input.value(),
+                "psics": self.sim_control_widget.psics_input.value()
             }
 
             # 收集UI状态
@@ -278,18 +279,23 @@ class MainWindow(QMainWindow):
             # 加载仿真参数
             if "sim_params" in config:
                 sp = config["sim_params"]
-                self.sim_control_widget.v0_input.setValue(sp.get("V0", 600.0))
-                self.sim_control_widget.h0_input.setValue(sp.get("H0", 30.0))
-                self.sim_control_widget.psi0_input.setValue(sp.get("Psi0", 0.0))
-                self.sim_control_widget.omega0_input.setValue(sp.get("Omega0", 1.0))
-                self.sim_control_widget.gamma0_input.setValue(sp.get("Gamma0", 1.0))
-                self.sim_control_widget.pc0_input.setValue(sp.get("Pc0", 2350.0))
-                self.sim_control_widget.xfin_input.setValue(sp.get("Xfin", 100.0))
-                self.sim_control_widget.hx_input.setValue(sp.get("HX", 0.05))
-                self.sim_control_widget.scale_input.setValue(sp.get("Scale", 1.0))
-                self.sim_control_widget.perturbation_combo.setCurrentIndex(sp.get("PerturbationType", 0))
-                self.sim_control_widget.nview_combo.setCurrentIndex(sp.get("NviewSetting", 1))
-                self.sim_control_widget.Nview_input.setValue(sp.get("Nview", 500))
+                self.sim_control_widget.L_input.setValue(sp.get("L", 3.195))
+                self.sim_control_widget.S_input.setValue(sp.get("S", 0.0356))
+                self.sim_control_widget.V_input.setValue(sp.get("V", 0))
+                self.sim_control_widget.m_input.setValue(sp.get("m", 114.7))
+                self.sim_control_widget.xc_input.setValue(sp.get("xc", -0.0188))
+                self.sim_control_widget.yc_input.setValue(sp.get("yc", -0.0017))
+                self.sim_control_widget.zc_input.setValue(sp.get("zc", 0.0008))
+                self.sim_control_widget.jxx_input.setValue(sp.get("Jxx", 0.63140684))
+                self.sim_control_widget.jyy_input.setValue(sp.get("Jyy", 57.06970864))
+                self.sim_control_widget.jzz_input.setValue(sp.get("Jzz", 57.07143674))
+                self.sim_control_widget.dt_input.setValue(sp.get("dt", 0.001))
+                self.sim_control_widget.t0_input.setValue(sp.get("t0", 0.539))
+                self.sim_control_widget.tend_input.setValue(sp.get("tend", 3.41))
+                self.sim_control_widget.ycs_input.setValue(sp.get("ycs", -3.45))
+                self.sim_control_widget.thetacs_input.setValue(sp.get("thetacs", -2.5086))
+                self.sim_control_widget.yvcs_input.setValue(sp.get("yvcs", -0.01323))
+                self.sim_control_widget.psics_input.setValue(sp.get("psics", 9.17098))
 
             # 加载UI状态
             if "ui_state" in config:

@@ -180,19 +180,7 @@ class ModelParameterWidget(QWidget):
 
     def load_default_parameters(self):
         """加载默认参数"""
-        # self.length_input.setValue(0.5)
-        # self.forebody_length_input.setValue(59.0)
-        # self.cavity_length_input.setValue(20.0)
-        # self.cavity_left_diam_input.setValue(6.0)
-        # self.cavity_right_diam_input.setValue(6.0)
-        # self.forebody_density_input.setValue(17.6)
-        # self.aftbody_density_input.setValue(4.5)
-        # self.cavity_density_input.setValue(0.0)
-        # self.cavitator_diam_input.setValue(1.5)
-        # self.cavitator_angle_input.setValue(180.0)
-        # self.cavitator_swing_input.setValue(0.0)
-        # self.section_count_input.setValue(3)
-        # self.update_section_table()
+
         pass
 
     def ask_model(self):
