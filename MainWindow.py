@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("入水空泡仿真系统")
         self.setGeometry(100, 100, 1400, 900)
 
-        # 创建Stab实例
+        # 创建Rushui实例
         self.rushui = Rushui()
 
         # 创建中心部件
@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
                 "Ncon": self.model_param_widget.section_count_input.value(),
                 "ConeLen": lengths,
                 "BaseDiam": diams,
-                "Omega0": self.stab.Omega0
+                "Omega0": self.rushui.Omega0
             }
 
             # 收集仿真参数
@@ -282,8 +282,8 @@ class MainWindow(QMainWindow):
                         self.model_param_widget.section_table.item(i, 0).setText(str(lengths[i]))
                         self.model_param_widget.section_table.item(i, 1).setText(str(diams[i]))
 
-                # 更新Stab实例
-                self.stab.Omega0 = mp.get("Omega0", 1.0)
+                # 更新Rushui实例
+                self.rushui.Omega0 = mp.get("Omega0", 1.0)
 
             # 加载仿真参数
             if "sim_params" in config:

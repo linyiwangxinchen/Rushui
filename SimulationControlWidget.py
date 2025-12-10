@@ -13,9 +13,9 @@ class SimulationControlWidget(QWidget):
     data_output_signal_f = pyqtSignal(dict)
     data_input_signal_f = pyqtSignal(bool)
 
-    def __init__(self, stab_instance, parent=None):
+    def __init__(self, rushui_instance, parent=None):
         super().__init__(parent)
-        self.rushui = stab_instance
+        self.rushui = rushui_instance
         self.calc_thread = None
         self.init_ui()
         a = 1
@@ -158,7 +158,29 @@ class SimulationControlWidget(QWidget):
     def start_simulation(self):
         """启动仿真计算"""
         try:
-            # 设置参数
+            # 设置参数 - 从界面获取参数并更新到rushui实例
+            # 弹体参数
+            self.rushui.L = self.L_input.value()
+            self.rushui.S = self.S_input.value()
+            self.rushui.V = self.V_input.value()
+            self.rushui.m = self.m_input.value()
+            self.rushui.xc = self.xc_input.value()
+            self.rushui.yc = self.yc_input.value()
+            self.rushui.zc = self.zc_input.value()
+            self.rushui.Jxx = self.jxx_input.value()
+            self.rushui.Jyy = self.jyy_input.value()
+            self.rushui.Jzz = self.jzz_input.value()
+            
+            # 积分参数
+            self.rushui.dt = self.dt_input.value()
+            self.rushui.t0 = self.t0_input.value()
+            self.rushui.tend = self.tend_input.value()
+            
+            # 起始条件
+            self.rushui.YCS = self.ycs_input.value()
+            self.rushui.THETACS = self.thetacs_input.value() / self.rushui.RTD  # 转换为弧度
+            self.rushui.VYCS = self.yvcs_input.value()
+            self.rushui.PSICS = self.psics_input.value() / self.rushui.RTD  # 转换为弧度
 
             # 如果已有线程，先停止
             if self.calc_thread and self.calc_thread.isRunning():
@@ -180,7 +202,7 @@ class SimulationControlWidget(QWidget):
             self.progress_bar.setValue(0)
 
             # 重置计算状态
-
+            # Rushui模型不需要手动设置这些状态
 
             self.calc_thread.start()
 
@@ -258,7 +280,7 @@ class SimulationControlWidget(QWidget):
 
             # 仅在确定线程已终止后重置模型
             try:
-                self.stab.__init__()
+                self.rushui.__init__()
             except Exception as e:
                 logging.error(f"重置模型时出错: {str(e)}")
 
