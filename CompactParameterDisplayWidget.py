@@ -107,10 +107,6 @@ class CompactParameterDisplayWidget(QWidget):
         omega_layout.addWidget(self.omega_label)
         row3.addLayout(omega_layout)
 
-
-
-
-
         group_layout.addLayout(row1)
         group_layout.addLayout(row2)
         group_layout.addLayout(row3)
@@ -131,36 +127,32 @@ class CompactParameterDisplayWidget(QWidget):
         group_layout.addWidget(QLabel("值"), 0, 3)
 
         # 第一行
-        group_layout.addWidget(QLabel("Cpr:"), 1, 0)
+        group_layout.addWidget(QLabel("Fx:"), 1, 0)
         self.cpr_label = QLabel("0.0000")
         group_layout.addWidget(self.cpr_label, 1, 1)
 
-        group_layout.addWidget(QLabel("Cnx:"), 1, 2)
+        group_layout.addWidget(QLabel("Mx:"), 1, 2)
         self.cnx_label = QLabel("0.0000")
         group_layout.addWidget(self.cnx_label, 1, 3)
 
         # 第二行
-        group_layout.addWidget(QLabel("Cny:"), 2, 0)
+        group_layout.addWidget(QLabel("Fy:"), 2, 0)
         self.cny_label = QLabel("0.0000")
         group_layout.addWidget(self.cny_label, 2, 1)
 
-        group_layout.addWidget(QLabel("Cnm:"), 2, 2)
+        group_layout.addWidget(QLabel("My:"), 2, 2)
         self.cnm_label = QLabel("0.0000")
         group_layout.addWidget(self.cnm_label, 2, 3)
 
         # 第三行
-        group_layout.addWidget(QLabel("Csx:"), 3, 0)
+        group_layout.addWidget(QLabel("Fz:"), 3, 0)
         self.csx_label = QLabel("0.0000")
         group_layout.addWidget(self.csx_label, 3, 1)
 
-        group_layout.addWidget(QLabel("Csy:"), 3, 2)
+        group_layout.addWidget(QLabel("Mz:"), 3, 2)
         self.csy_label = QLabel("0.0000")
         group_layout.addWidget(self.csy_label, 3, 3)
 
-        # 第四行
-        group_layout.addWidget(QLabel("Csm:"), 4, 0)
-        self.csm_label = QLabel("0.0000")
-        group_layout.addWidget(self.csm_label, 4, 1)
 
         force_group.setLayout(group_layout)
         layout.addWidget(force_group)
