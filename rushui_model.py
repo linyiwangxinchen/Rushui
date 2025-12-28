@@ -2052,21 +2052,6 @@ class Rushui:
                 if self.update_callback:
                     # 准备实时数据
 
-
-
-
-
-
-
-
-                    # self.plot_dan_x = posb[0, :]
-                    # self.plot_dan_y = posb[1, :]
-                    # self.plot_zhou_x = cav0[:, 0]
-                    # self.plot_zhou_y = cav0[:, 1]
-                    # self.plot_pao_up_x = cav1[:, 0]
-                    # self.plot_pao_up_y = cav1[:, 1]
-                    # self.plot_pao_down_x = cav2[:, 0]
-                    # self.plot_pao_down_y = cav2[:, 1]
                     data = {
                         'motions': {
                             't': self.t,
@@ -2085,6 +2070,10 @@ class Rushui:
                         },
                         'forces': {
                             'AFM': self.AFM
+                        },
+                        'datas': {
+                            'ts': self.ts,
+                            'ys': self.ys
                         }
                     }
                     # 调用回调函数
@@ -2096,51 +2085,52 @@ class Rushui:
         self.ts = np.array(self.ts)
 
     def plot_results(self):
-        """绘制结果图表"""
-        t = self.ts
-        y = self.ys
-        RTD = self.RTD
-
-        vx = y[:, 0]
-        vy = y[:, 1]
-        vz = y[:, 2]
-        v = np.sqrt(vx ** 2 + vy ** 2 + vz ** 2)
-
-        alpha = -np.arctan(vy / vx) * RTD
-        beta = np.arctan(vz / np.sqrt(vx ** 2 + vy ** 2)) * RTD
-
-        # 图1: 速度、攻角、侧滑角
-        plt.figure(1, figsize=(10, 8))
-        plt.subplot(3, 1, 1)
-        plt.plot(t, v, 'k-', linewidth=2)
-        plt.grid(True)
-        plt.ylabel('v(m/s)')
-
-        plt.subplot(3, 1, 2)
-        plt.plot(t, alpha, 'k-', linewidth=2)
-        plt.grid(True)
-        plt.ylabel('$\\alpha$(°)')
-
-        plt.subplot(3, 1, 3)
-        plt.plot(t, beta, 'k-', linewidth=2)
-        plt.grid(True)
-        plt.ylabel('$\\beta$(°)')
-        plt.xlabel('t(s)')
-
-        # 图2: 角速度
-        plt.figure(2, figsize=(10, 8))
-        for i in range(3):
-            plt.subplot(3, 1, i + 1)
-            plt.plot(t, y[:, 3 + i], 'k-', linewidth=2)
-            plt.grid(True)
-            plt.ylabel(['$\\omega_x$(°/s)', '$\\omega_y$(°/s)', '$\\omega_z$(°/s)'][i])
-        plt.xlabel('t(s)')
-
-        plt.savefig('./000.png')
-
-        # 更多图表可以继续添加...
-
-        plt.show()
+        pass
+        # """绘制结果图表"""
+        # t = self.ts
+        # y = self.ys
+        # RTD = self.RTD
+        #
+        # vx = y[:, 0]
+        # vy = y[:, 1]
+        # vz = y[:, 2]
+        # v = np.sqrt(vx ** 2 + vy ** 2 + vz ** 2)
+        #
+        # alpha = -np.arctan(vy / vx) * RTD
+        # beta = np.arctan(vz / np.sqrt(vx ** 2 + vy ** 2)) * RTD
+        #
+        # # 图1: 速度、攻角、侧滑角
+        # plt.figure(1, figsize=(10, 8))
+        # plt.subplot(3, 1, 1)
+        # plt.plot(t, v, 'k-', linewidth=2)
+        # plt.grid(True)
+        # plt.ylabel('v(m/s)')
+        #
+        # plt.subplot(3, 1, 2)
+        # plt.plot(t, alpha, 'k-', linewidth=2)
+        # plt.grid(True)
+        # plt.ylabel('$\\alpha$(°)')
+        #
+        # plt.subplot(3, 1, 3)
+        # plt.plot(t, beta, 'k-', linewidth=2)
+        # plt.grid(True)
+        # plt.ylabel('$\\beta$(°)')
+        # plt.xlabel('t(s)')
+        #
+        # # 图2: 角速度
+        # plt.figure(2, figsize=(10, 8))
+        # for i in range(3):
+        #     plt.subplot(3, 1, i + 1)
+        #     plt.plot(t, y[:, 3 + i], 'k-', linewidth=2)
+        #     plt.grid(True)
+        #     plt.ylabel(['$\\omega_x$(°/s)', '$\\omega_y$(°/s)', '$\\omega_z$(°/s)'][i])
+        # plt.xlabel('t(s)')
+        #
+        # plt.savefig('./000.png')
+        #
+        # # 更多图表可以继续添加...
+        #
+        # plt.show()
 
     def save_results(self):
         """保存结果到文件"""
@@ -2172,7 +2162,6 @@ class Rushui:
             }
         }
         return data
-
 
     def main(self):
         """主程序"""

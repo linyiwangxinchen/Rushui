@@ -1,0 +1,129 @@
+%single x0  FLT %
+27.8245
+%end%
+%single y0  FLT %
+-3.45
+%end%
+%single z0  FLT %
+0.05623
+%end%
+%single theta  FLT %
+0
+%end%
+%single psi  FLT %
+0
+%end%
+%single phi  FLT %
+6.84184
+%end%
+%single vx  FLT %
+100.969
+%end%
+%single vy  FLT %
+-0.01323
+%end%
+%single vz  FLT %
+-0.95246
+%end%
+%single wx  FLT %
+242.955
+%end%
+%single wy  FLT %
+-42.435
+%end%
+%single wz  FLT %
+56.515
+%end%
+%single dk  FLT %
+-2.9377
+%end%
+%single ds  FLT %
+0.94986
+%end%
+%single dxx  FLT %
+0.94986
+%end%
+%single dkf  FLT %
+-2.50238
+%end%
+%single dsf  FLT %
+0.38547
+%end%
+%single dxf  FLT %
+0.30266
+%end%
+%single t1  FLT %
+25080.6
+%end%
+%single t2  FLT %
+6971.4
+%end%
+%single kth  FLT %
+4
+%end%
+%single kps  FLT %
+4
+%end%
+%single kph  FLT %
+0.08
+%end%
+%single kwx  FLT %
+0.001656
+%end%
+%single kwz  FLT %
+0.312
+%end%
+%single kwy  FLT %
+0.312
+%end%
+%single L  FLT %
+3.195
+%end%
+%single S  FLT %
+0.0356
+%end%
+%single V  FLT %
+0
+%end%
+%single m  FLT %
+114.7
+%end%
+%single xc  FLT %
+-0.0188
+%end%
+%single yc  FLT %
+-0.0017
+%end%
+%single zc  FLT %
+0.0008
+%end%
+%single Jxx  FLT %
+0.631407
+%end%
+%single Jyy  FLT %
+57.0697
+%end%
+%single Jzz  FLT %
+57.0714
+%end%
+%single dt  FLT %
+0.001
+%end%
+%single t0  FLT %
+0.539
+%end%
+%single tend  FLT %
+3.41
+%end%
+%single ycs  FLT %
+-3.45
+%end%
+%single thetacs  FLT %
+-2.5086
+%end%
+%single yvcs  FLT %
+-0.01323
+%end%
+%single psics  FLT %
+9.17098
+%end%

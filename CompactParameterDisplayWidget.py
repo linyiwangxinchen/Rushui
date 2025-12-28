@@ -232,7 +232,7 @@ class CompactParameterDisplayWidget(QWidget):
             if 't' in motion:
                 self.time_label.setText(f"{motion['t']:.4f} s")
             if 'alphat' in motion:
-                self.alpha_label.setText(f"Alpha = {motion['alphat']:.4f} °")
+                self.alpha_label.setText(f"Alpha = {motion['alphat'] * self.rushui.RTD:.4f} °")
             if 'y' in motion:
                 self.pos_label.setText(f"X = {motion['y'][9]:.4f} m, Y = {motion['y'][10]:.4f} m, Z = {motion['y'][11]:.4f} m")
                 self.vel_label.setText(f"Vx = {motion['y'][0]:.4f} m/s, Vy = {motion['y'][1]:.4f} m/s, Vz = {motion['y'][2]:.4f} m/s")

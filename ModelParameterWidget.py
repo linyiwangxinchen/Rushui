@@ -180,7 +180,19 @@ class ModelParameterWidget(QWidget):
 
     def load_default_parameters(self):
         """加载默认参数"""
-
+        # self.length_input.setValue(0.5)
+        # self.forebody_length_input.setValue(59.0)
+        # self.cavity_length_input.setValue(20.0)
+        # self.cavity_left_diam_input.setValue(6.0)
+        # self.cavity_right_diam_input.setValue(6.0)
+        # self.forebody_density_input.setValue(17.6)
+        # self.aftbody_density_input.setValue(4.5)
+        # self.cavity_density_input.setValue(0.0)
+        # self.cavitator_diam_input.setValue(1.5)
+        # self.cavitator_angle_input.setValue(180.0)
+        # self.cavitator_swing_input.setValue(0.0)
+        # self.section_count_input.setValue(3)
+        # self.update_section_table()
         pass
 
     def ask_model(self):
@@ -448,26 +460,33 @@ class ModelParameterWidget(QWidget):
             )
 
             if filename:
-                # 收集所有参数
-                lengths, diams = self.get_section_parameters()
                 params = {
-                    "Lm": self.length_input.value(),
-                    "Lf": self.forebody_length_input.value(),
-                    "Lh": self.cavity_length_input.value(),
-                    "DLh": self.cavity_left_diam_input.value(),
-                    "DRh": self.cavity_right_diam_input.value(),
-                    "Rhof": self.forebody_density_input.value(),
-                    "Rhoa": self.aftbody_density_input.value(),
-                    "Rhoh": self.cavity_density_input.value(),
-                    "Dnmm": self.cavitator_diam_input.value(),
-                    "Beta": self.cavitator_angle_input.value(),
-                    "Delta": self.cavitator_swing_input.value(),
-                    "Ncon": self.section_count_input.value(),
-                    "ConeLen": lengths,
-                    "BaseDiam": diams,
-                    "Omega0": self.stab.Omega0,
-                    "V0": self.stab.V0,
-                    "H0": self.stab.H0
+                    'x0': self.x0_input.value(),
+                    'y0': self.y0_input.value(),
+                    'z0': self.z0_input.value(),
+                    'theta': self.theta_input.value(),
+                    'psi': self.psi_input.value(),
+                    'phi': self.phi_input.value(),
+                    'vx': self.vx_input.value(),
+                    'vy': self.vy_input.value(),
+                    'vz': self.vz_input.value(),
+                    'wx': self.wx_input.value(),
+                    'wy': self.wy_input.value(),
+                    'wz': self.wz_input.value(),
+                    'dk': self.dk_input.value(),
+                    'ds': self.ds_input.value(),
+                    'dxx': self.dxx_input.value(),
+                    'dkf': self.dkf_input.value(),
+                    'dsf': self.dsf_input.value(),
+                    'dxf': self.dxf_input.value(),
+                    't1': self.t1_input.value(),
+                    't2': self.t2_input.value(),
+                    'kth': self.kth_input.value(),
+                    'kps': self.kps_input.value(),
+                    'kph': self.kph_input.value(),
+                    'kwx': self.kwx_input.value(),
+                    'kwz': self.kwz_input.value(),
+                    'kwy': self.kwy_input.value()
                 }
 
                 # 保存为JSON
@@ -491,32 +510,33 @@ class ModelParameterWidget(QWidget):
                     params = json.load(f)
 
                 # 更新UI
-                self.length_input.setValue(params.get("Lm", 0.5))
-                self.forebody_length_input.setValue(params.get("Lf", 59.0))
-                self.cavity_length_input.setValue(params.get("Lh", 20.0))
-                self.cavity_left_diam_input.setValue(params.get("DLh", 6.0))
-                self.cavity_right_diam_input.setValue(params.get("DRh", 6.0))
-                self.forebody_density_input.setValue(params.get("Rhof", 17.6))
-                self.aftbody_density_input.setValue(params.get("Rhoa", 4.5))
-                self.cavity_density_input.setValue(params.get("Rhoh", 0.0))
-                self.cavitator_diam_input.setValue(params.get("Dnmm", 1.5))
-                self.cavitator_angle_input.setValue(params.get("Beta", 180.0))
-                self.cavitator_swing_input.setValue(params.get("Delta", 0.0))
-                self.section_count_input.setValue(params.get("Ncon", 3))
-
-                # 更新分段表格
-                lengths = params.get("ConeLen", [24.0, 35.0, 90.0])
-                diams = params.get("BaseDiam", [6.0, 9.5, 15.0])
-                self.update_section_table()
-
-                for i in range(min(self.section_count_input.value(), len(lengths), len(diams))):
-                    self.section_table.item(i, 0).setText(str(lengths[i]))
-                    self.section_table.item(i, 1).setText(str(diams[i]))
-
-                # 更新Stab实例
-                self.stab.Omega0 = params.get("Omega0", 1.0)
-                self.stab.V0 = params.get("V0", 600.0)
-                self.stab.H0 = params.get("H0", 30.0)
+                
+                self.x0_input.setValue(params.get('x0', 27.82448))
+                self.y0_input.setValue(params.get('y0', -3.45))
+                self.z0_input.setValue(params.get('z0', 0.05623))
+                self.theta_input.setValue(params.get('theta', 0))
+                self.psi_input.setValue(params.get('psi', 0))
+                self.phi_input.setValue(params.get('phi', 6.84184))
+                self.vx_input.setValue(params.get('vx', 100.96949))
+                self.vy_input.setValue(params.get('vy', -0.01323))
+                self.vz_input.setValue(params.get('vz', -0.95246))
+                self.wx_input.setValue(params.get('wx', 242.955))
+                self.wy_input.setValue(params.get('wy', -42.435))
+                self.wz_input.setValue(params.get('wz', 56.515))
+                self.dk_input.setValue(params.get('dk', -2.9377))
+                self.ds_input.setValue(params.get('ds', 0.94986))
+                self.dxx_input.setValue(params.get('dxx', 0.94986))
+                self.dkf_input.setValue(params.get('dkf', -2.50238))
+                self.dsf_input.setValue(params.get('dsf', 0.38547))
+                self.dxf_input.setValue(params.get('dxf', 0.30266))
+                self.t1_input.setValue(params.get('t1', 25080.6))
+                self.t2_input.setValue(params.get('t2', 6971.4))
+                self.kth_input.setValue(params.get('kth', 4))
+                self.kps_input.setValue(params.get('kps', 4))
+                self.kph_input.setValue(params.get('kph', 0.08))
+                self.kwx_input.setValue(params.get('kwx', 0.0016562))
+                self.kwz_input.setValue(params.get('kwz', 0.312))
+                self.kwy_input.setValue(params.get('kwy', 0.312))
 
                 QMessageBox.information(self, "加载成功", f"参数已从 {filename} 加载")
 

@@ -151,23 +151,16 @@ class VisualizationWidget(QWidget):
         """更新所有图表"""
         try:
             # 获取结果
-            results = self.stab.get_results()
 
-            # 更新轨迹图
-            if len(results['x']) > 1 and len(results['y']) > 1:
-                self.trajectory_data.setData(np.array(results['x'][1:]), np.array(results['y'][1:]))
-                self.trajectory_plot.autoRange()
+            self.trajectory_data.setData([], [])
+            self.trajectory_plot.autoRange()
 
-            # 更新动力学参数图
-            if len(results['x']) > 1:
-                # 攻角
-                alpha_deg = np.degrees(np.array(results['alpha'][1:]))
-                self.alpha_data.setData(np.array(results['x'][1:]), alpha_deg)
-                self.alpha_plot.autoRange()
+            self.alpha_data.setData([], [])
+            self.alpha_plot.autoRange()
 
-                # 速度
-                self.velocity_data.setData(np.array(results['x'][1:]), np.array(results['V'][1:]))
-                self.velocity_plot.autoRange()
+            # 速度
+            self.velocity_data.setData([], [])
+            self.velocity_plot.autoRange()
 
             logging.info("图表已更新")
         except Exception as e:

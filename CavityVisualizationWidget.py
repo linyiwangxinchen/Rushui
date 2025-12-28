@@ -111,7 +111,6 @@ class CavityVisualizationWidget(QWidget):
                 self.upper_cavity_plot.setData(plot_pao_up_x, plot_pao_up_y)
                 self.lower_cavity_plot.setData(plot_pao_down_x, plot_pao_down_y)
 
-
                 self.plot_widget.setXRange(-3, 3)
                 self.plot_widget.setYRange(-0.5, 0.5)
             except:
