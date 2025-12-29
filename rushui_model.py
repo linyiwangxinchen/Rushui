@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-class Rushui:
+class under:
     def __init__(self):
         self.plot_pao_down_y = None
         self.plot_pao_down_x = None
@@ -227,58 +227,58 @@ class Rushui:
         """设置初始条件"""
         RTD = self.RTD
 
-        # case11 初始条件
-        t0 = 0.539
-        vx = 100.96949
-        vy = -0.01323
-        vz = -0.95246
-        wx = 242.955 / RTD  # 单位：度
-        wy = -42.435 / RTD
-        wz = 56.515 / RTD
-        theta = 0 / RTD  # 度
-        psi = 0 / RTD
-        phi = 6.84184 / RTD
-        x0 = 27.82448
-        y0 = -3.45
-        z0 = 0.05623
-        DK = -2.9377 / RTD  # 空化器舵角
-        DS = 0.94986 / RTD  # 上直舵角
-        DX = 0.94986 / RTD  # 下直舵角
-        dkf = -2.50238 / RTD
-        dsf = 0.38547 / RTD
-        dxf = 0.30266 / RTD
-        T1 = 25080.6  # 推力
-        T2 = 6971.4
-        TC = t0  # 空泡计算时刻
-
-        # case11 初始条件
-        self.t0 = t0
-        self.vx = vx
-        self.vy = vy
-        self.vz = vz
-        self.wx = wx
-        self.wy = wy
-        self.wz = wz
-        self.theta = theta
-        self.psi = psi
-        self.phi = phi
-        self.x0 = x0
-        self.y0 = y0
-        self.z0 = z0
-        self.DK = DK
-        self.DS = DS
-        self.DX = DX
-        self.dkf = dkf
-        self.dsf = dsf
-        self.dxf = dxf
-        self.T1 = T1
-        self.T2 = T2
-        self.TC = TC
+        # # case11 初始条件
+        # t0 = 0.539
+        # vx = 100.96949
+        # vy = -0.01323
+        # vz = -0.95246
+        # wx = 242.955 / RTD  # 单位：度
+        # wy = -42.435 / RTD
+        # wz = 56.515 / RTD
+        # theta = 0 / RTD  # 度
+        # psi = 0 / RTD
+        # phi = 6.84184 / RTD
+        # x0 = 27.82448
+        # y0 = -3.45
+        # z0 = 0.05623
+        # DK = -2.9377 / RTD  # 空化器舵角
+        # DS = 0.94986 / RTD  # 上直舵角
+        # DX = 0.94986 / RTD  # 下直舵角
+        # dkf = -2.50238 / RTD
+        # dsf = 0.38547 / RTD
+        # dxf = 0.30266 / RTD
+        # T1 = 25080.6  # 推力
+        # T2 = 6971.4
+        # TC = t0  # 空泡计算时刻
+        #
+        # # case11 初始条件
+        # self.t0 = t0
+        # self.vx = vx
+        # self.vy = vy
+        # self.vz = vz
+        # self.wx = wx
+        # self.wy = wy
+        # self.wz = wz
+        # self.theta = theta
+        # self.psi = psi
+        # self.phi = phi
+        # self.x0 = x0
+        # self.y0 = y0
+        # self.z0 = z0
+        # self.DK = DK
+        # self.DS = DS
+        # self.DX = DX
+        # self.dkf = dkf
+        # self.dsf = dsf
+        # self.dxf = dxf
+        # self.T1 = T1
+        # self.T2 = T2
+        # self.TC = TC
 
         # 初始状态向量
-        y1 = np.array([vx, vy, vz, wx, wy, wz, theta, psi, phi, x0, y0, z0, dkf, dsf, dxf])
+        y1 = np.array([self.vx, self.vy, self.vz, self.wx, self.wy, self.wz, self.theta, self.psi, self.phi, self.x0, self.y0, self.z0, self.dkf, self.dsf, self.dxf])
         self.y1_initial = y1
-        self.t0_initial = t0
+        self.t0_initial = self.t0
 
     def update_initial_conditions(self):
         """
@@ -2165,7 +2165,7 @@ class Rushui:
 
     def main(self):
         """主程序"""
-        print("开始弹道仿真...")
+        print("开始水下弹道仿真...")
         # self.y1_initial = y1
         # self.t0_initial = t0
 
@@ -2200,6 +2200,10 @@ class Rushui:
 
 
 if __name__ == "__main__":
-    Calculate1 = Rushui()
+    Calculate1 = under()
     Calculate1.tend = 0.6
     Calculate1.main()
+
+    # []
+    # rushui()
+

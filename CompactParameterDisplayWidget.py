@@ -234,10 +234,20 @@ class CompactParameterDisplayWidget(QWidget):
             if 'alphat' in motion:
                 self.alpha_label.setText(f"Alpha = {motion['alphat']:.4f} °")
             if 'y' in motion:
-                self.pos_label.setText(f"X = {motion['y'][9, 0]:.4f} m, Y = {motion['y'][10, 0]:.4f} m, Z = {motion['y'][11, 0]:.4f} m")
-                self.vel_label.setText(f"Vx = {motion['y'][0, 0]:.4f} m/s, Vy = {motion['y'][1, 0]:.4f} m/s, Vz = {motion['y'][2, 0]:.4f} m/s")
-                self.angle_label.setText(f"Theta = {motion['y'][6, 0] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7, 0] * self.rushui.RTD:.4f}°, {motion['y'][8, 0] * self.rushui.RTD:.4f}°")
-                self.omega_label.setText(f"wx = {motion['y'][3, 0] * self.rushui.RTD:.4f} °/s, wy = {motion['y'][4, 0] * self.rushui.RTD:.4f} °/s, wz = {motion['y'][5, 0] * self.rushui.RTD:.4f} °/s")
+                if len(motion['y'].shape) == 2:
+                    self.pos_label.setText(f"X = {motion['y'][9, 0]:.4f} m, Y = {motion['y'][10, 0]:.4f} m, Z = {motion['y'][11, 0]:.4f} m")
+                    self.vel_label.setText(f"Vx = {motion['y'][0, 0]:.4f} m/s, Vy = {motion['y'][1, 0]:.4f} m/s, Vz = {motion['y'][2, 0]:.4f} m/s")
+                    self.angle_label.setText(f"Theta = {motion['y'][6, 0] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7, 0] * self.rushui.RTD:.4f}°, {motion['y'][8, 0] * self.rushui.RTD:.4f}°")
+                    self.omega_label.setText(f"wx = {motion['y'][3, 0] * self.rushui.RTD:.4f} °/s, wy = {motion['y'][4, 0] * self.rushui.RTD:.4f} °/s, wz = {motion['y'][5, 0] * self.rushui.RTD:.4f} °/s")
+                else:
+                    self.pos_label.setText(
+                        f"X = {motion['y'][9]:.4f} m, Y = {motion['y'][10]:.4f} m, Z = {motion['y'][11]:.4f} m")
+                    self.vel_label.setText(
+                        f"Vx = {motion['y'][0]:.4f} m/s, Vy = {motion['y'][1]:.4f} m/s, Vz = {motion['y'][2]:.4f} m/s")
+                    self.angle_label.setText(
+                        f"Theta = {motion['y'][6] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7] * self.rushui.RTD:.4f}°, {motion['y'][8] * self.rushui.RTD:.4f}°")
+                    self.omega_label.setText(
+                        f"wx = {motion['y'][3] * self.rushui.RTD:.4f} °/s, wy = {motion['y'][4] * self.rushui.RTD:.4f} °/s, wz = {motion['y'][5] * self.rushui.RTD:.4f} °/s")
 
         # 力系数
         if 'forces' in data:

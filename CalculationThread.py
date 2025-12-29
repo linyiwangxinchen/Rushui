@@ -32,7 +32,7 @@ class CalculationThread(QThread):
 
 
             # 启动主计算
-            self.rushui.get_results()
+            self.rushui.main()
 
             if not self.is_running:
                 self.progress.emit(100, "计算已中止")

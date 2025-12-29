@@ -29,17 +29,15 @@ class ModelParameterWidget(QWidget):
 
         # 创建分组框
         geometry_group = QGroupBox("总体参数")
-        mass_group = QGroupBox("空泡仿真参数")
+
 
 
         # 初始位置&姿态条件
         geo_layout = QGridLayout()
         geo_layout.setContentsMargins(5, 5, 5, 5)
         geo_layout.setSpacing(5)
-
         # 从第6行开始添加（前5行已被初始位置/角度参数占用）
         start_row = 0
-
         self.add_param_input(geo_layout, "长度 L (m):", start_row + 0, 0.1, 10.0, 3.195, 0.01, "L_input",
                              range_check=True)
         self.add_param_input(geo_layout, "横截面积 S (m²):", start_row + 1, 0.001, 1.0, 0.0356, 0.0001, "S_input",
@@ -64,11 +62,12 @@ class ModelParameterWidget(QWidget):
                              range_check=True)
         geometry_group.setLayout(geo_layout)
 
-        # 初始速度&角速度条件
+
+        # 空化器参数
+        mass_group = QGroupBox("空泡仿真参数")
         mass_layout = QGridLayout()
         mass_layout.setContentsMargins(5, 5, 5, 5)
         mass_layout.setSpacing(5)
-
         self.add_param_input(mass_layout, "空化器距重心 lk (m):", 0, -1000, 1000, 1.714, 0.1, "lk_input",
                              range_check=False)
         self.add_param_input(mass_layout, "空化器半径 rk (m):", 1, -1000, 1000, 0.021, 0.001, "rk_input",
@@ -77,6 +76,51 @@ class ModelParameterWidget(QWidget):
         self.add_param_input(mass_layout, "空泡轴线偏离 dyc (m):", 3, -1000, 1000, 0, 0.001, "dyc_input",
                              range_check=False)
         mass_group.setLayout(mass_layout)
+
+        # 物理几何参数
+        dive_model_group = QGroupBox("水下物理几何参数")
+        dive_model_layout = QGridLayout()
+        dive_model_layout.setContentsMargins(5, 5, 5, 5)
+        dive_model_layout.setSpacing(5)
+        self.add_param_input(dive_model_layout, "水下空化数 SGM:", 0, -1000, 1000, 0.018, 0.01, "SGM_input",
+                             range_check=False)
+        self.add_param_input(dive_model_layout, "水平鳍位置 LW(m):", 1, -1000, 1000, 0.021, 0.001, "LW_input",
+                             range_check=False)
+        self.add_param_input(dive_model_layout, "垂直鳍位置 LH (m):", 2, -1000, 1000, 0, 0.1, "LH_input", range_check=False)
+
+        dive_model_group.setLayout(dive_model_layout)
+
+        # 仿真控制参数
+        # ============= 舵机与角度限制参数 =============
+        control_limits_group = QGroupBox("舵机与角度限制参数")
+        control_limits_layout = QGridLayout()
+        control_limits_layout.setContentsMargins(5, 5, 5, 5)
+        control_limits_layout.setSpacing(5)
+
+        # 舵角参数 (单位: 度)
+        self.add_param_input(control_limits_layout, "舵角上限 dkmax (°):", 0, -90, 90, 0, 0.1, "dkmax_input")
+        self.add_param_input(control_limits_layout, "舵角下限 dkmin (°):", 1, -90, 90, -4, 0.1, "dkmin_input")
+        self.add_param_input(control_limits_layout, "舵角零位 dk0 (°):", 2, -90, 90, -2.61917, 0.01, "dk0_input")
+
+        # 位移限制 (单位: 米)
+        self.add_param_input(control_limits_layout, "横向位移限制 Δymax (m):", 3, 0, 100, 10, 0.1, "deltaymax_input")
+        self.add_param_input(control_limits_layout, "垂向位移限制 Δvymax (m):", 4, 0, 100, 10, 0.1, "deltavymax_input")
+
+        # 角度变化率 (单位: 度/秒)
+        self.add_param_input(control_limits_layout, "最大深度变化率 ddmax (°/s²):", 5, 0, 50, 10, 0.1,
+                             "ddmax_input")
+        self.add_param_input(control_limits_layout, "最大速度变化率 dvmax (°/s²):", 6, 0, 50, 5, 0.1,
+                             "dvmax_input")
+        self.add_param_input(control_limits_layout, "最大俯仰角速率 dθmax (°/s):", 7, 0, 30, 5, 0.1,
+                             "dthetamax_input")
+        self.add_param_input(control_limits_layout, "最大偏航角速率 wzmax (°/s):", 8, 0, 100, 30, 0.5,
+                             "wzmax_input")
+        self.add_param_input(control_limits_layout, "最大滚转角速率 wxmax (°/s):", 9, 0, 500, 300, 1,
+                             "wxmax_input")
+        self.add_param_input(control_limits_layout, "最大滚转角加速度 dφmax (°/s²):", 10, 0, 200, 60, 0.5,
+                             "dphimax_input")
+
+        control_limits_group.setLayout(control_limits_layout)
 
         # 按钮区域
         button_layout = QHBoxLayout()
@@ -91,6 +135,8 @@ class ModelParameterWidget(QWidget):
         # 组合所有布局
         main_layout.addWidget(geometry_group)
         main_layout.addWidget(mass_group)
+        main_layout.addWidget(dive_model_group)
+        main_layout.addWidget(control_limits_group)
         main_layout.addLayout(button_layout)
         main_layout.addStretch()
 
@@ -168,26 +214,42 @@ class ModelParameterWidget(QWidget):
     def to_model(self, Checki):
         # 向model发送数据
         data = {
-            # 初始位置&姿态条件
+            # 几何与质量参数
+            'L': self.L_input.value(),  # 长度 (m)
+            'S': self.S_input.value(),  # 横截面积 (m²)
+            'V': self.V_input.value(),  # 体积 (m³)
+            'm': self.m_input.value(),  # 质量 (kg)
+            'xc': self.xc_input.value(),  # 重心 x 坐标 (m)
+            'yc': self.yc_input.value(),  # 重心 y 坐标 (m)
+            'zc': self.zc_input.value(),  # 重心 z 坐标 (m)
+            'Jxx': self.Jxx_input.value(),  # 转动惯量 Jxx (kg·m²)
+            'Jyy': self.Jyy_input.value(),  # 转动惯量 Jyy (kg·m²)
+            'Jzz': self.Jzz_input.value(),  # 转动惯量 Jzz (kg·m²)
+            'T': self.T_input.value(),  # 推力 (N)
 
-            # 几何与质量参数 (新增分组)
-            'L': self.L_input.value(),  # 长度
-            'S': self.S_input.value(),  # 横截面积
-            'V': self.V_input.value(),  # 体积
-            'm': self.m_input.value(),  # 质量
-            'xc': self.xc_input.value(),  # 重心x坐标
-            'yc': self.yc_input.value(),  # 重心y坐标
-            'zc': self.zc_input.value(),  # 重心z坐标
-            'Jxx': self.Jxx_input.value(),  # 转动惯量
-            'Jyy': self.Jyy_input.value(),  # 转动惯量
-            'Jzz': self.Jzz_input.value(),  # 转动惯量
-            'T': self.T_input.value(),  # 推力
-
-            # 空化器参数
-            'lk': self.lk_input.value(),  # 空化器距重心 (m)
+            # 空泡仿真参数
+            'lk': self.lk_input.value(),  # 空化器距重心距离 (m)
             'rk': self.rk_input.value(),  # 空化器半径 (m)
             'sgm': self.sgm_input.value(),  # 全局空化数
             'dyc': self.dyc_input.value(),  # 空泡轴线偏离 (m)
+
+            # 水下物理几何参数
+            'SGM': self.SGM_input.value(),  # 水下空化数
+            'LW': self.LW_input.value(),  # 水平鳍位置 (m)
+            'LH': self.LH_input.value(),  # 垂直鳍位置 (m)
+
+            # 舵机与角度限制参数
+            'dkmax': self.dkmax_input.value(),  # 舵角上限 (°)
+            'dkmin': self.dkmin_input.value(),  # 舵角下限 (°)
+            'dk0': self.dk0_input.value(),  # 舵角零位 (°)
+            'deltaymax': self.deltaymax_input.value(),  # 横向位移限制 (m)
+            'deltavymax': self.deltavymax_input.value(),  # 垂向位移限制 (m)
+            'ddmax': self.ddmax_input.value(),  # 最大深度变化率 (°/s²)
+            'dvmax': self.dvmax_input.value(),  # 最大速度变化率 (°/s²)
+            'dthetamax': self.dthetamax_input.value(),  # 最大俯仰角速率 (°/s)
+            'wzmax': self.wzmax_input.value(),  # 最大偏航角速率 (°/s)
+            'wxmax': self.wxmax_input.value(),  # 最大滚转角速率 (°/s)
+            'dphimax': self.dphimax_input.value(),  # 最大滚转角加速度 (°/s²)
         }
 
         self.data_output_signal_m.emit(data)
@@ -195,26 +257,42 @@ class ModelParameterWidget(QWidget):
     def to_model1(self, Checki):
         # 向model发送数据
         data = {
-            # 初始位置&姿态条件
+            # 几何与质量参数
+            'L': self.L_input.value(),  # 长度 (m)
+            'S': self.S_input.value(),  # 横截面积 (m²)
+            'V': self.V_input.value(),  # 体积 (m³)
+            'm': self.m_input.value(),  # 质量 (kg)
+            'xc': self.xc_input.value(),  # 重心 x 坐标 (m)
+            'yc': self.yc_input.value(),  # 重心 y 坐标 (m)
+            'zc': self.zc_input.value(),  # 重心 z 坐标 (m)
+            'Jxx': self.Jxx_input.value(),  # 转动惯量 Jxx (kg·m²)
+            'Jyy': self.Jyy_input.value(),  # 转动惯量 Jyy (kg·m²)
+            'Jzz': self.Jzz_input.value(),  # 转动惯量 Jzz (kg·m²)
+            'T': self.T_input.value(),  # 推力 (N)
 
-            # 几何与质量参数 (新增分组)
-            'L': self.L_input.value(),  # 长度
-            'S': self.S_input.value(),  # 横截面积
-            'V': self.V_input.value(),  # 体积
-            'm': self.m_input.value(),  # 质量
-            'xc': self.xc_input.value(),  # 重心x坐标
-            'yc': self.yc_input.value(),  # 重心y坐标
-            'zc': self.zc_input.value(),  # 重心z坐标
-            'Jxx': self.Jxx_input.value(),  # 转动惯量
-            'Jyy': self.Jyy_input.value(),  # 转动惯量
-            'Jzz': self.Jzz_input.value(),  # 转动惯量
-            'T': self.T_input.value(),  # 推力
-
-            # 空化器参数
-            'lk': self.lk_input.value(),  # 空化器距重心 (m)
+            # 空泡仿真参数
+            'lk': self.lk_input.value(),  # 空化器距重心距离 (m)
             'rk': self.rk_input.value(),  # 空化器半径 (m)
             'sgm': self.sgm_input.value(),  # 全局空化数
             'dyc': self.dyc_input.value(),  # 空泡轴线偏离 (m)
+
+            # 水下物理几何参数
+            'SGM': self.SGM_input.value(),  # 水下空化数
+            'LW': self.LW_input.value(),  # 水平鳍位置 (m)
+            'LH': self.LH_input.value(),  # 垂直鳍位置 (m)
+
+            # 舵机与角度限制参数
+            'dkmax': self.dkmax_input.value(),  # 舵角上限 (°)
+            'dkmin': self.dkmin_input.value(),  # 舵角下限 (°)
+            'dk0': self.dk0_input.value(),  # 舵角零位 (°)
+            'deltaymax': self.deltaymax_input.value(),  # 横向位移限制 (m)
+            'deltavymax': self.deltavymax_input.value(),  # 垂向位移限制 (m)
+            'ddmax': self.ddmax_input.value(),  # 最大深度变化率 (°/s²)
+            'dvmax': self.dvmax_input.value(),  # 最大速度变化率 (°/s²)
+            'dthetamax': self.dthetamax_input.value(),  # 最大俯仰角速率 (°/s)
+            'wzmax': self.wzmax_input.value(),  # 最大偏航角速率 (°/s)
+            'wxmax': self.wxmax_input.value(),  # 最大滚转角速率 (°/s)
+            'dphimax': self.dphimax_input.value(),  # 最大滚转角加速度 (°/s²)
         }
         self.data_output_signal_m1.emit(data)
 
@@ -399,23 +477,41 @@ class ModelParameterWidget(QWidget):
             if filename:
                 params = {
                     # 几何与质量参数 (新增分组)
-                    'L': self.L_input.value(),  # 长度
-                    'S': self.S_input.value(),  # 横截面积
-                    'V': self.V_input.value(),  # 体积
-                    'm': self.m_input.value(),  # 质量
-                    'xc': self.xc_input.value(),  # 重心x坐标
-                    'yc': self.yc_input.value(),  # 重心y坐标
-                    'zc': self.zc_input.value(),  # 重心z坐标
-                    'Jxx': self.Jxx_input.value(),  # 转动惯量
-                    'Jyy': self.Jyy_input.value(),  # 转动惯量
-                    'Jzz': self.Jzz_input.value(),  # 转动惯量
-                    'T': self.T_input.value(),  # 推力
+                    'L': self.L_input.value(),  # 长度 (m)
+                    'S': self.S_input.value(),  # 横截面积 (m²)
+                    'V': self.V_input.value(),  # 体积 (m³)
+                    'm': self.m_input.value(),  # 质量 (kg)
+                    'xc': self.xc_input.value(),  # 重心 x 坐标 (m)
+                    'yc': self.yc_input.value(),  # 重心 y 坐标 (m)
+                    'zc': self.zc_input.value(),  # 重心 z 坐标 (m)
+                    'Jxx': self.Jxx_input.value(),  # 转动惯量 Jxx (kg·m²)
+                    'Jyy': self.Jyy_input.value(),  # 转动惯量 Jyy (kg·m²)
+                    'Jzz': self.Jzz_input.value(),  # 转动惯量 Jzz (kg·m²)
+                    'T': self.T_input.value(),  # 推力 (N)
 
-                    # 空化器参数
-                    'lk': self.lk_input.value(),  # 空化器距重心 (m)
+                    # 空泡仿真参数
+                    'lk': self.lk_input.value(),  # 空化器距重心距离 (m)
                     'rk': self.rk_input.value(),  # 空化器半径 (m)
                     'sgm': self.sgm_input.value(),  # 全局空化数
                     'dyc': self.dyc_input.value(),  # 空泡轴线偏离 (m)
+
+                    # 水下物理几何参数
+                    'SGM': self.SGM_input.value(),  # 水下空化数
+                    'LW': self.LW_input.value(),  # 水平鳍位置 (m)
+                    'LH': self.LH_input.value(),  # 垂直鳍位置 (m)
+
+                    # 舵机与角度限制参数
+                    'dkmax': self.dkmax_input.value(),  # 舵角上限 (°)
+                    'dkmin': self.dkmin_input.value(),  # 舵角下限 (°)
+                    'dk0': self.dk0_input.value(),  # 舵角零位 (°)
+                    'deltaymax': self.deltaymax_input.value(),  # 横向位移限制 (m)
+                    'deltavymax': self.deltavymax_input.value(),  # 垂向位移限制 (m)
+                    'ddmax': self.ddmax_input.value(),  # 最大深度变化率 (°/s²)
+                    'dvmax': self.dvmax_input.value(),  # 最大速度变化率 (°/s²)
+                    'dthetamax': self.dthetamax_input.value(),  # 最大俯仰角速率 (°/s)
+                    'wzmax': self.wzmax_input.value(),  # 最大偏航角速率 (°/s)
+                    'wxmax': self.wxmax_input.value(),  # 最大滚转角速率 (°/s)
+                    'dphimax': self.dphimax_input.value(),  # 最大滚转角加速度 (°/s²)
                 }
 
                 # 保存为JSON
@@ -440,25 +536,41 @@ class ModelParameterWidget(QWidget):
 
                 # 更新UI
                 # 更新UI - 几何与质量参数
-                self.L_input.setValue(params.get('L', 3.195))  # 长度
-                self.S_input.setValue(params.get('S', 0.0356))  # 横截面积
-                self.V_input.setValue(params.get('V', 0.0))  # 体积
-                self.m_input.setValue(params.get('m', 114.7))  # 质量
-                self.xc_input.setValue(params.get('xc', -0.0188))  # 重心x坐标
-                self.yc_input.setValue(params.get('yc', -0.0017))  # 重心y坐标
-                self.zc_input.setValue(params.get('zc', 0.0008))  # 重心z坐标
-                self.Jxx_input.setValue(params.get('Jxx', 0.63140684))  # 转动惯量
-                self.Jyy_input.setValue(params.get('Jyy', 57.06970864))  # 转动惯量
-                self.Jzz_input.setValue(params.get('Jzz', 57.07143674))  # 转动惯量
-                self.T_input.setValue(params.get('T', 0.0))  # 推力
+                self.L_input.setValue(params.get('L', 3.195))  # 长度 (m)
+                self.S_input.setValue(params.get('S', 0.0356))  # 横截面积 (m²)
+                self.V_input.setValue(params.get('V', 0.0))  # 体积 (m³)
+                self.m_input.setValue(params.get('m', 114.7))  # 质量 (kg)
+                self.xc_input.setValue(params.get('xc', -0.0188))  # 重心 xc (m)
+                self.yc_input.setValue(params.get('yc', -0.0017))  # 重心 yc (m)
+                self.zc_input.setValue(params.get('zc', 0.0008))  # 重心 zc (m)
+                self.Jxx_input.setValue(params.get('Jxx', 0.63140684))  # 转动惯量 Jxx (kg·m²)
+                self.Jyy_input.setValue(params.get('Jyy', 57.06970864))  # 转动惯量 Jyy (kg·m²)
+                self.Jzz_input.setValue(params.get('Jzz', 57.07143674))  # 转动惯量 Jzz (kg·m²)
+                self.T_input.setValue(params.get('T', 0.0))  # 推力 (N)
 
-                # 更新UI - 空化器参数
-                # 新增的几何/流体参数
-                self.lk_input.setValue(params.get('lk', 1.714))  # 空化器距重心
-                self.rk_input.setValue(params.get('rk', 0.021))  # 空化器半径
-                self.sgm_input.setValue(params.get('sgm', 0))  # 全局空化数
-                self.dyc_input.setValue(params.get('dyc', 0))  # 空泡轴线偏离
+                # 更新UI - 空泡仿真参数
+                self.lk_input.setValue(params.get('lk', 1.714))  # 空化器距重心 lk (m)
+                self.rk_input.setValue(params.get('rk', 0.021))  # 空化器半径 rk (m)
+                self.sgm_input.setValue(params.get('sgm', 0.0))  # 全局空化数 sgm
+                self.dyc_input.setValue(params.get('dyc', 0.0))  # 空泡轴线偏离 dyc (m)
 
+                # 更新UI - 水下物理几何参数
+                self.SGM_input.setValue(params.get('SGM', 0.018))  # 水下空化数 SGM
+                self.LW_input.setValue(params.get('LW', 0.021))  # 水平鳍位置 LW (m)
+                self.LH_input.setValue(params.get('LH', 0.0))  # 垂直鳍位置 LH (m)
+
+                # 更新UI - 舵机与角度限制参数
+                self.dkmax_input.setValue(params.get('dkmax', 0.0))  # 舵角上限 dkmax (°)
+                self.dkmin_input.setValue(params.get('dkmin', -4.0))  # 舵角下限 dkmin (°)
+                self.dk0_input.setValue(params.get('dk0', -2.61917))  # 舵角零位 dk0 (°)
+                self.deltaymax_input.setValue(params.get('deltaymax', 10.0))  # 横向位移限制 Δymax (m)
+                self.deltavymax_input.setValue(params.get('deltavymax', 10.0))  # 垂向位移限制 Δvymax (m)
+                self.ddmax_input.setValue(params.get('ddmax', 10.0))  # 最大深度变化率 ddmax (°/s²)
+                self.dvmax_input.setValue(params.get('dvmax', 5.0))  # 最大速度变化率 dvmax (°/s²)
+                self.dthetamax_input.setValue(params.get('dthetamax', 5.0))  # 最大俯仰角速率 dθmax (°/s)
+                self.wzmax_input.setValue(params.get('wzmax', 30.0))  # 最大偏航角速率 wzmax (°/s)
+                self.wxmax_input.setValue(params.get('wxmax', 300.0))  # 最大滚转角速率 wxmax (°/s)
+                self.dphimax_input.setValue(params.get('dphimax', 60.0))  # 最大滚转角加速度 dφmax (°/s²)
 
                 QMessageBox.information(self, "加载成功", f"参数已从 {filename} 加载")
 

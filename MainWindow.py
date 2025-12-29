@@ -10,7 +10,7 @@ from ModelParameterWidget import ModelParameterWidget
 from SimulationControlWidget import SimulationControlWidget
 from VisualizationWidget import VisualizationWidget
 # from rushui_model import Rushui
-from rushui1 import Entry as Rushui
+from core import Dan as Rushui
 from SimulationDiveWidget import SimulationDiveWidget
 from PyQt5.QtGui import QPainter, QLinearGradient, QColor, QPalette, QBrush, QPixmap
 import json
@@ -168,53 +168,72 @@ class MainWindow(QMainWindow):
 
             # 收集模型参数
             model_params = {
-                'x0': self.model_param_widget.x0_input.value(),
-                'y0': self.model_param_widget.y0_input.value(),
-                'z0': self.model_param_widget.z0_input.value(),
-                'theta': self.model_param_widget.theta_input.value(),
-                'psi': self.model_param_widget.psi_input.value(),
-                'phi': self.model_param_widget.phi_input.value(),
-                'vx': self.model_param_widget.vx_input.value(),
-                'vy': self.model_param_widget.vy_input.value(),
-                'vz': self.model_param_widget.vz_input.value(),
-                'wx': self.model_param_widget.wx_input.value(),
-                'wy': self.model_param_widget.wy_input.value(),
-                'wz': self.model_param_widget.wz_input.value(),
-                'dk': self.model_param_widget.dk_input.value(),
-                'ds': self.model_param_widget.ds_input.value(),
-                'dxx': self.model_param_widget.dxx_input.value(),
-                'dkf': self.model_param_widget.dkf_input.value(),
-                'dsf': self.model_param_widget.dsf_input.value(),
-                'dxf': self.model_param_widget.dxf_input.value(),
-                't1': self.model_param_widget.t1_input.value(),
-                't2': self.model_param_widget.t2_input.value(),
-                'kth': self.model_param_widget.kth_input.value(),
-                'kps': self.model_param_widget.kps_input.value(),
-                'kph': self.model_param_widget.kph_input.value(),
-                'kwx': self.model_param_widget.kwx_input.value(),
-                'kwz': self.model_param_widget.kwz_input.value(),
-                'kwy': self.model_param_widget.kwy_input.value()
+                # 几何与质量参数
+                'L': self.model_param_widget.L_input.value(),  # 长度 (m)
+                'S': self.model_param_widget.S_input.value(),  # 横截面积 (m²)
+                'V': self.model_param_widget.V_input.value(),  # 体积 (m³)
+                'm': self.model_param_widget.m_input.value(),  # 质量 (kg)
+                'xc': self.model_param_widget.xc_input.value(),  # 重心 x 坐标 (m)
+                'yc': self.model_param_widget.yc_input.value(),  # 重心 y 坐标 (m)
+                'zc': self.model_param_widget.zc_input.value(),  # 重心 z 坐标 (m)
+                'Jxx': self.model_param_widget.Jxx_input.value(),  # 转动惯量 Jxx (kg·m²)
+                'Jyy': self.model_param_widget.Jyy_input.value(),  # 转动惯量 Jyy (kg·m²)
+                'Jzz': self.model_param_widget.Jzz_input.value(),  # 转动惯量 Jzz (kg·m²)
+                'T': self.model_param_widget.T_input.value(),  # 推力 (N)
+
+                # 空泡仿真参数
+                'lk': self.model_param_widget.lk_input.value(),  # 空化器距重心距离 (m)
+                'rk': self.model_param_widget.rk_input.value(),  # 空化器半径 (m)
+                'sgm': self.model_param_widget.sgm_input.value(),  # 全局空化数
+                'dyc': self.model_param_widget.dyc_input.value(),  # 空泡轴线偏离 (m)
+
+                # 水下物理几何参数
+                'SGM': self.model_param_widget.SGM_input.value(),  # 水下空化数
+                'LW': self.model_param_widget.LW_input.value(),  # 水平鳍位置 (m)
+                'LH': self.model_param_widget.LH_input.value(),  # 垂直鳍位置 (m)
+
+                # 舵机与角度限制参数
+                'dkmax': self.model_param_widget.dkmax_input.value(),  # 舵角上限 (°)
+                'dkmin': self.model_param_widget.dkmin_input.value(),  # 舵角下限 (°)
+                'dk0': self.model_param_widget.dk0_input.value(),  # 舵角零位 (°)
+                'deltaymax': self.model_param_widget.deltaymax_input.value(),  # 横向位移限制 (m)
+                'deltavymax': self.model_param_widget.deltavymax_input.value(),  # 垂向位移限制 (m)
+                'ddmax': self.model_param_widget.ddmax_input.value(),  # 最大深度变化率 (°/s²)
+                'dvmax': self.model_param_widget.dvmax_input.value(),  # 最大速度变化率 (°/s²)
+                'dthetamax': self.model_param_widget.dthetamax_input.value(),  # 最大俯仰角速率 (°/s)
+                'wzmax': self.model_param_widget.wzmax_input.value(),  # 最大偏航角速率 (°/s)
+                'wxmax': self.model_param_widget.wxmax_input.value(),  # 最大滚转角速率 (°/s)
+                'dphimax': self.model_param_widget.dphimax_input.value(),  # 最大滚转角加速度 (°/s²)
             }
 
             # 收集仿真参数
             sim_params = {
-                "L": self.sim_control_widget.L_input.value(),
-                "S": self.sim_control_widget.S_input.value(),
-                "V": self.sim_control_widget.V_input.value(),
-                "m": self.sim_control_widget.m_input.value(),
-                "xc": self.sim_control_widget.xc_input.value(),
-                "yc": self.sim_control_widget.yc_input.value(),
-                "zc": self.sim_control_widget.zc_input.value(),
-                "Jxx": self.sim_control_widget.jxx_input.value(),
-                "Jyy": self.sim_control_widget.jyy_input.value(),
-                "Jzz": self.sim_control_widget.jzz_input.value(),
-                "dt": self.sim_control_widget.dt_input.value(),
-                "t0": self.sim_control_widget.t0_input.value(),
-                "tend": self.sim_control_widget.tend_input.value(),
-                "ycs": self.sim_control_widget.ycs_input.value(),
-                "thetacs": self.sim_control_widget.thetacs_input.value(),
-                "yvcs": self.sim_control_widget.yvcs_input.value(),
-                "psics": self.sim_control_widget.psics_input.value()
+                # ——————————入水参数——————————
+                't0': self.sim_control_widget.t0_input.value(),  # 起始时间 (s)
+                'tend': self.sim_control_widget.tend_input.value(),  # 终止时间 (s)
+                'dt': self.sim_control_widget.dt_input.value(),  # 仿真步长 (s)
+                'v0': self.sim_control_widget.v0_input.value(),  # 入水速度 (m/s)
+                'theta0': self.sim_control_widget.theta0_input.value(),  # 弹道角 (deg)
+                'psi0': self.sim_control_widget.psi0_input.value(),  # 偏航角 (deg)
+                'phi0': self.sim_control_widget.phi0_input.value(),  # 横滚角 (deg)
+                'alpha0': self.sim_control_widget.alpha0_input.value(),  # 攻角 (deg)
+                'wx0': self.sim_control_widget.wx0_input.value(),  # 横滚角速度 (deg/s)
+                'wy0': self.sim_control_widget.wy0_input.value(),  # 偏航角速度 (deg/s)
+                'wz0': self.sim_control_widget.wz0_input.value(),  # 俯仰角速度 (deg/s)
+
+                # ——————————控制参数 (修正分组)——————————
+                # 注：原代码存在分组命名冲突，已按实际参数含义重新分组
+                'k_wz': self.sim_control_widget.k_wz_input.value(),  # 偏航角速度增益 (控制参数)
+                'k_theta': self.sim_control_widget.k_theta_input.value(),  # 俯仰角增益 (控制参数)
+
+                'kwz': self.sim_control_widget.kwz_input.value(),  # 偏航角速度增益 (控制参数)
+                'ktheta': self.sim_control_widget.ktheta_input.value(),  # 俯仰角增益 (控制参数)
+                # ——————————深度控制参数——————————
+                'k_ps': self.sim_control_widget.k_ps_input.value(),  # 姿态同步增益
+                'k_ph': self.sim_control_widget.k_ph_input.value(),  # 舵机响应增益
+                'k_wx': self.sim_control_widget.k_wx_input.value(),  # 滚转角速度增益
+                'k_wy': self.sim_control_widget.k_wy_input.value(),  # 垂向控制增益
+                'tend_under': self.sim_control_widget.tend_under_input.value()
             }
 
             # 收集UI状态
@@ -239,7 +258,7 @@ class MainWindow(QMainWindow):
             self.status_label.setText(f"配置已保存至: {filename}")
             QMessageBox.information(self, "保存成功", f"配置已成功保存至:\n{filename}")
             logging.info(f"配置已保存至: {filename}")
-            # 手动签出
+            # # 手动签出
             # names = []
             # datas = []
             # model_params_key = model_params.keys()
@@ -270,55 +289,73 @@ class MainWindow(QMainWindow):
 
             # 收集模型参数
             model_params = {
-                'x0': self.model_param_widget.x0_input.value(),
-                'y0': self.model_param_widget.y0_input.value(),
-                'z0': self.model_param_widget.z0_input.value(),
-                'theta': self.model_param_widget.theta_input.value(),
-                'psi': self.model_param_widget.psi_input.value(),
-                'phi': self.model_param_widget.phi_input.value(),
-                'vx': self.model_param_widget.vx_input.value(),
-                'vy': self.model_param_widget.vy_input.value(),
-                'vz': self.model_param_widget.vz_input.value(),
-                'wx': self.model_param_widget.wx_input.value(),
-                'wy': self.model_param_widget.wy_input.value(),
-                'wz': self.model_param_widget.wz_input.value(),
-                'dk': self.model_param_widget.dk_input.value(),
-                'ds': self.model_param_widget.ds_input.value(),
-                'dxx': self.model_param_widget.dxx_input.value(),
-                'dkf': self.model_param_widget.dkf_input.value(),
-                'dsf': self.model_param_widget.dsf_input.value(),
-                'dxf': self.model_param_widget.dxf_input.value(),
-                't1': self.model_param_widget.t1_input.value(),
-                't2': self.model_param_widget.t2_input.value(),
-                'kth': self.model_param_widget.kth_input.value(),
-                'kps': self.model_param_widget.kps_input.value(),
-                'kph': self.model_param_widget.kph_input.value(),
-                'kwx': self.model_param_widget.kwx_input.value(),
-                'kwz': self.model_param_widget.kwz_input.value(),
-                'kwy': self.model_param_widget.kwy_input.value()
+                # 几何与质量参数
+                'L': self.model_param_widget.L_input.value(),  # 长度 (m)
+                'S': self.model_param_widget.S_input.value(),  # 横截面积 (m²)
+                'V': self.model_param_widget.V_input.value(),  # 体积 (m³)
+                'm': self.model_param_widget.m_input.value(),  # 质量 (kg)
+                'xc': self.model_param_widget.xc_input.value(),  # 重心 x 坐标 (m)
+                'yc': self.model_param_widget.yc_input.value(),  # 重心 y 坐标 (m)
+                'zc': self.model_param_widget.zc_input.value(),  # 重心 z 坐标 (m)
+                'Jxx': self.model_param_widget.Jxx_input.value(),  # 转动惯量 Jxx (kg·m²)
+                'Jyy': self.model_param_widget.Jyy_input.value(),  # 转动惯量 Jyy (kg·m²)
+                'Jzz': self.model_param_widget.Jzz_input.value(),  # 转动惯量 Jzz (kg·m²)
+                'T': self.model_param_widget.T_input.value(),  # 推力 (N)
+
+                # 空泡仿真参数
+                'lk': self.model_param_widget.lk_input.value(),  # 空化器距重心距离 (m)
+                'rk': self.model_param_widget.rk_input.value(),  # 空化器半径 (m)
+                'sgm': self.model_param_widget.sgm_input.value(),  # 全局空化数
+                'dyc': self.model_param_widget.dyc_input.value(),  # 空泡轴线偏离 (m)
+
+                # 水下物理几何参数
+                'SGM': self.model_param_widget.SGM_input.value(),  # 水下空化数
+                'LW': self.model_param_widget.LW_input.value(),  # 水平鳍位置 (m)
+                'LH': self.model_param_widget.LH_input.value(),  # 垂直鳍位置 (m)
+
+                # 舵机与角度限制参数
+                'dkmax': self.model_param_widget.dkmax_input.value(),  # 舵角上限 (°)
+                'dkmin': self.model_param_widget.dkmin_input.value(),  # 舵角下限 (°)
+                'dk0': self.model_param_widget.dk0_input.value(),  # 舵角零位 (°)
+                'deltaymax': self.model_param_widget.deltaymax_input.value(),  # 横向位移限制 (m)
+                'deltavymax': self.model_param_widget.deltavymax_input.value(),  # 垂向位移限制 (m)
+                'ddmax': self.model_param_widget.ddmax_input.value(),  # 最大深度变化率 (°/s²)
+                'dvmax': self.model_param_widget.dvmax_input.value(),  # 最大速度变化率 (°/s²)
+                'dthetamax': self.model_param_widget.dthetamax_input.value(),  # 最大俯仰角速率 (°/s)
+                'wzmax': self.model_param_widget.wzmax_input.value(),  # 最大偏航角速率 (°/s)
+                'wxmax': self.model_param_widget.wxmax_input.value(),  # 最大滚转角速率 (°/s)
+                'dphimax': self.model_param_widget.dphimax_input.value(),  # 最大滚转角加速度 (°/s²)
             }
 
             # 收集仿真参数
             sim_params = {
-                "L": self.sim_control_widget.L_input.value(),
-                "S": self.sim_control_widget.S_input.value(),
-                "V": self.sim_control_widget.V_input.value(),
-                "m": self.sim_control_widget.m_input.value(),
-                "xc": self.sim_control_widget.xc_input.value(),
-                "yc": self.sim_control_widget.yc_input.value(),
-                "zc": self.sim_control_widget.zc_input.value(),
-                "Jxx": self.sim_control_widget.jxx_input.value(),
-                "Jyy": self.sim_control_widget.jyy_input.value(),
-                "Jzz": self.sim_control_widget.jzz_input.value(),
-                "dt": self.sim_control_widget.dt_input.value(),
-                "t0": self.sim_control_widget.t0_input.value(),
-                "tend": self.sim_control_widget.tend_input.value(),
-                "ycs": self.sim_control_widget.ycs_input.value(),
-                "thetacs": self.sim_control_widget.thetacs_input.value(),
-                "yvcs": self.sim_control_widget.yvcs_input.value(),
-                "psics": self.sim_control_widget.psics_input.value()
-            }
+                # ——————————入水参数——————————
+                't0': self.sim_control_widget.t0_input.value(),  # 起始时间 (s)
+                'tend': self.sim_control_widget.tend_input.value(),  # 终止时间 (s)
+                'dt': self.sim_control_widget.dt_input.value(),  # 仿真步长 (s)
+                'v0': self.sim_control_widget.v0_input.value(),  # 入水速度 (m/s)
+                'theta0': self.sim_control_widget.theta0_input.value(),  # 弹道角 (deg)
+                'psi0': self.sim_control_widget.psi0_input.value(),  # 偏航角 (deg)
+                'phi0': self.sim_control_widget.phi0_input.value(),  # 横滚角 (deg)
+                'alpha0': self.sim_control_widget.alpha0_input.value(),  # 攻角 (deg)
+                'wx0': self.sim_control_widget.wx0_input.value(),  # 横滚角速度 (deg/s)
+                'wy0': self.sim_control_widget.wy0_input.value(),  # 偏航角速度 (deg/s)
+                'wz0': self.sim_control_widget.wz0_input.value(),  # 俯仰角速度 (deg/s)
 
+                # ——————————控制参数 (修正分组)——————————
+                # 注：原代码存在分组命名冲突，已按实际参数含义重新分组
+                'k_wz': self.sim_control_widget.k_wz_input.value(),  # 偏航角速度增益 (控制参数)
+                'k_theta': self.sim_control_widget.k_theta_input.value(),  # 俯仰角增益 (控制参数)
+
+                'kwz': self.sim_control_widget.kwz_input.value(),  # 偏航角速度增益 (控制参数)
+                'ktheta': self.sim_control_widget.ktheta_input.value(),  # 俯仰角增益 (控制参数)
+                # ——————————深度控制参数——————————
+                'k_ps': self.sim_control_widget.k_ps_input.value(),  # 姿态同步增益
+                'k_ph': self.sim_control_widget.k_ph_input.value(),  # 舵机响应增益
+                'k_wx': self.sim_control_widget.k_wx_input.value(),  # 滚转角速度增益
+                'k_wy': self.sim_control_widget.k_wy_input.value(),  # 垂向控制增益
+                'tend_under': self.sim_control_widget.tend_under_input.value()
+            }
             # 收集UI状态
             ui_state = {
                 "CurrentTab": self.centralWidget().findChild(QTabWidget).currentIndex(),
@@ -382,53 +419,59 @@ class MainWindow(QMainWindow):
             # 加载模型参数
             if "model_params" in config:
                 mp = config["model_params"]
-                self.model_param_widget.x0_input.setValue(mp.get('x0', 27.82448))
-                self.model_param_widget.y0_input.setValue(mp.get('y0', -3.45))
-                self.model_param_widget.z0_input.setValue(mp.get('z0', 0.05623))
-                self.model_param_widget.theta_input.setValue(mp.get('theta', 0))
-                self.model_param_widget.psi_input.setValue(mp.get('psi', 0))
-                self.model_param_widget.phi_input.setValue(mp.get('phi', 6.84184))
-                self.model_param_widget.vx_input.setValue(mp.get('vx', 100.96949))
-                self.model_param_widget.vy_input.setValue(mp.get('vy', -0.01323))
-                self.model_param_widget.vz_input.setValue(mp.get('vz', -0.95246))
-                self.model_param_widget.wx_input.setValue(mp.get('wx', 242.955))
-                self.model_param_widget.wy_input.setValue(mp.get('wy', -42.435))
-                self.model_param_widget.wz_input.setValue(mp.get('wz', 56.515))
-                self.model_param_widget.dk_input.setValue(mp.get('dk', -2.9377))
-                self.model_param_widget.ds_input.setValue(mp.get('ds', 0.94986))
-                self.model_param_widget.dxx_input.setValue(mp.get('dxx', 0.94986))
-                self.model_param_widget.dkf_input.setValue(mp.get('dkf', -2.50238))
-                self.model_param_widget.dsf_input.setValue(mp.get('dsf', 0.38547))
-                self.model_param_widget.dxf_input.setValue(mp.get('dxf', 0.30266))
-                self.model_param_widget.t1_input.setValue(mp.get('t1', 25080.6))
-                self.model_param_widget.t2_input.setValue(mp.get('t2', 6971.4))
-                self.model_param_widget.kth_input.setValue(mp.get('kth', 4))
-                self.model_param_widget.kps_input.setValue(mp.get('kps', 4))
-                self.model_param_widget.kph_input.setValue(mp.get('kph', 0.08))
-                self.model_param_widget.kwx_input.setValue(mp.get('kwx', 0.0016562))
-                self.model_param_widget.kwz_input.setValue(mp.get('kwz', 0.312))
-                self.model_param_widget.kwy_input.setValue(mp.get('kwy', 0.312))
+                self.model_param_widget.L_input.setValue(mp.get('L', None))
+                self.model_param_widget.S_input.setValue(mp.get('S', None))
+                self.model_param_widget.V_input.setValue(mp.get('V', None))
+                self.model_param_widget.m_input.setValue(mp.get('m', None))
+                self.model_param_widget.xc_input.setValue(mp.get('xc', None))
+                self.model_param_widget.yc_input.setValue(mp.get('yc', None))
+                self.model_param_widget.zc_input.setValue(mp.get('zc', None))
+                self.model_param_widget.Jxx_input.setValue(mp.get('Jxx', None))
+                self.model_param_widget.Jyy_input.setValue(mp.get('Jyy', None))
+                self.model_param_widget.Jzz_input.setValue(mp.get('Jzz', None))
+                self.model_param_widget.T_input.setValue(mp.get('T', None))
+                self.model_param_widget.lk_input.setValue(mp.get('lk', None))
+                self.model_param_widget.rk_input.setValue(mp.get('rk', None))
+                self.model_param_widget.sgm_input.setValue(mp.get('sgm', None))
+                self.model_param_widget.dyc_input.setValue(mp.get('dyc', None))
+                self.model_param_widget.SGM_input.setValue(mp.get('SGM', None))
+                self.model_param_widget.LW_input.setValue(mp.get('LW', None))
+                self.model_param_widget.LH_input.setValue(mp.get('LH', None))
+                self.model_param_widget.dkmax_input.setValue(mp.get('dkmax', None))
+                self.model_param_widget.dkmin_input.setValue(mp.get('dkmin', None))
+                self.model_param_widget.dk0_input.setValue(mp.get('dk0', None))
+                self.model_param_widget.deltaymax_input.setValue(mp.get('deltaymax', None))
+                self.model_param_widget.deltavymax_input.setValue(mp.get('deltavymax', None))
+                self.model_param_widget.ddmax_input.setValue(mp.get('ddmax', None))
+                self.model_param_widget.dvmax_input.setValue(mp.get('dvmax', None))
+                self.model_param_widget.dthetamax_input.setValue(mp.get('dthetamax', None))
+                self.model_param_widget.wzmax_input.setValue(mp.get('wzmax', None))
+                self.model_param_widget.wxmax_input.setValue(mp.get('wxmax', None))
+                self.model_param_widget.dphimax_input.setValue(mp.get('dphimax', None))
 
             # 加载仿真参数
             if "sim_params" in config:
                 sp = config["sim_params"]
-                self.sim_control_widget.L_input.setValue(sp.get("L", 3.195))
-                self.sim_control_widget.S_input.setValue(sp.get("S", 0.0356))
-                self.sim_control_widget.V_input.setValue(sp.get("V", 0))
-                self.sim_control_widget.m_input.setValue(sp.get("m", 114.7))
-                self.sim_control_widget.xc_input.setValue(sp.get("xc", -0.0188))
-                self.sim_control_widget.yc_input.setValue(sp.get("yc", -0.0017))
-                self.sim_control_widget.zc_input.setValue(sp.get("zc", 0.0008))
-                self.sim_control_widget.jxx_input.setValue(sp.get("Jxx", 0.63140684))
-                self.sim_control_widget.jyy_input.setValue(sp.get("Jyy", 57.06970864))
-                self.sim_control_widget.jzz_input.setValue(sp.get("Jzz", 57.07143674))
-                self.sim_control_widget.dt_input.setValue(sp.get("dt", 0.001))
-                self.sim_control_widget.t0_input.setValue(sp.get("t0", 0.539))
-                self.sim_control_widget.tend_input.setValue(sp.get("tend", 3.41))
-                self.sim_control_widget.ycs_input.setValue(sp.get("ycs", -3.45))
-                self.sim_control_widget.thetacs_input.setValue(sp.get("thetacs", -2.5086))
-                self.sim_control_widget.yvcs_input.setValue(sp.get("yvcs", -0.01323))
-                self.sim_control_widget.psics_input.setValue(sp.get("psics", 9.17098))
+                self.sim_control_widget.t0_input.setValue(sp.get('t0', None))
+                self.sim_control_widget.tend_input.setValue(sp.get('tend', None))
+                self.sim_control_widget.dt_input.setValue(sp.get('dt', None))
+                self.sim_control_widget.v0_input.setValue(sp.get('v0', None))
+                self.sim_control_widget.theta0_input.setValue(sp.get('theta0', None))
+                self.sim_control_widget.psi0_input.setValue(sp.get('psi0', None))
+                self.sim_control_widget.phi0_input.setValue(sp.get('phi0', None))
+                self.sim_control_widget.alpha0_input.setValue(sp.get('alpha0', None))
+                self.sim_control_widget.wx0_input.setValue(sp.get('wx0', None))
+                self.sim_control_widget.wy0_input.setValue(sp.get('wy0', None))
+                self.sim_control_widget.wz0_input.setValue(sp.get('wz0', None))
+                self.sim_control_widget.k_wz_input.setValue(sp.get('k_wz', None))
+                self.sim_control_widget.k_theta_input.setValue(sp.get('k_theta', None))
+                self.sim_control_widget.kwz_input.setValue(sp.get('kwz', None))
+                self.sim_control_widget.ktheta_input.setValue(sp.get('ktheta', None))
+                self.sim_control_widget.k_ps_input.setValue(sp.get('k_ps', None))
+                self.sim_control_widget.k_ph_input.setValue(sp.get('k_ph', None))
+                self.sim_control_widget.k_wx_input.setValue(sp.get('k_wx', None))
+                self.sim_control_widget.k_wy_input.setValue(sp.get('k_wy', None))
+                self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
 
             # 加载UI状态
             if "ui_state" in config:
@@ -464,32 +507,26 @@ class MainWindow(QMainWindow):
             if not filename:
                 return
 
-            x0, _, _ = read_data('input.txt', 'x0')
-            y0, _, _ = read_data('input.txt', 'y0')
-            z0, _, _ = read_data('input.txt', 'z0')
-            theta, _, _ = read_data('input.txt', 'theta')
-            psi, _, _ = read_data('input.txt', 'psi')
-            phi, _, _ = read_data('input.txt', 'phi')
-            vx, _, _ = read_data('input.txt', 'vx')
-            vy, _, _ = read_data('input.txt', 'vy')
-            vz, _, _ = read_data('input.txt', 'vz')
-            wx, _, _ = read_data('input.txt', 'wx')
-            wy, _, _ = read_data('input.txt', 'wy')
-            wz, _, _ = read_data('input.txt', 'wz')
-            dk, _, _ = read_data('input.txt', 'dk')
-            ds, _, _ = read_data('input.txt', 'ds')
-            dxx, _, _ = read_data('input.txt', 'dxx')
-            dkf, _, _ = read_data('input.txt', 'dkf')
-            dsf, _, _ = read_data('input.txt', 'dsf')
-            dxf, _, _ = read_data('input.txt', 'dxf')
-            t1, _, _ = read_data('input.txt', 't1')
-            t2, _, _ = read_data('input.txt', 't2')
-            kth, _, _ = read_data('input.txt', 'kth')
-            kps, _, _ = read_data('input.txt', 'kps')
-            kph, _, _ = read_data('input.txt', 'kph')
-            kwx, _, _ = read_data('input.txt', 'kwx')
+            t0, _, _ = read_data('input.txt', 't0')
+            tend, _, _ = read_data('input.txt', 'tend')
+            dt, _, _ = read_data('input.txt', 'dt')
+            v0, _, _ = read_data('input.txt', 'v0')
+            theta0, _, _ = read_data('input.txt', 'theta0')
+            psi0, _, _ = read_data('input.txt', 'psi0')
+            phi0, _, _ = read_data('input.txt', 'phi0')
+            alpha0, _, _ = read_data('input.txt', 'alpha0')
+            wx0, _, _ = read_data('input.txt', 'wx0')
+            wy0, _, _ = read_data('input.txt', 'wy0')
+            wz0, _, _ = read_data('input.txt', 'wz0')
+            k_wz, _, _ = read_data('input.txt', 'k_wz')
+            k_theta, _, _ = read_data('input.txt', 'k_theta')
             kwz, _, _ = read_data('input.txt', 'kwz')
-            kwy, _, _ = read_data('input.txt', 'kwy')
+            ktheta, _, _ = read_data('input.txt', 'ktheta')
+            k_ps, _, _ = read_data('input.txt', 'k_ps')
+            k_ph, _, _ = read_data('input.txt', 'k_ph')
+            k_wx, _, _ = read_data('input.txt', 'k_wx')
+            k_wy, _, _ = read_data('input.txt', 'k_wy')
+            tend_under, _, _ = read_data('input.txt', 'tend_under')
             L, _, _ = read_data('input.txt', 'L')
             S, _, _ = read_data('input.txt', 'S')
             V, _, _ = read_data('input.txt', 'V')
@@ -500,41 +537,47 @@ class MainWindow(QMainWindow):
             Jxx, _, _ = read_data('input.txt', 'Jxx')
             Jyy, _, _ = read_data('input.txt', 'Jyy')
             Jzz, _, _ = read_data('input.txt', 'Jzz')
-            dt, _, _ = read_data('input.txt', 'dt')
-            t0, _, _ = read_data('input.txt', 't0')
-            tend, _, _ = read_data('input.txt', 'tend')
-            ycs, _, _ = read_data('input.txt', 'ycs')
-            thetacs, _, _ = read_data('input.txt', 'thetacs')
-            yvcs, _, _ = read_data('input.txt', 'yvcs')
-            psics, _, _ = read_data('input.txt', 'psics')
+            T, _, _ = read_data('input.txt', 'T')
+            lk, _, _ = read_data('input.txt', 'lk')
+            rk, _, _ = read_data('input.txt', 'rk')
+            sgm, _, _ = read_data('input.txt', 'sgm')
+            dyc, _, _ = read_data('input.txt', 'dyc')
+            SGM, _, _ = read_data('input.txt', 'SGM')
+            LW, _, _ = read_data('input.txt', 'LW')
+            LH, _, _ = read_data('input.txt', 'LH')
+            dkmax, _, _ = read_data('input.txt', 'dkmax')
+            dkmin, _, _ = read_data('input.txt', 'dkmin')
+            dk0, _, _ = read_data('input.txt', 'dk0')
+            deltaymax, _, _ = read_data('input.txt', 'deltaymax')
+            deltavymax, _, _ = read_data('input.txt', 'deltavymax')
+            ddmax, _, _ = read_data('input.txt', 'ddmax')
+            dvmax, _, _ = read_data('input.txt', 'dvmax')
+            dthetamax, _, _ = read_data('input.txt', 'dthetamax')
+            wzmax, _, _ = read_data('input.txt', 'wzmax')
+            wxmax, _, _ = read_data('input.txt', 'wxmax')
+            dphimax, _, _ = read_data('input.txt', 'dphimax')
 
             laptop_datas = {
-                'x0': x0,
-                'y0': y0,
-                'z0': z0,
-                'theta': theta,
-                'psi': psi,
-                'phi': phi,
-                'vx': vx,
-                'vy': vy,
-                'vz': vz,
-                'wx': wx,
-                'wy': wy,
-                'wz': wz,
-                'dk': dk,
-                'ds': ds,
-                'dxx': dxx,
-                'dkf': dkf,
-                'dsf': dsf,
-                'dxf': dxf,
-                't1': t1,
-                't2': t2,
-                'kth': kth,
-                'kps': kps,
-                'kph': kph,
-                'kwx': kwx,
+                't0': t0,
+                'tend': tend,
+                'dt': dt,
+                'v0': v0,
+                'theta0': theta0,
+                'psi0': psi0,
+                'phi0': phi0,
+                'alpha0': alpha0,
+                'wx0': wx0,
+                'wy0': wy0,
+                'wz0': wz0,
+                'k_wz': k_wz,
+                'k_theta': k_theta,
                 'kwz': kwz,
-                'kwy': kwy,
+                'ktheta': ktheta,
+                'k_ps': k_ps,
+                'k_ph': k_ph,
+                'k_wx': k_wx,
+                'k_wy': k_wy,
+                'tend_under': tend_under,
                 'L': L,
                 'S': S,
                 'V': V,
@@ -545,63 +588,81 @@ class MainWindow(QMainWindow):
                 'Jxx': Jxx,
                 'Jyy': Jyy,
                 'Jzz': Jzz,
-                'dt': dt,
-                't0': t0,
-                'tend': tend,
-                'ycs': ycs,
-                'thetacs': thetacs,
-                'yvcs': yvcs,
-                'psics': psics
+                'T': T,
+                'lk': lk,
+                'rk': rk,
+                'sgm': sgm,
+                'dyc': dyc,
+                'SGM': SGM,
+                'LW': LW,
+                'LH': LH,
+                'dkmax': dkmax,
+                'dkmin': dkmin,
+                'dk0': dk0,
+                'deltaymax': deltaymax,
+                'deltavymax': deltavymax,
+                'ddmax': ddmax,
+                'dvmax': dvmax,
+                'dthetamax': dthetamax,
+                'wzmax': wzmax,
+                'wxmax': wxmax,
+                'dphimax': dphimax,
             }
 
             # 验证配置文件
 
             mp = laptop_datas
-            self.model_param_widget.x0_input.setValue(mp.get('x0', 27.82448))
-            self.model_param_widget.y0_input.setValue(mp.get('y0', -3.45))
-            self.model_param_widget.z0_input.setValue(mp.get('z0', 0.05623))
-            self.model_param_widget.theta_input.setValue(mp.get('theta', 0))
-            self.model_param_widget.psi_input.setValue(mp.get('psi', 0))
-            self.model_param_widget.phi_input.setValue(mp.get('phi', 6.84184))
-            self.model_param_widget.vx_input.setValue(mp.get('vx', 100.96949))
-            self.model_param_widget.vy_input.setValue(mp.get('vy', -0.01323))
-            self.model_param_widget.vz_input.setValue(mp.get('vz', -0.95246))
-            self.model_param_widget.wx_input.setValue(mp.get('wx', 242.955))
-            self.model_param_widget.wy_input.setValue(mp.get('wy', -42.435))
-            self.model_param_widget.wz_input.setValue(mp.get('wz', 56.515))
-            self.model_param_widget.dk_input.setValue(mp.get('dk', -2.9377))
-            self.model_param_widget.ds_input.setValue(mp.get('ds', 0.94986))
-            self.model_param_widget.dxx_input.setValue(mp.get('dxx', 0.94986))
-            self.model_param_widget.dkf_input.setValue(mp.get('dkf', -2.50238))
-            self.model_param_widget.dsf_input.setValue(mp.get('dsf', 0.38547))
-            self.model_param_widget.dxf_input.setValue(mp.get('dxf', 0.30266))
-            self.model_param_widget.t1_input.setValue(mp.get('t1', 25080.6))
-            self.model_param_widget.t2_input.setValue(mp.get('t2', 6971.4))
-            self.model_param_widget.kth_input.setValue(mp.get('kth', 4))
-            self.model_param_widget.kps_input.setValue(mp.get('kps', 4))
-            self.model_param_widget.kph_input.setValue(mp.get('kph', 0.08))
-            self.model_param_widget.kwx_input.setValue(mp.get('kwx', 0.0016562))
-            self.model_param_widget.kwz_input.setValue(mp.get('kwz', 0.312))
-            self.model_param_widget.kwy_input.setValue(mp.get('kwy', 0.312))
+            self.model_param_widget.L_input.setValue(mp.get('L', None))
+            self.model_param_widget.S_input.setValue(mp.get('S', None))
+            self.model_param_widget.V_input.setValue(mp.get('V', None))
+            self.model_param_widget.m_input.setValue(mp.get('m', None))
+            self.model_param_widget.xc_input.setValue(mp.get('xc', None))
+            self.model_param_widget.yc_input.setValue(mp.get('yc', None))
+            self.model_param_widget.zc_input.setValue(mp.get('zc', None))
+            self.model_param_widget.Jxx_input.setValue(mp.get('Jxx', None))
+            self.model_param_widget.Jyy_input.setValue(mp.get('Jyy', None))
+            self.model_param_widget.Jzz_input.setValue(mp.get('Jzz', None))
+            self.model_param_widget.T_input.setValue(mp.get('T', None))
+            self.model_param_widget.lk_input.setValue(mp.get('lk', None))
+            self.model_param_widget.rk_input.setValue(mp.get('rk', None))
+            self.model_param_widget.sgm_input.setValue(mp.get('sgm', None))
+            self.model_param_widget.dyc_input.setValue(mp.get('dyc', None))
+            self.model_param_widget.SGM_input.setValue(mp.get('SGM', None))
+            self.model_param_widget.LW_input.setValue(mp.get('LW', None))
+            self.model_param_widget.LH_input.setValue(mp.get('LH', None))
+            self.model_param_widget.dkmax_input.setValue(mp.get('dkmax', None))
+            self.model_param_widget.dkmin_input.setValue(mp.get('dkmin', None))
+            self.model_param_widget.dk0_input.setValue(mp.get('dk0', None))
+            self.model_param_widget.deltaymax_input.setValue(mp.get('deltaymax', None))
+            self.model_param_widget.deltavymax_input.setValue(mp.get('deltavymax', None))
+            self.model_param_widget.ddmax_input.setValue(mp.get('ddmax', None))
+            self.model_param_widget.dvmax_input.setValue(mp.get('dvmax', None))
+            self.model_param_widget.dthetamax_input.setValue(mp.get('dthetamax', None))
+            self.model_param_widget.wzmax_input.setValue(mp.get('wzmax', None))
+            self.model_param_widget.wxmax_input.setValue(mp.get('wxmax', None))
+            self.model_param_widget.dphimax_input.setValue(mp.get('dphimax', None))
 
             sp = laptop_datas
-            self.sim_control_widget.L_input.setValue(sp.get("L", 3.195))
-            self.sim_control_widget.S_input.setValue(sp.get("S", 0.0356))
-            self.sim_control_widget.V_input.setValue(sp.get("V", 0))
-            self.sim_control_widget.m_input.setValue(sp.get("m", 114.7))
-            self.sim_control_widget.xc_input.setValue(sp.get("xc", -0.0188))
-            self.sim_control_widget.yc_input.setValue(sp.get("yc", -0.0017))
-            self.sim_control_widget.zc_input.setValue(sp.get("zc", 0.0008))
-            self.sim_control_widget.jxx_input.setValue(sp.get("Jxx", 0.63140684))
-            self.sim_control_widget.jyy_input.setValue(sp.get("Jyy", 57.06970864))
-            self.sim_control_widget.jzz_input.setValue(sp.get("Jzz", 57.07143674))
-            self.sim_control_widget.dt_input.setValue(sp.get("dt", 0.001))
-            self.sim_control_widget.t0_input.setValue(sp.get("t0", 0.539))
-            self.sim_control_widget.tend_input.setValue(sp.get("tend", 3.41))
-            self.sim_control_widget.ycs_input.setValue(sp.get("ycs", -3.45))
-            self.sim_control_widget.thetacs_input.setValue(sp.get("thetacs", -2.5086))
-            self.sim_control_widget.yvcs_input.setValue(sp.get("yvcs", -0.01323))
-            self.sim_control_widget.psics_input.setValue(sp.get("psics", 9.17098))
+            self.sim_control_widget.t0_input.setValue(sp.get('t0', None))
+            self.sim_control_widget.tend_input.setValue(sp.get('tend', None))
+            self.sim_control_widget.dt_input.setValue(sp.get('dt', None))
+            self.sim_control_widget.v0_input.setValue(sp.get('v0', None))
+            self.sim_control_widget.theta0_input.setValue(sp.get('theta0', None))
+            self.sim_control_widget.psi0_input.setValue(sp.get('psi0', None))
+            self.sim_control_widget.phi0_input.setValue(sp.get('phi0', None))
+            self.sim_control_widget.alpha0_input.setValue(sp.get('alpha0', None))
+            self.sim_control_widget.wx0_input.setValue(sp.get('wx0', None))
+            self.sim_control_widget.wy0_input.setValue(sp.get('wy0', None))
+            self.sim_control_widget.wz0_input.setValue(sp.get('wz0', None))
+            self.sim_control_widget.k_wz_input.setValue(sp.get('k_wz', None))
+            self.sim_control_widget.k_theta_input.setValue(sp.get('k_theta', None))
+            self.sim_control_widget.kwz_input.setValue(sp.get('kwz', None))
+            self.sim_control_widget.ktheta_input.setValue(sp.get('ktheta', None))
+            self.sim_control_widget.k_ps_input.setValue(sp.get('k_ps', None))
+            self.sim_control_widget.k_ph_input.setValue(sp.get('k_ph', None))
+            self.sim_control_widget.k_wx_input.setValue(sp.get('k_wx', None))
+            self.sim_control_widget.k_wy_input.setValue(sp.get('k_wy', None))
+            self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
             # 更新状态栏
             self.status_label.setText(f"配置已从: {filename} 加载")
             QMessageBox.information(self, "加载成功", f"配置已成功从:\n{filename}\n加载")
@@ -724,32 +785,26 @@ class MainWindow(QMainWindow):
         check_file = os.path.exists("./input.txt")
         if check_file:
             try:
-                x0, _, _ = read_data('input.txt', 'x0')
-                y0, _, _ = read_data('input.txt', 'y0')
-                z0, _, _ = read_data('input.txt', 'z0')
-                theta, _, _ = read_data('input.txt', 'theta')
-                psi, _, _ = read_data('input.txt', 'psi')
-                phi, _, _ = read_data('input.txt', 'phi')
-                vx, _, _ = read_data('input.txt', 'vx')
-                vy, _, _ = read_data('input.txt', 'vy')
-                vz, _, _ = read_data('input.txt', 'vz')
-                wx, _, _ = read_data('input.txt', 'wx')
-                wy, _, _ = read_data('input.txt', 'wy')
-                wz, _, _ = read_data('input.txt', 'wz')
-                dk, _, _ = read_data('input.txt', 'dk')
-                ds, _, _ = read_data('input.txt', 'ds')
-                dxx, _, _ = read_data('input.txt', 'dxx')
-                dkf, _, _ = read_data('input.txt', 'dkf')
-                dsf, _, _ = read_data('input.txt', 'dsf')
-                dxf, _, _ = read_data('input.txt', 'dxf')
-                t1, _, _ = read_data('input.txt', 't1')
-                t2, _, _ = read_data('input.txt', 't2')
-                kth, _, _ = read_data('input.txt', 'kth')
-                kps, _, _ = read_data('input.txt', 'kps')
-                kph, _, _ = read_data('input.txt', 'kph')
-                kwx, _, _ = read_data('input.txt', 'kwx')
+                t0, _, _ = read_data('input.txt', 't0')
+                tend, _, _ = read_data('input.txt', 'tend')
+                dt, _, _ = read_data('input.txt', 'dt')
+                v0, _, _ = read_data('input.txt', 'v0')
+                theta0, _, _ = read_data('input.txt', 'theta0')
+                psi0, _, _ = read_data('input.txt', 'psi0')
+                phi0, _, _ = read_data('input.txt', 'phi0')
+                alpha0, _, _ = read_data('input.txt', 'alpha0')
+                wx0, _, _ = read_data('input.txt', 'wx0')
+                wy0, _, _ = read_data('input.txt', 'wy0')
+                wz0, _, _ = read_data('input.txt', 'wz0')
+                k_wz, _, _ = read_data('input.txt', 'k_wz')
+                k_theta, _, _ = read_data('input.txt', 'k_theta')
                 kwz, _, _ = read_data('input.txt', 'kwz')
-                kwy, _, _ = read_data('input.txt', 'kwy')
+                ktheta, _, _ = read_data('input.txt', 'ktheta')
+                k_ps, _, _ = read_data('input.txt', 'k_ps')
+                k_ph, _, _ = read_data('input.txt', 'k_ph')
+                k_wx, _, _ = read_data('input.txt', 'k_wx')
+                k_wy, _, _ = read_data('input.txt', 'k_wy')
+                tend_under, _, _ = read_data('input.txt', 'tend_under')
                 L, _, _ = read_data('input.txt', 'L')
                 S, _, _ = read_data('input.txt', 'S')
                 V, _, _ = read_data('input.txt', 'V')
@@ -760,41 +815,47 @@ class MainWindow(QMainWindow):
                 Jxx, _, _ = read_data('input.txt', 'Jxx')
                 Jyy, _, _ = read_data('input.txt', 'Jyy')
                 Jzz, _, _ = read_data('input.txt', 'Jzz')
-                dt, _, _ = read_data('input.txt', 'dt')
-                t0, _, _ = read_data('input.txt', 't0')
-                tend, _, _ = read_data('input.txt', 'tend')
-                ycs, _, _ = read_data('input.txt', 'ycs')
-                thetacs, _, _ = read_data('input.txt', 'thetacs')
-                yvcs, _, _ = read_data('input.txt', 'yvcs')
-                psics, _, _ = read_data('input.txt', 'psics')
+                T, _, _ = read_data('input.txt', 'T')
+                lk, _, _ = read_data('input.txt', 'lk')
+                rk, _, _ = read_data('input.txt', 'rk')
+                sgm, _, _ = read_data('input.txt', 'sgm')
+                dyc, _, _ = read_data('input.txt', 'dyc')
+                SGM, _, _ = read_data('input.txt', 'SGM')
+                LW, _, _ = read_data('input.txt', 'LW')
+                LH, _, _ = read_data('input.txt', 'LH')
+                dkmax, _, _ = read_data('input.txt', 'dkmax')
+                dkmin, _, _ = read_data('input.txt', 'dkmin')
+                dk0, _, _ = read_data('input.txt', 'dk0')
+                deltaymax, _, _ = read_data('input.txt', 'deltaymax')
+                deltavymax, _, _ = read_data('input.txt', 'deltavymax')
+                ddmax, _, _ = read_data('input.txt', 'ddmax')
+                dvmax, _, _ = read_data('input.txt', 'dvmax')
+                dthetamax, _, _ = read_data('input.txt', 'dthetamax')
+                wzmax, _, _ = read_data('input.txt', 'wzmax')
+                wxmax, _, _ = read_data('input.txt', 'wxmax')
+                dphimax, _, _ = read_data('input.txt', 'dphimax')
 
                 laptop_datas = {
-                    'x0': x0,
-                    'y0': y0,
-                    'z0': z0,
-                    'theta': theta,
-                    'psi': psi,
-                    'phi': phi,
-                    'vx': vx,
-                    'vy': vy,
-                    'vz': vz,
-                    'wx': wx,
-                    'wy': wy,
-                    'wz': wz,
-                    'dk': dk,
-                    'ds': ds,
-                    'dxx': dxx,
-                    'dkf': dkf,
-                    'dsf': dsf,
-                    'dxf': dxf,
-                    't1': t1,
-                    't2': t2,
-                    'kth': kth,
-                    'kps': kps,
-                    'kph': kph,
-                    'kwx': kwx,
+                    't0': t0,
+                    'tend': tend,
+                    'dt': dt,
+                    'v0': v0,
+                    'theta0': theta0,
+                    'psi0': psi0,
+                    'phi0': phi0,
+                    'alpha0': alpha0,
+                    'wx0': wx0,
+                    'wy0': wy0,
+                    'wz0': wz0,
+                    'k_wz': k_wz,
+                    'k_theta': k_theta,
                     'kwz': kwz,
-                    'kwy': kwy,
+                    'ktheta': ktheta,
+                    'k_ps': k_ps,
+                    'k_ph': k_ph,
+                    'k_wx': k_wx,
+                    'k_wy': k_wy,
+                    'tend_under': tend_under,
                     'L': L,
                     'S': S,
                     'V': V,
@@ -805,63 +866,81 @@ class MainWindow(QMainWindow):
                     'Jxx': Jxx,
                     'Jyy': Jyy,
                     'Jzz': Jzz,
-                    'dt': dt,
-                    't0': t0,
-                    'tend': tend,
-                    'ycs': ycs,
-                    'thetacs': thetacs,
-                    'yvcs': yvcs,
-                    'psics': psics
+                    'T': T,
+                    'lk': lk,
+                    'rk': rk,
+                    'sgm': sgm,
+                    'dyc': dyc,
+                    'SGM': SGM,
+                    'LW': LW,
+                    'LH': LH,
+                    'dkmax': dkmax,
+                    'dkmin': dkmin,
+                    'dk0': dk0,
+                    'deltaymax': deltaymax,
+                    'deltavymax': deltavymax,
+                    'ddmax': ddmax,
+                    'dvmax': dvmax,
+                    'dthetamax': dthetamax,
+                    'wzmax': wzmax,
+                    'wxmax': wxmax,
+                    'dphimax': dphimax,
                 }
 
                 # 验证配置文件
 
                 mp = laptop_datas
-                self.model_param_widget.x0_input.setValue(mp.get('x0', 27.82448))
-                self.model_param_widget.y0_input.setValue(mp.get('y0', -3.45))
-                self.model_param_widget.z0_input.setValue(mp.get('z0', 0.05623))
-                self.model_param_widget.theta_input.setValue(mp.get('theta', 0))
-                self.model_param_widget.psi_input.setValue(mp.get('psi', 0))
-                self.model_param_widget.phi_input.setValue(mp.get('phi', 6.84184))
-                self.model_param_widget.vx_input.setValue(mp.get('vx', 100.96949))
-                self.model_param_widget.vy_input.setValue(mp.get('vy', -0.01323))
-                self.model_param_widget.vz_input.setValue(mp.get('vz', -0.95246))
-                self.model_param_widget.wx_input.setValue(mp.get('wx', 242.955))
-                self.model_param_widget.wy_input.setValue(mp.get('wy', -42.435))
-                self.model_param_widget.wz_input.setValue(mp.get('wz', 56.515))
-                self.model_param_widget.dk_input.setValue(mp.get('dk', -2.9377))
-                self.model_param_widget.ds_input.setValue(mp.get('ds', 0.94986))
-                self.model_param_widget.dxx_input.setValue(mp.get('dxx', 0.94986))
-                self.model_param_widget.dkf_input.setValue(mp.get('dkf', -2.50238))
-                self.model_param_widget.dsf_input.setValue(mp.get('dsf', 0.38547))
-                self.model_param_widget.dxf_input.setValue(mp.get('dxf', 0.30266))
-                self.model_param_widget.t1_input.setValue(mp.get('t1', 25080.6))
-                self.model_param_widget.t2_input.setValue(mp.get('t2', 6971.4))
-                self.model_param_widget.kth_input.setValue(mp.get('kth', 4))
-                self.model_param_widget.kps_input.setValue(mp.get('kps', 4))
-                self.model_param_widget.kph_input.setValue(mp.get('kph', 0.08))
-                self.model_param_widget.kwx_input.setValue(mp.get('kwx', 0.0016562))
-                self.model_param_widget.kwz_input.setValue(mp.get('kwz', 0.312))
-                self.model_param_widget.kwy_input.setValue(mp.get('kwy', 0.312))
+                self.model_param_widget.L_input.setValue(mp.get('L', None))
+                self.model_param_widget.S_input.setValue(mp.get('S', None))
+                self.model_param_widget.V_input.setValue(mp.get('V', None))
+                self.model_param_widget.m_input.setValue(mp.get('m', None))
+                self.model_param_widget.xc_input.setValue(mp.get('xc', None))
+                self.model_param_widget.yc_input.setValue(mp.get('yc', None))
+                self.model_param_widget.zc_input.setValue(mp.get('zc', None))
+                self.model_param_widget.Jxx_input.setValue(mp.get('Jxx', None))
+                self.model_param_widget.Jyy_input.setValue(mp.get('Jyy', None))
+                self.model_param_widget.Jzz_input.setValue(mp.get('Jzz', None))
+                self.model_param_widget.T_input.setValue(mp.get('T', None))
+                self.model_param_widget.lk_input.setValue(mp.get('lk', None))
+                self.model_param_widget.rk_input.setValue(mp.get('rk', None))
+                self.model_param_widget.sgm_input.setValue(mp.get('sgm', None))
+                self.model_param_widget.dyc_input.setValue(mp.get('dyc', None))
+                self.model_param_widget.SGM_input.setValue(mp.get('SGM', None))
+                self.model_param_widget.LW_input.setValue(mp.get('LW', None))
+                self.model_param_widget.LH_input.setValue(mp.get('LH', None))
+                self.model_param_widget.dkmax_input.setValue(mp.get('dkmax', None))
+                self.model_param_widget.dkmin_input.setValue(mp.get('dkmin', None))
+                self.model_param_widget.dk0_input.setValue(mp.get('dk0', None))
+                self.model_param_widget.deltaymax_input.setValue(mp.get('deltaymax', None))
+                self.model_param_widget.deltavymax_input.setValue(mp.get('deltavymax', None))
+                self.model_param_widget.ddmax_input.setValue(mp.get('ddmax', None))
+                self.model_param_widget.dvmax_input.setValue(mp.get('dvmax', None))
+                self.model_param_widget.dthetamax_input.setValue(mp.get('dthetamax', None))
+                self.model_param_widget.wzmax_input.setValue(mp.get('wzmax', None))
+                self.model_param_widget.wxmax_input.setValue(mp.get('wxmax', None))
+                self.model_param_widget.dphimax_input.setValue(mp.get('dphimax', None))
 
                 sp = laptop_datas
-                self.sim_control_widget.L_input.setValue(sp.get("L", 3.195))
-                self.sim_control_widget.S_input.setValue(sp.get("S", 0.0356))
-                self.sim_control_widget.V_input.setValue(sp.get("V", 0))
-                self.sim_control_widget.m_input.setValue(sp.get("m", 114.7))
-                self.sim_control_widget.xc_input.setValue(sp.get("xc", -0.0188))
-                self.sim_control_widget.yc_input.setValue(sp.get("yc", -0.0017))
-                self.sim_control_widget.zc_input.setValue(sp.get("zc", 0.0008))
-                self.sim_control_widget.jxx_input.setValue(sp.get("Jxx", 0.63140684))
-                self.sim_control_widget.jyy_input.setValue(sp.get("Jyy", 57.06970864))
-                self.sim_control_widget.jzz_input.setValue(sp.get("Jzz", 57.07143674))
-                self.sim_control_widget.dt_input.setValue(sp.get("dt", 0.001))
-                self.sim_control_widget.t0_input.setValue(sp.get("t0", 0.539))
-                self.sim_control_widget.tend_input.setValue(sp.get("tend", 3.41))
-                self.sim_control_widget.ycs_input.setValue(sp.get("ycs", -3.45))
-                self.sim_control_widget.thetacs_input.setValue(sp.get("thetacs", -2.5086))
-                self.sim_control_widget.yvcs_input.setValue(sp.get("yvcs", -0.01323))
-                self.sim_control_widget.psics_input.setValue(sp.get("psics", 9.17098))
+                self.sim_control_widget.t0_input.setValue(sp.get('t0', None))
+                self.sim_control_widget.tend_input.setValue(sp.get('tend', None))
+                self.sim_control_widget.dt_input.setValue(sp.get('dt', None))
+                self.sim_control_widget.v0_input.setValue(sp.get('v0', None))
+                self.sim_control_widget.theta0_input.setValue(sp.get('theta0', None))
+                self.sim_control_widget.psi0_input.setValue(sp.get('psi0', None))
+                self.sim_control_widget.phi0_input.setValue(sp.get('phi0', None))
+                self.sim_control_widget.alpha0_input.setValue(sp.get('alpha0', None))
+                self.sim_control_widget.wx0_input.setValue(sp.get('wx0', None))
+                self.sim_control_widget.wy0_input.setValue(sp.get('wy0', None))
+                self.sim_control_widget.wz0_input.setValue(sp.get('wz0', None))
+                self.sim_control_widget.k_wz_input.setValue(sp.get('k_wz', None))
+                self.sim_control_widget.k_theta_input.setValue(sp.get('k_theta', None))
+                self.sim_control_widget.kwz_input.setValue(sp.get('kwz', None))
+                self.sim_control_widget.ktheta_input.setValue(sp.get('ktheta', None))
+                self.sim_control_widget.k_ps_input.setValue(sp.get('k_ps', None))
+                self.sim_control_widget.k_ph_input.setValue(sp.get('k_ph', None))
+                self.sim_control_widget.k_wx_input.setValue(sp.get('k_wx', None))
+                self.sim_control_widget.k_wy_input.setValue(sp.get('k_wy', None))
+                self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
                 # 更新状态栏
                 logging.info("加载配置成功")
 

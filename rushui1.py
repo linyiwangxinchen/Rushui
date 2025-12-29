@@ -17,6 +17,7 @@ plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
 
 class  Entry:
     def __init__(self):
+        # ——————————画图参量——————————
         self.plot_pao_down_y = None
         self.plot_pao_down_x = None
         self.plot_pao_up_y = None
@@ -30,7 +31,6 @@ class  Entry:
         self.min_callback_interval = 0.05
         # ——————————基本常量——————————
         self.rtd = 180 / np.pi
-        self.RTD = self.rtd
         self.g = 9.8
         self.rho = 1000
 
@@ -72,7 +72,7 @@ class  Entry:
 
         # ——————————入水参数——————————
         self.t0 = 0      # 仿真起始时间
-        self.tend = 1  # 仿真终止时间
+        self.tend = 0.2  # 仿真终止时间
         self.tp = 0      # 全局变量：上一步仿真时间
         self.dt = 2e-4   # 仿真步长
         self.v0 = 300  # 入水速度
@@ -99,9 +99,9 @@ class  Entry:
         self.k_wz = 0.06
         self.k_theta = 0.04
 
-        self._recalculate_update_input()
+        self._update_input()
 
-    def _recalculate_update_input(self):
+    def _update_input(self):
         # 需要二次更新的参数
         self.total.D = np.sqrt(4 / np.pi * self.total.S)  # 直径
         self.xb = self.lk - self.xb  # 转到体坐标系
@@ -631,7 +631,7 @@ class  Entry:
 
                 # 计算开口空泡容积
                 if self.isOpen:
-                    if j < self.ic +1:
+                    if j < self.ic + 1:
                         QC += np.pi * rcj ** 2 * np.sqrt((self.posCav[j - 1, 0] - self.posCav[j, 0]) ** 2 + (self.posCav[j - 1, 1] - self.posCav[j, 1]) ** 2)
                         dQC += self.posCav[j - 1, 3] * np.sqrt((self.posCav[j - 1, 0] - self.posCav[j, 0]) ** 2 + (self.posCav[j - 1, 1] - self.posCav[j, 1]) ** 2)
 
@@ -714,6 +714,16 @@ class  Entry:
             posc = Cb0 @ np.array([[lt], [0], [0]])
 
             # --------画图----------
+            # 准备绘图数据
+            self.plot_dan_x = posb[0, :]
+            self.plot_dan_y = posb[1, :]
+
+            self.plot_zhou_x = self.cav0[:, 0] - x0
+            self.plot_zhou_y = self.cav0[:, 1] - y0
+            self.plot_pao_up_x = cav1[:, 0] - x0
+            self.plot_pao_up_y = cav1[:, 1] - y0
+            self.plot_pao_down_x = cav2[:, 0] - x0
+            self.plot_pao_down_y = cav2[:, 1] - y0
 
             # 计算航行器总冲角，暂时按纵平面考虑
             alphat = -np.arctan(vy / vx) * self.rtd
@@ -1034,18 +1044,10 @@ class  Entry:
             # if t > 0.0112:
             #     sgfakjhfs = 0
 
-            dataiii = {
-                'plot_dan_x': posb[0, :],
-                'plot_dan_y': posb[1, :],
-                'plot_zhou_x': self.cav0[:, 0] - x0,
-                'plot_zhou_y': self.cav0[:, 1] - y0,
-                'plot_pao_up_x': cav1[:, 0] - x0,
-                'plot_pao_up_y': cav1[:, 1] - y0,
-                'plot_pao_down_x': cav2[:, 0] - x0,
-                'plot_pao_down_y': cav2[:, 1] - y0
-            }
+
             # 绘制Apc关于t的曲线//估计是压力曲线
             current_time = time.time()
+
             if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:
                 last_callback_time = current_time
                 # ========== 进度回调 ==========
@@ -1063,14 +1065,14 @@ class  Entry:
                             'y': y
                         },
                         'points': {
-                            'plot_dan_x': posb[0, :],
-                            'plot_dan_y': posb[1, :],
-                            'plot_zhou_x': self.cav0[:, 0],
-                            'plot_zhou_y': self.cav0[:, 1],
-                            'plot_pao_up_x': cav1[:, 0],
-                            'plot_pao_up_y': cav1[:, 1],
-                            'plot_pao_down_x': cav2[:, 0],
-                            'plot_pao_down_y': cav2[:, 0]
+                            'plot_dan_x': self.plot_dan_x,
+                            'plot_dan_y': self.plot_dan_y,
+                            'plot_zhou_x': self.plot_zhou_x,
+                            'plot_zhou_y': self.plot_zhou_y,
+                            'plot_pao_up_x': self.plot_pao_up_x,
+                            'plot_pao_up_y': self.plot_pao_up_y,
+                            'plot_pao_down_x': self.plot_pao_down_x,
+                            'plot_pao_down_y': self.plot_pao_down_y
                         },
                         'forces': {
                             'AFM': AFM
@@ -1078,6 +1080,7 @@ class  Entry:
                         'datas': {
                             'ts': T,
                             'ys': Y
+
                         }
                     }
                     # 调用回调函数
@@ -1200,6 +1203,9 @@ class  Entry:
 
 
     def get_results(self):
+
+        print("开始入水弹道仿真。。。")
+        self._update_input()
         # 获取弹道参数y和时间t
         y, t = self._equation_solving_()
 
@@ -1219,6 +1225,9 @@ class  Entry:
         beta = np.arctan(vz / np.sqrt(vx ** 2 + vy ** 2)) * self.rtd
         self.y = y
         self.t = t
+
+        print("入水弹道仿真完成")
+
         return t, y
 
 if __name__ == "__main__":
@@ -1228,7 +1237,7 @@ if __name__ == "__main__":
     # entry._equation_solving_()
 
     # 画图
-    entry.get_results()
+    # entry._plot_results()
 
 
 

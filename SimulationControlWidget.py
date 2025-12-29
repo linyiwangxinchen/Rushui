@@ -30,7 +30,7 @@ class SimulationControlWidget(QWidget):
         entry_layout = QGridLayout()
         self.add_labeled_input(entry_layout, "起始时间 t0 (s):", 0, 0, -1000, 1000, 0, 0.001, "t0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "终止时间 tend (s):", 1, 0, -1000, 1000, 1, 0.001, "tend_input",
+        self.add_labeled_input(entry_layout, "终止时间 tend (s):", 1, 0, -1000, 1000, 0.2, 0.001, "tend_input",
                                range_check=False)
         self.add_labeled_input(entry_layout, "仿真步长 dt (s):", 2, 0, -1000, 1000, 0.0002, 0.00001, "dt_input",
                                range_check=False)
@@ -53,13 +53,54 @@ class SimulationControlWidget(QWidget):
         entry_group.setLayout(entry_layout)
 
         # ——————————控制参数——————————
-        control_group = QGroupBox("入水参数")
+        control_group = QGroupBox("控制参数")
         control_layout_data = QGridLayout()
         self.add_labeled_input(control_layout_data, "横滚角速度增益 k_wz:", 0, 0, -1000, 1000, 0.06, 0.0001, "k_wz_input",
                                range_check=False)
         self.add_labeled_input(control_layout_data, "俯仰角增益 k_theta:", 1, 0, -1000, 1000, 0.04, 0.0001, "k_theta_input",
                                range_check=False)
         control_group.setLayout(control_layout_data)
+
+        # ——————————控制参数——————————
+        control_dive_group = QGroupBox("控制参数")
+        control_dive_layout_data = QGridLayout()
+        control_dive_layout_data.setContentsMargins(5, 5, 5, 5)
+        control_dive_layout_data.setSpacing(5)
+
+        # 俯仰角增益 kth (对应原self.kth)
+        self.add_labeled_input(control_dive_layout_data, "俯仰角增益 ktheta:", 0, 0, -1000, 1000, 4, 0.1,
+                               "ktheta_input", range_check=False)
+
+        # 姿态同步增益 kps (关联kth)
+        self.add_labeled_input(control_dive_layout_data, "姿态同步增益 k_ps:", 1, 0, -1000, 1000, 4, 0.1, "k_ps_input",
+                               range_check=False)
+
+        # 舵机响应增益 kph
+        self.add_labeled_input(control_dive_layout_data, "舵机响应增益 k_ph:", 2, 0, -1000, 1000, 0.08, 0.01,
+                               "k_ph_input", range_check=False)
+
+        # 滚转角速度增益 kwx
+        self.add_labeled_input(control_dive_layout_data, "滚转角速度增益 k_wx:", 3, 0, -1000, 1000, 0.0016562, 0.000001,
+                               "k_wx_input", range_check=False)
+
+        # 偏航角速度增益 kwz
+        self.add_labeled_input(control_dive_layout_data, "偏航角速度增益 kwz:", 4, 0, -1000, 1000, 0.312, 0.001,
+                               "kwz_input", range_check=False)
+
+        # 垂向控制增益 kwy (关联kwz)
+        self.add_labeled_input(control_dive_layout_data, "垂向控制增益 k_wy:", 5, 0, -1000, 1000, 0.312, 0.001,
+                               "k_wy_input", range_check=False)
+
+        control_dive_group.setLayout(control_dive_layout_data)
+
+        # ——————————控制参数——————————
+        dive_group = QGroupBox("控制参数")
+        dive_layout_data = QGridLayout()
+        dive_layout_data.setContentsMargins(5, 5, 5, 5)
+        dive_layout_data.setSpacing(5)
+        self.add_labeled_input(dive_layout_data, "水下仿真时间:", 0, 0, -1000, 1000, 3.41, 0.001,
+                               "tend_under_input", range_check=False)
+        dive_group.setLayout(dive_layout_data)
 
         # 控制按钮
         control_layout = QHBoxLayout()
@@ -88,6 +129,8 @@ class SimulationControlWidget(QWidget):
         # 组合布局
         main_layout.addWidget(entry_group)
         main_layout.addWidget(control_group)
+        main_layout.addWidget(control_dive_group)
+        main_layout.addWidget(dive_group)
         main_layout.addLayout(control_layout)
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.progress_label)
@@ -114,12 +157,10 @@ class SimulationControlWidget(QWidget):
     def to_model(self, Checki):
         # 向model发送数据
         data = {
-            # 积分参数 (正确分组)
-            'dt': self.dt_input.value(),
-            't0': self.t0_input.value(),
-            'tend': self.tend_input.value(),
-
-            # 入水条件 (新增分组)
+            # ——————————入水参数——————————
+            't0': self.t0_input.value(),  # 起始时间 (s)
+            'tend': self.tend_input.value(),  # 终止时间 (s)
+            'dt': self.dt_input.value(),  # 仿真步长 (s)
             'v0': self.v0_input.value(),  # 入水速度 (m/s)
             'theta0': self.theta0_input.value(),  # 弹道角 (deg)
             'psi0': self.psi0_input.value(),  # 偏航角 (deg)
@@ -129,9 +170,19 @@ class SimulationControlWidget(QWidget):
             'wy0': self.wy0_input.value(),  # 偏航角速度 (deg/s)
             'wz0': self.wz0_input.value(),  # 俯仰角速度 (deg/s)
 
-            # 控制参数 (正确分组)
-            'k_wz': self.k_wz_input.value(),
-            'k_theta': self.k_theta_input.value()
+            # ——————————控制参数 (修正分组)——————————
+            # 注：原代码存在分组命名冲突，已按实际参数含义重新分组
+            'k_wz': self.k_wz_input.value(),  # 偏航角速度增益 (控制参数)
+            'k_theta': self.k_theta_input.value(),  # 俯仰角增益 (控制参数)
+
+            'kwz': self.kwz_input.value(),  # 偏航角速度增益 (控制参数)
+            'ktheta': self.ktheta_input.value(),  # 俯仰角增益 (控制参数)
+            # ——————————深度控制参数——————————
+            'k_ps': self.k_ps_input.value(),  # 姿态同步增益
+            'k_ph': self.k_ph_input.value(),  # 舵机响应增益
+            'k_wx': self.k_wx_input.value(),  # 滚转角速度增益
+            'k_wy': self.k_wy_input.value(),  # 垂向控制增益
+            'tend_under_input': self.tend_under_input.value()
         }
         self.data_output_signal_f.emit(data)
 
@@ -143,40 +194,78 @@ class SimulationControlWidget(QWidget):
         try:
             # 设置参数
             # 1. 从本窗口UI获取入水参数和控制参数
-            dt = self.dt_input.value()
-            t0 = self.t0_input.value()
-            tend = self.tend_input.value()
-            v0 = self.v0_input.value()
-            theta0_deg = self.theta0_input.value()  # 角度单位
-            psi0_deg = self.psi0_input.value()  # 角度单位
-            phi0_deg = self.phi0_input.value()  # 角度单位
-            alpha0_deg = self.alpha0_input.value()  # 角度单位
-            wx0_deg = self.wx0_input.value()  # 角度/秒
-            wy0_deg = self.wy0_input.value()  # 角度/秒
-            wz0_deg = self.wz0_input.value()  # 角度/秒
-            k_wz = self.k_wz_input.value()
-            k_theta = self.k_theta_input.value()
+            # ——————————入水参数——————————
+            t0 = self.t0_input.value()  # 起始时间 (s)
+            tend = self.tend_input.value()  # 终止时间 (s)
+            dt = self.dt_input.value()  # 仿真步长 (s)
+            v0 = self.v0_input.value()  # 入水速度 (m/s)
+            theta0 = self.theta0_input.value()  # 弹道角 (deg)
+            psi0 = self.psi0_input.value()  # 偏航角 (deg)
+            phi0 = self.phi0_input.value()  # 横滚角 (deg)
+            alpha0 = self.alpha0_input.value()  # 攻角 (deg)
+            wx0 = self.wx0_input.value()  # 横滚角速度 (deg/s)
+            wy0 = self.wy0_input.value()  # 偏航角速度 (deg/s)
+            wz0 = self.wz0_input.value()  # 俯仰角速度 (deg/s)
+
+            # ——————————基础控制参数——————————
+            # 注意：此处的k_wz和k_theta会被深度控制参数覆盖（UI存在重复定义）
+            k_wz = self.k_wz_input.value()  # 偏航角速度增益 (基础控制)
+            k_theta = self.k_theta_input.value()  # 俯仰角增益 (基础控制)
+
+            # ——————————深度控制参数——————————
+            k_ps = self.k_ps_input.value()  # 姿态同步增益
+            k_ph = self.k_ph_input.value()  # 舵机响应增益
+            k_wx = self.k_wx_input.value()  # 滚转角速度增益
+            k_wy = self.k_wy_input.value()  # 垂向控制增益
+            # 注意：深度控制组的k_wz和k_theta会覆盖基础控制组的值
+            kwz = self.kwz_input.value()  # 偏航角速度增益 (深度控制)
+            ktheta = self.ktheta_input.value()  # 俯仰角增益 (深度控制)
+            tend_under = self.tend_under_input.value()
 
             self.ask_model()
 
             model_data = self.model_data
-            # 总体参数
-            self.rushui.total.L = model_data['L']
-            self.rushui.total.S = model_data['S']
-            self.rushui.total.V = model_data['V']
-            self.rushui.total.m = model_data['m']
-            self.rushui.total.xc = model_data['xc']
-            self.rushui.total.yc = model_data['yc']
-            self.rushui.total.zc = model_data['zc']
-            self.rushui.total.Jxx = model_data['Jxx']
-            self.rushui.total.Jyy = model_data['Jyy']
-            self.rushui.total.Jzz = model_data['Jzz']
-            self.rushui.total.T = model_data['T']
+            # 几何与质量参数 (赋值到self.total命名空间)
+            self.rushui.total.L = model_data['L']  # 长度 (m)
+            self.rushui.total.S = model_data['S']  # 横截面积 (m²)
+            self.rushui.total.V = model_data['V']  # 体积 (m³)
+            self.rushui.total.m = model_data['m']  # 质量 (kg)
+            self.rushui.total.xc = model_data['xc']  # 重心 x 坐标 (m)
+            self.rushui.total.yc = model_data['yc']  # 重心 y 坐标 (m)
+            self.rushui.total.zc = model_data['zc']  # 重心 z 坐标 (m)
+            self.rushui.total.Jxx = model_data['Jxx']  # 转动惯量 Jxx (kg·m²)
+            self.rushui.total.Jyy = model_data['Jyy']  # 转动惯量 Jyy (kg·m²)
+            self.rushui.total.Jzz = model_data['Jzz']  # 转动惯量 Jzz (kg·m²)
+            self.rushui.total.T = model_data['T']  # 推力 (N)
 
-            # 空化器参数
-            self.rushui.lk = model_data['lk']  # 空化器距重心
-            self.rushui.rk = model_data['rk']  # 空化器半径
+            # 空泡仿真参数 (直接赋值到实例)
+            self.rushui.lk = model_data['lk']  # 空化器距重心距离 (m)
+            self.rushui.rk = model_data['rk']  # 空化器半径 (m)
             self.rushui.sgm = model_data['sgm']  # 全局空化数
+            self.rushui.dyc = model_data['dyc']  # 空泡轴线偏离 (m)
+
+            # 水下物理几何参数 (直接赋值到实例)
+            self.rushui.SGM = model_data['SGM']  # 水下空化数
+            self.rushui.LW = model_data['LW']  # 水平鳍位置 (m)
+            self.rushui.LH = model_data['LH']  # 垂直鳍位置 (m)
+
+            # 舵机与角度限制参数 (需角度转弧度)
+            RTD = self.rushui.RTD  # 获取弧度-角度转换因子 (180/π)
+
+            # 角度类参数 (° -> rad)
+            self.rushui.dkmax = model_data['dkmax'] / RTD  # 舵角上限 (rad)
+            self.rushui.dkmin = model_data['dkmin'] / RTD  # 舵角下限 (rad)
+            self.rushui.dk0 = model_data['dk0'] / RTD  # 舵角零位 (rad)
+            self.rushui.ddmax = model_data['ddmax'] / RTD  # 最大深度变化率 (rad/s²)
+            self.rushui.dvmax = model_data['dvmax'] / RTD  # 最大速度变化率 (rad/s²)
+            self.rushui.dthetamax = model_data['dthetamax'] / RTD  # 最大俯仰角速率 (rad/s)
+            self.rushui.wzmax = model_data['wzmax'] / RTD  # 最大偏航角速率 (rad/s)
+            self.rushui.wxmax = model_data['wxmax'] / RTD  # 最大滚转角速率 (rad/s)
+            self.rushui.dphimax = model_data['dphimax'] / RTD  # 最大滚转角加速度 (rad/s²)
+
+            # 位移类参数 (直接赋值，单位m)
+            self.rushui.deltaymax = model_data['deltaymax']  # 横向位移限制 (m)
+            self.rushui.deltavymax = model_data['deltavymax']  # 垂向位移限制 (m)
 
             # 入水初始条件
             self.rushui.t0 = t0
@@ -184,21 +273,39 @@ class SimulationControlWidget(QWidget):
             self.rushui.dt = dt
             self.rushui.v0 = v0
 
-            # 角度转换为弧度
-            self.rushui.theta0 = theta0_deg / self.rushui.rtd
-            self.rushui.psi0 = psi0_deg / self.rushui.rtd
-            self.rushui.phi0 = phi0_deg / self.rushui.rtd
-            self.rushui.alpha0 = alpha0_deg / self.rushui.rtd
-            self.rushui.wx0 = wx0_deg / self.rushui.rtd
-            self.rushui.wy0 = wy0_deg / self.rushui.rtd
-            self.rushui.wz0 = wz0_deg / self.rushui.rtd
+            # ——————————入水参数—————————— (角度需转换为弧度)
+            self.rushui.t0 = t0  # 起始时间 (s)
+            self.rushui.tend = tend  # 终止时间 (s)
+            self.rushui.dt = dt  # 仿真步长 (s)
+            self.rushui.v0 = v0  # 入水速度 (m/s)
+            self.rushui.theta0 = theta0 / RTD  # 弹道角 (rad)
+            self.rushui.psi0 = psi0 / RTD  # 偏航角 (rad)
+            self.rushui.phi0 = phi0 / RTD  # 横滚角 (rad)
+            self.rushui.alpha0 = alpha0 / RTD  # 攻角 (rad)
+            self.rushui.wx0 = wx0 / RTD  # 横滚角速度 (rad/s)
+            self.rushui.wy0 = wy0 / RTD  # 偏航角速度 (rad/s)
+            self.rushui.wz0 = wz0 / RTD  # 俯仰角速度 (rad/s)
 
-            # 控制参数
-            self.rushui.k_wz = k_wz
-            self.rushui.k_theta = k_theta
+            # ——————————基础控制参数—————————— (无量纲增益，直接赋值)
+            # 注意：这些参数在Dan类中有独立用途
+            self.rushui.k_wz = k_wz  # 偏航角速度增益
+            self.rushui.k_theta = k_theta  # 俯仰角增益
+
+            # ——————————深度控制参数—————————— (无量纲增益，直接赋值)
+            # 与基础控制参数不同，这些用于水下控制律
+            self.rushui.kps = k_ps  # 姿态同步增益 (对应kth)
+            self.rushui.kph = k_ph  # 舵机响应增益
+            self.rushui.kwx = k_wx  # 滚转角速度增益
+            self.rushui.kwy = k_wy  # 垂向控制增益
+            self.rushui.kwz = kwz  # 偏航角速度增益 (深度控制)
+            self.rushui.kth = ktheta  # 俯仰角增益 (深度控制)
+
+            # ——————————特殊关联参数——————————
+            # Dan类中kps默认等于kth，但UI提供独立控制，此处显式同步
+            self.rushui.kps = self.rushui.kth  # 确保姿态同步增益与俯仰增益一致
+            self.rushui.tend_under = tend_under
 
             self.rushui._recalculate_update_input()
-
 
             # 如果已有线程，先停止
             if self.calc_thread and self.calc_thread.isRunning():
