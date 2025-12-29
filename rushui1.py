@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from types import SimpleNamespace
 import matplotlib.pyplot as plt
@@ -15,8 +17,20 @@ plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
 
 class  Entry:
     def __init__(self):
+        self.plot_pao_down_y = None
+        self.plot_pao_down_x = None
+        self.plot_pao_up_y = None
+        self.plot_pao_up_x = None
+        self.plot_zhou_y = None
+        self.plot_zhou_x = None
+        self.plot_dan_y = None
+        self.plot_dan_x = None
+        self.update_callback = None
+        self.progress_callback = None
+        self.min_callback_interval = 0.05
         # ——————————基本常量——————————
         self.rtd = 180 / np.pi
+        self.RTD = self.rtd
         self.g = 9.8
         self.rho = 1000
 
@@ -25,7 +39,7 @@ class  Entry:
         self.total = SimpleNamespace()
         self.total.L = 3.195   # 长度
         self.total.S = 0.0356  # 横截面积
-        self.total.D = np.sqrt(4 / np.pi * self.total.S)  # 直径
+
         self.total.V = 0     # 体积
         self.total.m = 114.7   # 重量
         self.total.xc = -0.0188    # 重心坐标，体坐标系原点位于重心所在横截面中心
@@ -54,7 +68,7 @@ class  Entry:
         self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
         self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
         self.zb = np.zeros((1, len(self.yb))).flatten()
-        self.xb = self.lk - self.xb  # 转到体坐标系
+
 
         # ——————————入水参数——————————
         self.t0 = 0      # 仿真起始时间
@@ -76,24 +90,7 @@ class  Entry:
         self.Dn = 2 * self.rk  # 空化器直径
         self.cx0 = 0.82  # 空化器零空化数阻力系数
 
-        # ——————————空泡数组初始化——————————
-        self.nc = 200  # 空泡外形数组长度
-        self.posCav = np.zeros((self.nc, 5))  # 空泡外形数组初始化
-        self.cav0 = np.zeros((self.nc, 3))    # 空泡轴线数组初始化
-        self.ic = 1  # 空泡记录在数组中的最后一个数据位置(索引)
 
-        self.x0 = -self.lk * np.cos(self.theta0)
-        self.y0 = -self.lk * np.sin(self.theta0)
-
-        self.posCav[self.ic - 1, 0] = self.x0 + self.lk * np.cos(self.theta0)
-        self.posCav[self.ic - 1, 1] = self.y0 + self.lk * np.sin(self.theta0)
-        self.posCav[self.ic - 1, 2] = self.theta0
-
-        self.vx0 = self.v0 * np.cos(self.alpha0)
-
-        self.posCav[self.ic - 1, 3] = self.k1 * self.A / 4 * self.Dn * np.cos(self.dk) * self.vx0 * np.sqrt(self.cx0 * (1 + self.sgm))  # dS0
-        self.posCav[self.ic - 1, 4] = np.pi * self.Dn ** 2 / 4
-        self.isOpen = 1
 
         # ——————————force_rec.txt相关参数存储——————————
         self.force_data = []
@@ -101,6 +98,27 @@ class  Entry:
         # ——————————控制参数——————————
         self.k_wz = 0.06
         self.k_theta = 0.04
+
+        self._recalculate_update_input()
+
+    def _recalculate_update_input(self):
+        # 需要二次更新的参数
+        self.total.D = np.sqrt(4 / np.pi * self.total.S)  # 直径
+        self.xb = self.lk - self.xb  # 转到体坐标系
+        # ——————————空泡数组初始化——————————
+        self.nc = 200  # 空泡外形数组长度
+        self.posCav = np.zeros((self.nc, 5))  # 空泡外形数组初始化
+        self.cav0 = np.zeros((self.nc, 3))    # 空泡轴线数组初始化
+        self.ic = 1  # 空泡记录在数组中的最后一个数据位置(索引)
+        self.x0 = -self.lk * np.cos(self.theta0)
+        self.y0 = -self.lk * np.sin(self.theta0)
+        self.posCav[self.ic - 1, 0] = self.x0 + self.lk * np.cos(self.theta0)
+        self.posCav[self.ic - 1, 1] = self.y0 + self.lk * np.sin(self.theta0)
+        self.posCav[self.ic - 1, 2] = self.theta0
+        self.vx0 = self.v0 * np.cos(self.alpha0)
+        self.posCav[self.ic - 1, 3] = self.k1 * self.A / 4 * self.Dn * np.cos(self.dk) * self.vx0 * np.sqrt(self.cx0 * (1 + self.sgm))  # dS0
+        self.posCav[self.ic - 1, 4] = np.pi * self.Dn ** 2 / 4
+        self.isOpen = 1
 
 
     # 设置流体动力系数
@@ -445,9 +463,10 @@ class  Entry:
         dQC = 0
         QCp = 0
         Apc = np.array([pc])
-
+        current_time = time.time()
+        last_callback_time = time.time()
         while t < self.tend:
-            print(t)
+            # print(t)
 
             # 根据当前状态求导函数
             vx = y[0, 0]
@@ -1015,8 +1034,55 @@ class  Entry:
             # if t > 0.0112:
             #     sgfakjhfs = 0
 
-
+            dataiii = {
+                'plot_dan_x': posb[0, :],
+                'plot_dan_y': posb[1, :],
+                'plot_zhou_x': self.cav0[:, 0] - x0,
+                'plot_zhou_y': self.cav0[:, 1] - y0,
+                'plot_pao_up_x': cav1[:, 0] - x0,
+                'plot_pao_up_y': cav1[:, 1] - y0,
+                'plot_pao_down_x': cav2[:, 0] - x0,
+                'plot_pao_down_y': cav2[:, 1] - y0
+            }
             # 绘制Apc关于t的曲线//估计是压力曲线
+            current_time = time.time()
+            if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:
+                last_callback_time = current_time
+                # ========== 进度回调 ==========
+                if self.progress_callback:
+                    self.progress_callback(int(t / self.dt), int(self.tend / self.dt))
+
+                # ========== 实时数据准备 ==========
+                if self.update_callback:
+                    # 准备实时数据
+
+                    data = {
+                        'motions': {
+                            't': t,
+                            'alphat': alphat,
+                            'y': y
+                        },
+                        'points': {
+                            'plot_dan_x': posb[0, :],
+                            'plot_dan_y': posb[1, :],
+                            'plot_zhou_x': self.cav0[:, 0],
+                            'plot_zhou_y': self.cav0[:, 1],
+                            'plot_pao_up_x': cav1[:, 0],
+                            'plot_pao_up_y': cav1[:, 1],
+                            'plot_pao_down_x': cav2[:, 0],
+                            'plot_pao_down_y': cav2[:, 0]
+                        },
+                        'forces': {
+                            'AFM': AFM
+                        },
+                        'datas': {
+                            'ts': T,
+                            'ys': Y
+                        }
+                    }
+                    # 调用回调函数
+                    self.update_callback(data)
+
 
         t = T
         y = Y.T
@@ -1132,6 +1198,29 @@ class  Entry:
 
         print("画图结束...")
 
+
+    def get_results(self):
+        # 获取弹道参数y和时间t
+        y, t = self._equation_solving_()
+
+        # print("开始写入self.force_data...")
+        # pd.DataFrame(self.force_data).to_excel('self_force_data.xlsx', index=False, header=False)
+        # print("self.force_data写完咯...")
+
+        # 弹道参数预处理
+        y[:, 3:9] = y[:, 3:9] * self.rtd
+        # pd.DataFrame(y).to_excel('entry_y.xlsx', index=False, header=False)
+        vx = y[:, 0]
+        vy = y[:, 1]
+        vz = y[:, 2]
+        v = np.sqrt(vx ** 2 + vy ** 2 + vz ** 2)
+        alpha = -np.arctan(vy / vx) * self.rtd
+        alpha = alpha[:, np.newaxis]
+        beta = np.arctan(vz / np.sqrt(vx ** 2 + vy ** 2)) * self.rtd
+        self.y = y
+        self.t = t
+        return t, y
+
 if __name__ == "__main__":
     entry = Entry()
 
@@ -1139,7 +1228,7 @@ if __name__ == "__main__":
     # entry._equation_solving_()
 
     # 画图
-    # entry._plot_results()
+    entry.get_results()
 
 
 

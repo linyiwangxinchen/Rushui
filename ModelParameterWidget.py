@@ -28,25 +28,40 @@ class ModelParameterWidget(QWidget):
         main_layout.setSpacing(5)
 
         # 创建分组框
-        geometry_group = QGroupBox("初始位置&姿态条件")
-        mass_group = QGroupBox("初始速度&角速度条件")
-        cavitator_group = QGroupBox("空化器参数")
-        push_group = QGroupBox("推力参数")
-        pid_group = QGroupBox("控制参数")
-        result_group = QGroupBox("计算结果")
+        geometry_group = QGroupBox("总体参数")
+        mass_group = QGroupBox("空泡仿真参数")
+
 
         # 初始位置&姿态条件
         geo_layout = QGridLayout()
         geo_layout.setContentsMargins(5, 5, 5, 5)
         geo_layout.setSpacing(5)
 
-        self.add_param_input(geo_layout, "初始x0:", 0, -1000, 1000.0, 27.82448, 0.1, "x0_input", range_check=False)
-        self.add_param_input(geo_layout, "初始y0:", 1, -1000, 1000, -3.45, 0.1, "y0_input", range_check=False)
-        self.add_param_input(geo_layout, "初始z0:", 2, -1000, 1000, 0.05623, 0.1, "z0_input", range_check=False)
-        self.add_param_input(geo_layout, "初始theta(deg):", 3, -1000, 1000, 0, 0.1, "theta_input", range_check=False)
-        self.add_param_input(geo_layout, "初始psi(deg):", 4, -1000, 1000, 0, 0.1, "psi_input", range_check=False)
-        self.add_param_input(geo_layout, "初始phi(deg):", 5, -1000, 1000, 6.84184, 0.1, "phi_input", range_check=False)
+        # 从第6行开始添加（前5行已被初始位置/角度参数占用）
+        start_row = 0
 
+        self.add_param_input(geo_layout, "长度 L (m):", start_row + 0, 0.1, 10.0, 3.195, 0.01, "L_input",
+                             range_check=True)
+        self.add_param_input(geo_layout, "横截面积 S (m²):", start_row + 1, 0.001, 1.0, 0.0356, 0.0001, "S_input",
+                             range_check=True)
+        self.add_param_input(geo_layout, "体积 V (m³):", start_row + 2, 0.0, 10.0, 0.0, 0.001, "V_input",
+                             range_check=True)
+        self.add_param_input(geo_layout, "质量 m (kg):", start_row + 3, 1.0, 1000.0, 114.7, 0.1, "m_input",
+                             range_check=True)
+        self.add_param_input(geo_layout, "重心 xc (m):", start_row + 4, -5.0, 5.0, -0.0188, 0.0001, "xc_input",
+                             range_check=True)
+        self.add_param_input(geo_layout, "重心 yc (m):", start_row + 5, -5.0, 5.0, -0.0017, 0.0001, "yc_input",
+                             range_check=True)
+        self.add_param_input(geo_layout, "重心 zc (m):", start_row + 6, -5.0, 5.0, 0.0008, 0.0001, "zc_input",
+                             range_check=True)
+        self.add_param_input(geo_layout, "转动惯量 Jxx (kg·m²):", start_row + 7, 0.01, 1000.0, 0.63140684, 0.01,
+                             "Jxx_input", range_check=True)
+        self.add_param_input(geo_layout, "转动惯量 Jyy (kg·m²):", start_row + 8, 0.01, 1000.0, 57.06970864, 0.01,
+                             "Jyy_input", range_check=True)
+        self.add_param_input(geo_layout, "转动惯量 Jzz (kg·m²):", start_row + 9, 0.01, 1000.0, 57.07143674, 0.01,
+                             "Jzz_input", range_check=True)
+        self.add_param_input(geo_layout, "推力 T (N):", start_row + 10, 0.0, 10000.0, 0.0, 0.1, "T_input",
+                             range_check=True)
         geometry_group.setLayout(geo_layout)
 
         # 初始速度&角速度条件
@@ -54,59 +69,14 @@ class ModelParameterWidget(QWidget):
         mass_layout.setContentsMargins(5, 5, 5, 5)
         mass_layout.setSpacing(5)
 
-        self.add_param_input(mass_layout, "初始vx:", 0, -1000, 1000, 100.96949, 0.1, "vx_input", range_check=False)
-        self.add_param_input(mass_layout, "初始vy:", 1, -1000, 1000, -0.01323, 1.0, "vy_input", range_check=False)
-        self.add_param_input(mass_layout, "初始vz:", 2, -1000, 1000, -0.95246, 1.0, "vz_input", range_check=False)
-        self.add_param_input(mass_layout, "初始wx(deg):", 3, -1000, 1000, 242.955, 1.0, "wx_input", range_check=False)
-        self.add_param_input(mass_layout, "初始wy(deg):", 4, -1000, 1000, -42.435, 1.0, "wy_input", range_check=False)
-        self.add_param_input(mass_layout, "初始wz(deg):", 5, -1000, 1000, 56.515, 1.0, "wz_input", range_check=False)
-
+        self.add_param_input(mass_layout, "空化器距重心 lk (m):", 0, -1000, 1000, 1.714, 0.1, "lk_input",
+                             range_check=False)
+        self.add_param_input(mass_layout, "空化器半径 rk (m):", 1, -1000, 1000, 0.021, 0.001, "rk_input",
+                             range_check=False)
+        self.add_param_input(mass_layout, "全局空化数 sgm:", 2, -1000, 1000, 0, 0.1, "sgm_input", range_check=False)
+        self.add_param_input(mass_layout, "空泡轴线偏离 dyc (m):", 3, -1000, 1000, 0, 0.001, "dyc_input",
+                             range_check=False)
         mass_group.setLayout(mass_layout)
-
-        # 空化器参数布局
-        cavitator_layout = QGridLayout()
-        cavitator_layout.setContentsMargins(5, 5, 5, 5)
-        cavitator_layout.setSpacing(5)
-
-        # self.add_param_input(cavitator_layout, "初始vx:", 0, -1000, 1000, 0, 1.0, "vx_input", range_check=False)
-        # self.add_param_input(cavitator_layout, "初始vy:", 1, -1000, 1000, 0, 1.0, "vy_input", range_check=False)
-        # self.add_param_input(cavitator_layout, "初始vz:", 2, -1000, 1000, 0, 1.0, "vz_input", range_check=False)
-        # self.add_param_input(cavitator_layout, "初始wx:", 3, -1000, 1000, 0, 1.0, "wx_input", range_check=False)
-        # self.add_param_input(cavitator_layout, "初始wy:", 4, -1000, 1000, 0, 1.0, "wy_input", range_check=False)
-        # self.add_param_input(cavitator_layout, "初始wz:", 5, -1000, 1000, 0, 1.0, "wz_input", range_check=False)
-        self.add_param_input(cavitator_layout, "空化器DK (deg):", 0, -1000, 1000, -2.9377, 1.0, "dk_input", range_check=False)
-        self.add_param_input(cavitator_layout, "空化器DS (deg):", 1, -1000, 1000, 0.94986, 1.0, "ds_input", range_check=False)
-        self.add_param_input(cavitator_layout, "空化器DX (deg):", 2, -1000, 1000, 0.94986, 1.0, "dxx_input", range_check=False)
-        self.add_param_input(cavitator_layout, "空化器dkf(deg):", 3, -1000, 1000, -2.50238, 1.0, "dkf_input", range_check=False)
-        self.add_param_input(cavitator_layout, "空化器dsf(deg):", 4, -1000, 1000, 0.38547, 1.0, "dsf_input", range_check=False)
-        self.add_param_input(cavitator_layout, "空化器dxf(deg):", 5, -1000, 1000, 0.30266, 1.0, "dxf_input", range_check=False)
-
-        cavitator_group.setLayout(cavitator_layout)
-
-
-        # 推力设置部分
-        push_layout = QGridLayout()
-        push_layout.setContentsMargins(5, 5, 5, 5)
-        push_layout.setSpacing(5)
-
-        self.add_param_input(push_layout, "初始T1:", 0, -100000, 100000, 25080.6, 1.0, "t1_input", range_check=False)
-        self.add_param_input(push_layout, "初始T2:", 1, -100000, 100000, 6971.4, 1.0, "t2_input", range_check=False)
-        push_group.setLayout(push_layout)
-
-
-        # 控制参数部分
-        pid_layout = QGridLayout()
-        pid_layout.setContentsMargins(5, 5, 5, 5)
-        pid_layout.setSpacing(5)
-
-        self.add_param_input(pid_layout, "kth:", 0, -1000, 1000, 4, 0.001, "kth_input", range_check=False)
-        self.add_param_input(pid_layout, "kps:", 1, -1000, 1000, 4, 0.001, "kps_input", range_check=False)
-        self.add_param_input(pid_layout, "kph:", 2, -1000, 1000, 0.08, 0.001, "kph_input", range_check=False)
-        self.add_param_input(pid_layout, "kwx:", 3, -1000, 1000, 0.0016562, 0.001, "kwx_input", range_check=False)
-        self.add_param_input(pid_layout, "kwz:", 4, -1000, 1000, 0.312, 0.001, "kwz_input", range_check=False)
-        self.add_param_input(pid_layout, "kwy:", 5, -1000, 1000, 0.312, 0.001, "kwy_input", range_check=False)
-
-        pid_group.setLayout(pid_layout)
 
         # 按钮区域
         button_layout = QHBoxLayout()
@@ -118,13 +88,9 @@ class ModelParameterWidget(QWidget):
         button_layout.addWidget(self.save_button)
         button_layout.addWidget(self.load_button)
 
-
         # 组合所有布局
         main_layout.addWidget(geometry_group)
         main_layout.addWidget(mass_group)
-        main_layout.addWidget(cavitator_group)
-        main_layout.addWidget(push_group)
-        main_layout.addWidget(pid_group)
         main_layout.addLayout(button_layout)
         main_layout.addStretch()
 
@@ -203,81 +169,52 @@ class ModelParameterWidget(QWidget):
         # 向model发送数据
         data = {
             # 初始位置&姿态条件
-            'x0': self.x0_input.value(),
-            'y0': self.y0_input.value(),
-            'z0': self.z0_input.value(),
-            'theta': self.theta_input.value(),
-            'psi': self.psi_input.value(),
-            'phi': self.phi_input.value(),
 
-            # 初始速度&角速度条件
-            'vx': self.vx_input.value(),
-            'vy': self.vy_input.value(),
-            'vz': self.vz_input.value(),
-            'wx': self.wx_input.value(),
-            'wy': self.wy_input.value(),
-            'wz': self.wz_input.value(),
+            # 几何与质量参数 (新增分组)
+            'L': self.L_input.value(),  # 长度
+            'S': self.S_input.value(),  # 横截面积
+            'V': self.V_input.value(),  # 体积
+            'm': self.m_input.value(),  # 质量
+            'xc': self.xc_input.value(),  # 重心x坐标
+            'yc': self.yc_input.value(),  # 重心y坐标
+            'zc': self.zc_input.value(),  # 重心z坐标
+            'Jxx': self.Jxx_input.value(),  # 转动惯量
+            'Jyy': self.Jyy_input.value(),  # 转动惯量
+            'Jzz': self.Jzz_input.value(),  # 转动惯量
+            'T': self.T_input.value(),  # 推力
 
             # 空化器参数
-            'dk': self.dk_input.value(),
-            'ds': self.ds_input.value(),
-            'dxx': self.dxx_input.value(),  # 注意：对应"空化器DX"参数
-            'dkf': self.dkf_input.value(),
-            'dsf': self.dsf_input.value(),
-            'dxf': self.dxf_input.value(),
-
-            # 推力设置
-            't1': self.t1_input.value(),
-            't2': self.t2_input.value(),
-
-            # 控制参数
-            'kth': self.kth_input.value(),
-            'kps': self.kps_input.value(),
-            'kph': self.kph_input.value(),
-            'kwx': self.kwx_input.value(),
-            'kwz': self.kwz_input.value(),
-            'kwy': self.kwy_input.value()
+            'lk': self.lk_input.value(),  # 空化器距重心 (m)
+            'rk': self.rk_input.value(),  # 空化器半径 (m)
+            'sgm': self.sgm_input.value(),  # 全局空化数
+            'dyc': self.dyc_input.value(),  # 空泡轴线偏离 (m)
         }
+
         self.data_output_signal_m.emit(data)
 
     def to_model1(self, Checki):
         # 向model发送数据
         data = {
             # 初始位置&姿态条件
-            'x0': self.x0_input.value(),
-            'y0': self.y0_input.value(),
-            'z0': self.z0_input.value(),
-            'theta': self.theta_input.value(),
-            'psi': self.psi_input.value(),
-            'phi': self.phi_input.value(),
 
-            # 初始速度&角速度条件
-            'vx': self.vx_input.value(),
-            'vy': self.vy_input.value(),
-            'vz': self.vz_input.value(),
-            'wx': self.wx_input.value(),
-            'wy': self.wy_input.value(),
-            'wz': self.wz_input.value(),
+            # 几何与质量参数 (新增分组)
+            'L': self.L_input.value(),  # 长度
+            'S': self.S_input.value(),  # 横截面积
+            'V': self.V_input.value(),  # 体积
+            'm': self.m_input.value(),  # 质量
+            'xc': self.xc_input.value(),  # 重心x坐标
+            'yc': self.yc_input.value(),  # 重心y坐标
+            'zc': self.zc_input.value(),  # 重心z坐标
+            'Jxx': self.Jxx_input.value(),  # 转动惯量
+            'Jyy': self.Jyy_input.value(),  # 转动惯量
+            'Jzz': self.Jzz_input.value(),  # 转动惯量
+            'T': self.T_input.value(),  # 推力
 
             # 空化器参数
-            'dk': self.dk_input.value(),
-            'ds': self.ds_input.value(),
-            'dxx': self.dxx_input.value(),  # 注意：对应"空化器DX"参数
-            'dkf': self.dkf_input.value(),
-            'dsf': self.dsf_input.value(),
-            'dxf': self.dxf_input.value(),
-
-            # 推力设置
-            't1': self.t1_input.value(),
-            't2': self.t2_input.value(),
-
-            # 控制参数
-            'kth': self.kth_input.value(),
-            'kps': self.kps_input.value(),
-            'kph': self.kph_input.value(),
-            'kwx': self.kwx_input.value(),
-            'kwz': self.kwz_input.value(),
-            'kwy': self.kwy_input.value()
+            'lk': self.lk_input.value(),  # 空化器距重心 (m)
+            'rk': self.rk_input.value(),  # 空化器半径 (m)
+            'sgm': self.sgm_input.value(),  # 全局空化数
+            'dyc': self.dyc_input.value(),  # 空泡轴线偏离 (m)
         }
         self.data_output_signal_m1.emit(data)
 
@@ -461,32 +398,24 @@ class ModelParameterWidget(QWidget):
 
             if filename:
                 params = {
-                    'x0': self.x0_input.value(),
-                    'y0': self.y0_input.value(),
-                    'z0': self.z0_input.value(),
-                    'theta': self.theta_input.value(),
-                    'psi': self.psi_input.value(),
-                    'phi': self.phi_input.value(),
-                    'vx': self.vx_input.value(),
-                    'vy': self.vy_input.value(),
-                    'vz': self.vz_input.value(),
-                    'wx': self.wx_input.value(),
-                    'wy': self.wy_input.value(),
-                    'wz': self.wz_input.value(),
-                    'dk': self.dk_input.value(),
-                    'ds': self.ds_input.value(),
-                    'dxx': self.dxx_input.value(),
-                    'dkf': self.dkf_input.value(),
-                    'dsf': self.dsf_input.value(),
-                    'dxf': self.dxf_input.value(),
-                    't1': self.t1_input.value(),
-                    't2': self.t2_input.value(),
-                    'kth': self.kth_input.value(),
-                    'kps': self.kps_input.value(),
-                    'kph': self.kph_input.value(),
-                    'kwx': self.kwx_input.value(),
-                    'kwz': self.kwz_input.value(),
-                    'kwy': self.kwy_input.value()
+                    # 几何与质量参数 (新增分组)
+                    'L': self.L_input.value(),  # 长度
+                    'S': self.S_input.value(),  # 横截面积
+                    'V': self.V_input.value(),  # 体积
+                    'm': self.m_input.value(),  # 质量
+                    'xc': self.xc_input.value(),  # 重心x坐标
+                    'yc': self.yc_input.value(),  # 重心y坐标
+                    'zc': self.zc_input.value(),  # 重心z坐标
+                    'Jxx': self.Jxx_input.value(),  # 转动惯量
+                    'Jyy': self.Jyy_input.value(),  # 转动惯量
+                    'Jzz': self.Jzz_input.value(),  # 转动惯量
+                    'T': self.T_input.value(),  # 推力
+
+                    # 空化器参数
+                    'lk': self.lk_input.value(),  # 空化器距重心 (m)
+                    'rk': self.rk_input.value(),  # 空化器半径 (m)
+                    'sgm': self.sgm_input.value(),  # 全局空化数
+                    'dyc': self.dyc_input.value(),  # 空泡轴线偏离 (m)
                 }
 
                 # 保存为JSON
@@ -510,33 +439,26 @@ class ModelParameterWidget(QWidget):
                     params = json.load(f)
 
                 # 更新UI
-                
-                self.x0_input.setValue(params.get('x0', 27.82448))
-                self.y0_input.setValue(params.get('y0', -3.45))
-                self.z0_input.setValue(params.get('z0', 0.05623))
-                self.theta_input.setValue(params.get('theta', 0))
-                self.psi_input.setValue(params.get('psi', 0))
-                self.phi_input.setValue(params.get('phi', 6.84184))
-                self.vx_input.setValue(params.get('vx', 100.96949))
-                self.vy_input.setValue(params.get('vy', -0.01323))
-                self.vz_input.setValue(params.get('vz', -0.95246))
-                self.wx_input.setValue(params.get('wx', 242.955))
-                self.wy_input.setValue(params.get('wy', -42.435))
-                self.wz_input.setValue(params.get('wz', 56.515))
-                self.dk_input.setValue(params.get('dk', -2.9377))
-                self.ds_input.setValue(params.get('ds', 0.94986))
-                self.dxx_input.setValue(params.get('dxx', 0.94986))
-                self.dkf_input.setValue(params.get('dkf', -2.50238))
-                self.dsf_input.setValue(params.get('dsf', 0.38547))
-                self.dxf_input.setValue(params.get('dxf', 0.30266))
-                self.t1_input.setValue(params.get('t1', 25080.6))
-                self.t2_input.setValue(params.get('t2', 6971.4))
-                self.kth_input.setValue(params.get('kth', 4))
-                self.kps_input.setValue(params.get('kps', 4))
-                self.kph_input.setValue(params.get('kph', 0.08))
-                self.kwx_input.setValue(params.get('kwx', 0.0016562))
-                self.kwz_input.setValue(params.get('kwz', 0.312))
-                self.kwy_input.setValue(params.get('kwy', 0.312))
+                # 更新UI - 几何与质量参数
+                self.L_input.setValue(params.get('L', 3.195))  # 长度
+                self.S_input.setValue(params.get('S', 0.0356))  # 横截面积
+                self.V_input.setValue(params.get('V', 0.0))  # 体积
+                self.m_input.setValue(params.get('m', 114.7))  # 质量
+                self.xc_input.setValue(params.get('xc', -0.0188))  # 重心x坐标
+                self.yc_input.setValue(params.get('yc', -0.0017))  # 重心y坐标
+                self.zc_input.setValue(params.get('zc', 0.0008))  # 重心z坐标
+                self.Jxx_input.setValue(params.get('Jxx', 0.63140684))  # 转动惯量
+                self.Jyy_input.setValue(params.get('Jyy', 57.06970864))  # 转动惯量
+                self.Jzz_input.setValue(params.get('Jzz', 57.07143674))  # 转动惯量
+                self.T_input.setValue(params.get('T', 0.0))  # 推力
+
+                # 更新UI - 空化器参数
+                # 新增的几何/流体参数
+                self.lk_input.setValue(params.get('lk', 1.714))  # 空化器距重心
+                self.rk_input.setValue(params.get('rk', 0.021))  # 空化器半径
+                self.sgm_input.setValue(params.get('sgm', 0))  # 全局空化数
+                self.dyc_input.setValue(params.get('dyc', 0))  # 空泡轴线偏离
+
 
                 QMessageBox.information(self, "加载成功", f"参数已从 {filename} 加载")
 

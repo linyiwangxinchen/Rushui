@@ -24,54 +24,42 @@ class SimulationControlWidget(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(5, 5, 5, 5)
         main_layout.setSpacing(5)
-        # 弹体参数
-        dan_group = QGroupBox("弹体参数")
-        dan_layout = QGridLayout()
-        dan_layout.setContentsMargins(5, 5, 5, 5)
-        dan_layout.setSpacing(5)
 
-        self.add_labeled_input(dan_layout, "弹体L:", 0, 0, -1000, 1000, 3.195, 0.0001, "L_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体S:", 1, 0, -1000, 1000, 0.0356, 0.0001, "S_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体V:", 2, 0, -1000, 1000, 0, 0.0001, "V_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体m:", 3, 0, -1000, 1000, 114.7, 0.0001, "m_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体xc:", 4, 0, -1000, 1000, -0.0188, 0.0001, "xc_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体yc:", 5, 0, -1000, 1000, -0.0017, 0.0001, "yc_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体zc:", 6, 0, -1000, 1000, 0.0008, 0.0001, "zc_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体Jxx:", 7, 0, -1000, 1000, 0.63140684, 0.0001, "jxx_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体Jyy:", 8, 0, -1000, 1000, 57.06970864, 0.0001, "jyy_input", range_check=False)
-        self.add_labeled_input(dan_layout, "弹体Jzz:", 9, 0, -1000, 1000, 57.07143674, 0.0001, "jzz_input", range_check=False)
-        dan_group.setLayout(dan_layout)
+        # ——————————入水参数——————————
+        entry_group = QGroupBox("入水参数")
+        entry_layout = QGridLayout()
+        self.add_labeled_input(entry_layout, "起始时间 t0 (s):", 0, 0, -1000, 1000, 0, 0.001, "t0_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "终止时间 tend (s):", 1, 0, -1000, 1000, 1, 0.001, "tend_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "仿真步长 dt (s):", 2, 0, -1000, 1000, 0.0002, 0.00001, "dt_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "入水速度 v0 (m/s):", 3, 0, -1000, 1000, 300, 0.1, "v0_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "弹道角 theta0 (deg):", 4, 0, -1000, 1000, -10, 0.01, "theta0_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "偏航角 psi0 (deg):", 5, 0, -1000, 1000, 0, 0.01, "psi0_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "横滚角 phi0 (deg):", 6, 0, -1000, 1000, 0, 0.01, "phi0_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "攻角 alpha0 (deg):", 7, 0, -1000, 1000, 0.03138, 0.0001, "alpha0_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "横滚角速度 wx0 (deg/s):", 8, 0, -1000, 1000, 0, 0.01, "wx0_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "偏航角速度 wy0 (deg/s):", 9, 0, -1000, 1000, 0, 0.01, "wy0_input",
+                               range_check=False)
+        self.add_labeled_input(entry_layout, "俯仰角速度 wz0 (deg/s):", 10, 0, -1000, 1000, 6.63, 0.01, "wz0_input",
+                               range_check=False)
+        entry_group.setLayout(entry_layout)
 
-        # 初始条件组
-        init_group = QGroupBox("积分参数")
-        init_layout = QGridLayout()
-        init_layout.setContentsMargins(5, 5, 5, 5)
-        init_layout.setSpacing(5)
-
-        self.add_labeled_input(init_layout, "积分步长dt:", 0, 0, -1000, 1000, 0.001, 0.0001, "dt_input", range_check=False)
-        self.add_labeled_input(init_layout, "积分起始时间t0:", 1, 0, -1000, 1000, 0.539, 0.01, "t0_input", range_check=False)
-        self.add_labeled_input(init_layout, "积分截止时间tend:", 2, 0, -1000, 1000, 3.41, 1.0, "tend_input", range_check=False)
-        # layout, label_text, row, col, min_val, max_val, default_val, step, attr_name, range_check
-        init_group.setLayout(init_layout)
-
-        # 仿真设置组
-        sim_group = QGroupBox("起始条件")
-        sim_layout = QGridLayout()
-        sim_layout.setContentsMargins(5, 5, 5, 5)
-        sim_layout.setSpacing(5)
-
-        self.add_labeled_input(sim_layout, "启控深度YCS (m):", 0, 0, -1000, 1000, -3.45, 1.0, "ycs_input", range_check=False)
-        self.add_labeled_input(sim_layout, "启控俯仰角THETACS (deg):", 1, 0, -1000, 1000, -2.5086, 1.0, "thetacs_input", range_check=False)
-        self.add_labeled_input(sim_layout, "启控垂向速度VYCS (m/s):", 2, 0, -1000, 1000, -0.01323, 1.0, "yvcs_input", range_check=False)
-        self.add_labeled_input(sim_layout, "启控偏航角PSICS (deg):", 3, 0, -1000, 1000, 9.17098, 1.0, "psics_input", range_check=False)
-
-        # 开题
-        # 基于智能预测的高速入水过程
-        # 高速入水过程智能预测方法
-        # 流动控制方法，大量预测，流动外形，开展入水过程流动控制
-        # 流动控制方法实验验证与数据对比分析
-
-        sim_group.setLayout(sim_layout)
+        # ——————————控制参数——————————
+        control_group = QGroupBox("入水参数")
+        control_layout_data = QGridLayout()
+        self.add_labeled_input(control_layout_data, "横滚角速度增益 k_wz:", 0, 0, -1000, 1000, 0.06, 0.0001, "k_wz_input",
+                               range_check=False)
+        self.add_labeled_input(control_layout_data, "俯仰角增益 k_theta:", 1, 0, -1000, 1000, 0.04, 0.0001, "k_theta_input",
+                               range_check=False)
+        control_group.setLayout(control_layout_data)
 
         # 控制按钮
         control_layout = QHBoxLayout()
@@ -98,9 +86,8 @@ class SimulationControlWidget(QWidget):
         self.progress_label.setStyleSheet("font-weight: bold;")
 
         # 组合布局
-        main_layout.addWidget(dan_group)
-        main_layout.addWidget(init_group)
-        main_layout.addWidget(sim_group)
+        main_layout.addWidget(entry_group)
+        main_layout.addWidget(control_group)
         main_layout.addLayout(control_layout)
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.progress_label)
@@ -127,28 +114,24 @@ class SimulationControlWidget(QWidget):
     def to_model(self, Checki):
         # 向model发送数据
         data = {
-                # 弹体参数
-            'L': self.L_input.value(),    # 弹体总长
-            'S': self.S_input.value(),    # 参考面积
-            'V': self.V_input.value(),    # 体积
-            'm': self.m_input.value(),    # 质量
-            'xc': self.xc_input.value(),  # 质心x坐标
-            'yc': self.yc_input.value(),  # 质心y坐标
-            'zc': self.zc_input.value(),  # 质心z坐标
-            'Jxx': self.jxx_input.value(),# x轴转动惯量
-            'Jyy': self.jyy_input.value(),# y轴转动惯量
-            'Jzz': self.jzz_input.value(),# z轴转动惯量
+            # 积分参数 (正确分组)
+            'dt': self.dt_input.value(),
+            't0': self.t0_input.value(),
+            'tend': self.tend_input.value(),
 
-            # 积分参数
-            'dt': self.dt_input.value(),  # 积分步长
-            't0': self.t0_input.value(),  # 起始时间
-            'tend': self.tend_input.value(),  # 截止时间
+            # 入水条件 (新增分组)
+            'v0': self.v0_input.value(),  # 入水速度 (m/s)
+            'theta0': self.theta0_input.value(),  # 弹道角 (deg)
+            'psi0': self.psi0_input.value(),  # 偏航角 (deg)
+            'phi0': self.phi0_input.value(),  # 横滚角 (deg)
+            'alpha0': self.alpha0_input.value(),  # 攻角 (deg)
+            'wx0': self.wx0_input.value(),  # 横滚角速度 (deg/s)
+            'wy0': self.wy0_input.value(),  # 偏航角速度 (deg/s)
+            'wz0': self.wz0_input.value(),  # 俯仰角速度 (deg/s)
 
-            # 起始条件
-            'ycs': self.ycs_input.value(),        # 启控深度 (m)
-            'thetacs': self.thetacs_input.value(),# 启控俯仰角 (deg)
-            'yvcs': self.yvcs_input.value(),      # 启控垂向速度 (m/s)
-            'psics': self.psics_input.value()     # 启控偏航角 (deg)
+            # 控制参数 (正确分组)
+            'k_wz': self.k_wz_input.value(),
+            'k_theta': self.k_theta_input.value()
         }
         self.data_output_signal_f.emit(data)
 
@@ -159,50 +142,63 @@ class SimulationControlWidget(QWidget):
         """启动仿真计算"""
         try:
             # 设置参数
-            self.rushui.L = self.L_input.value()
-            self.rushui.S = self.S_input.value()
-            self.rushui.V = self.V_input.value()
-            self.rushui.m = self.m_input.value()
-            self.rushui.xc = self.xc_input.value()
-            self.rushui.yc = self.yc_input.value()
-            self.rushui.zc = self.zc_input.value()
-            self.rushui.Jxx = self.jxx_input.value()
-            self.rushui.Jyy = self.jyy_input.value()
-            self.rushui.Jzz = self.jzz_input.value()
-            self.rushui.dt = self.dt_input.value()
-            self.rushui.t0 = self.t0_input.value()
-            self.rushui.tend = self.tend_input.value()
-            self.rushui.YCS = self.ycs_input.value()
-            self.rushui.THETACS = self.thetacs_input.value() / self.rushui.RTD
-            self.rushui.VYCS = self.yvcs_input.value()
-            self.rushui.PSICS = self.psics_input.value() / self.rushui.RTD
+            # 1. 从本窗口UI获取入水参数和控制参数
+            dt = self.dt_input.value()
+            t0 = self.t0_input.value()
+            tend = self.tend_input.value()
+            v0 = self.v0_input.value()
+            theta0_deg = self.theta0_input.value()  # 角度单位
+            psi0_deg = self.psi0_input.value()  # 角度单位
+            phi0_deg = self.phi0_input.value()  # 角度单位
+            alpha0_deg = self.alpha0_input.value()  # 角度单位
+            wx0_deg = self.wx0_input.value()  # 角度/秒
+            wy0_deg = self.wy0_input.value()  # 角度/秒
+            wz0_deg = self.wz0_input.value()  # 角度/秒
+            k_wz = self.k_wz_input.value()
+            k_theta = self.k_theta_input.value()
+
             self.ask_model()
-            self.rushui.x0 = self.model_data['x0']
-            self.rushui.y0 = self.model_data['y0']
-            self.rushui.z0 = self.model_data['z0']
-            self.rushui.theta = self.model_data['theta'] / self.rushui.RTD
-            self.rushui.psi = self.model_data['psi'] / self.rushui.RTD
-            self.rushui.phi = self.model_data['phi'] / self.rushui.RTD
-            self.rushui.vx = self.model_data['vx']
-            self.rushui.vy = self.model_data['vy']
-            self.rushui.vz = self.model_data['vz']
-            self.rushui.wx = self.model_data['wx'] / self.rushui.RTD
-            self.rushui.wy = self.model_data['wy'] / self.rushui.RTD
-            self.rushui.wz = self.model_data['wz'] / self.rushui.RTD
-            self.rushui.DK = self.model_data['dk'] / self.rushui.RTD
-            self.rushui.DS = self.model_data['ds'] / self.rushui.RTD
-            self.rushui.DX = self.model_data['dxx'] / self.rushui.RTD
-            self.rushui.dkf = self.model_data['dkf'] / self.rushui.RTD
-            self.rushui.dsf = self.model_data['dsf'] / self.rushui.RTD
-            self.rushui.dxf = self.model_data['dxf'] / self.rushui.RTD
-            self.rushui.t1 = self.model_data['t1']
-            self.rushui.t2 = self.model_data['t2']
-            self.rushui.kth = self.model_data['kth']
-            self.rushui.kps = self.model_data['kps']
-            self.rushui.kph = self.model_data['kph']
-            self.rushui.kwx = self.model_data['kwx']
-            self.rushui.kwz = self.model_data['kwz']
-            self.rushui.kwy = self.model_data['kwy']
+
+            model_data = self.model_data
+            # 总体参数
+            self.rushui.total.L = model_data['L']
+            self.rushui.total.S = model_data['S']
+            self.rushui.total.V = model_data['V']
+            self.rushui.total.m = model_data['m']
+            self.rushui.total.xc = model_data['xc']
+            self.rushui.total.yc = model_data['yc']
+            self.rushui.total.zc = model_data['zc']
+            self.rushui.total.Jxx = model_data['Jxx']
+            self.rushui.total.Jyy = model_data['Jyy']
+            self.rushui.total.Jzz = model_data['Jzz']
+            self.rushui.total.T = model_data['T']
+
+            # 空化器参数
+            self.rushui.lk = model_data['lk']  # 空化器距重心
+            self.rushui.rk = model_data['rk']  # 空化器半径
+            self.rushui.sgm = model_data['sgm']  # 全局空化数
+
+            # 入水初始条件
+            self.rushui.t0 = t0
+            self.rushui.tend = tend
+            self.rushui.dt = dt
+            self.rushui.v0 = v0
+
+            # 角度转换为弧度
+            self.rushui.theta0 = theta0_deg / self.rushui.rtd
+            self.rushui.psi0 = psi0_deg / self.rushui.rtd
+            self.rushui.phi0 = phi0_deg / self.rushui.rtd
+            self.rushui.alpha0 = alpha0_deg / self.rushui.rtd
+            self.rushui.wx0 = wx0_deg / self.rushui.rtd
+            self.rushui.wy0 = wy0_deg / self.rushui.rtd
+            self.rushui.wz0 = wz0_deg / self.rushui.rtd
+
+            # 控制参数
+            self.rushui.k_wz = k_wz
+            self.rushui.k_theta = k_theta
+
+            self.rushui._recalculate_update_input()
+
 
             # 如果已有线程，先停止
             if self.calc_thread and self.calc_thread.isRunning():

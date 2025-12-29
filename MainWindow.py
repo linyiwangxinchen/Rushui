@@ -9,7 +9,8 @@ from PyQt5.QtWidgets import QApplication, QMessageBox, QVBoxLayout, QTabWidget, 
 from ModelParameterWidget import ModelParameterWidget
 from SimulationControlWidget import SimulationControlWidget
 from VisualizationWidget import VisualizationWidget
-from rushui_model import Rushui
+# from rushui_model import Rushui
+from rushui1 import Entry as Rushui
 from SimulationDiveWidget import SimulationDiveWidget
 from PyQt5.QtGui import QPainter, QLinearGradient, QColor, QPalette, QBrush, QPixmap
 import json
