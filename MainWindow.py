@@ -17,6 +17,7 @@ import json
 from read_data import read_data
 from write_data import write_data
 import os
+from CustomExportDialog import CustomExportDialog
 import math
 
 # 配置日志
@@ -28,7 +29,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("入水空泡仿真系统")
+        self.setWindowTitle("空水一体弹道与突防效能评估系统")
         self.setGeometry(100, 100, 1400, 900)
 
         # 创建Stab实例
@@ -52,6 +53,8 @@ class MainWindow(QMainWindow):
         self.sim_control_widget = SimulationControlWidget(self.rushui)
         control_panel.addTab(self.sim_control_widget, "积分参量")
 
+        self.sim_dive_widget = SimulationDiveWidget(self.rushui)
+        control_panel.addTab(self.sim_dive_widget, "毁伤模块")
 
         # 创建右侧面板
         right_panel = QVBoxLayout()
@@ -139,6 +142,10 @@ class MainWindow(QMainWindow):
 
         load_action_laptop = file_menu.addAction("读取平台配置")
         load_action_laptop.triggered.connect(self.load_laptop_configuration)
+
+        # 自定义导出数据功能
+        custom_export_action = file_menu.addAction("自定义导出数据")
+        custom_export_action.triggered.connect(self.custom_export_data)
 
         file_menu.addSeparator()
 
@@ -233,7 +240,34 @@ class MainWindow(QMainWindow):
                 'k_ph': self.sim_control_widget.k_ph_input.value(),  # 舵机响应增益
                 'k_wx': self.sim_control_widget.k_wx_input.value(),  # 滚转角速度增益
                 'k_wy': self.sim_control_widget.k_wy_input.value(),  # 垂向控制增益
-                'tend_under': self.sim_control_widget.tend_under_input.value()
+                'tend_under': self.sim_control_widget.tend_under_input.value(),
+                'T1': self.sim_control_widget.T1_input.value(),
+                'T2': self.sim_control_widget.T2_input.value()
+            }
+
+            dive_params = {
+                'ship_L': self.sim_dive_widget.ship_L_input.value(),
+                'ship_M': self.sim_dive_widget.ship_M_input.value(),
+                'ship_B': self.sim_dive_widget.ship_B_input.value(),
+                'ship_T': self.sim_dive_widget.ship_T_input.value(),
+
+                # 武器毁伤多次重复实验
+                'burn_N': self.sim_dive_widget.burn_N_input.value(),
+                'ship_if': self.sim_dive_widget.ship_if.currentIndex(),  # 是否手动设置舰艇类型
+                'ship_tpye': self.sim_dive_widget.ship_tpye.currentIndex(),  # 选择的舰艇类型（注意变量名拼写）
+
+                # 目标舰艇相关参数
+                'ship_x_x': self.sim_dive_widget.ship_x_x_input.value(),  # x位置
+                'ship_x_y': self.sim_dive_widget.ship_x_y_input.value(),  # y位置
+                'ship_x_z': self.sim_dive_widget.ship_x_z_input.value(),  # z位置
+                'ship_v_max': self.sim_dive_widget.ship_v_max_input.value(),  # 最大速度（节）
+                'ship_a_max': self.sim_dive_widget.ship_a_max_input.value(),  # 最大加速度（m/s^2）
+
+                # 空中入水飞行参数
+                'air_t': self.sim_dive_widget.air_t_input.value(),  # 飞行时间(s)
+                'air_L': self.sim_dive_widget.air_L_input.value(),  # 弹道距离(km)
+                'air_theta': self.sim_dive_widget.air_theta_input.value(),  # 入水倾角(deg)
+                'air_v': self.sim_dive_widget.air_v_input.value()  # 入水速度(m/s)
             }
 
             # 收集UI状态
@@ -246,6 +280,7 @@ class MainWindow(QMainWindow):
             config = {
                 "model_params": model_params,
                 "sim_params": sim_params,
+                "dive_params": dive_params,
                 "ui_state": ui_state,
                 "config_version": "3.0",
                 "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
@@ -265,9 +300,11 @@ class MainWindow(QMainWindow):
             # model_params_val = model_params.values()
             # sim_params_key = sim_params.keys()
             # sim_params_val = sim_params.values()
+            # dive_params_key = dive_params.keys()
+            # dive_params_val = dive_params.values()
             # a = 1
-            # names = list(model_params_key) + list(sim_params_key)
-            # datas = list(model_params_val) + list(sim_params_val)
+            # names = list(model_params_key) + list(sim_params_key) + list(dive_params_key)
+            # datas = list(model_params_val) + list(sim_params_val) + list(dive_params_val)
             # fid = open('output.txt', 'w', encoding='utf-8')
             # for i in range(len(names)):
             #     write_data(fid, 'single', names[i], 'FLT', datas[i])
@@ -287,7 +324,7 @@ class MainWindow(QMainWindow):
             if not filename:
                 return
 
-            # 收集模型参数
+                # 收集模型参数
             model_params = {
                 # 几何与质量参数
                 'L': self.model_param_widget.L_input.value(),  # 长度 (m)
@@ -354,8 +391,36 @@ class MainWindow(QMainWindow):
                 'k_ph': self.sim_control_widget.k_ph_input.value(),  # 舵机响应增益
                 'k_wx': self.sim_control_widget.k_wx_input.value(),  # 滚转角速度增益
                 'k_wy': self.sim_control_widget.k_wy_input.value(),  # 垂向控制增益
-                'tend_under': self.sim_control_widget.tend_under_input.value()
+                'tend_under': self.sim_control_widget.tend_under_input.value(),
+                'T1': self.sim_control_widget.T1_input.value(),
+                'T2': self.sim_control_widget.T2_input.value()
             }
+
+            dive_params = {
+                'ship_L': self.sim_dive_widget.ship_L_input.value(),
+                'ship_M': self.sim_dive_widget.ship_M_input.value(),
+                'ship_B': self.sim_dive_widget.ship_B_input.value(),
+                'ship_T': self.sim_dive_widget.ship_T_input.value(),
+
+                # 武器毁伤多次重复实验
+                'burn_N': self.sim_dive_widget.burn_N_input.value(),
+                'ship_if': self.sim_dive_widget.ship_if.currentIndex(),  # 是否手动设置舰艇类型
+                'ship_tpye': self.sim_dive_widget.ship_tpye.currentIndex(),  # 选择的舰艇类型（注意变量名拼写）
+
+                # 目标舰艇相关参数
+                'ship_x_x': self.sim_dive_widget.ship_x_x_input.value(),  # x位置
+                'ship_x_y': self.sim_dive_widget.ship_x_y_input.value(),  # y位置
+                'ship_x_z': self.sim_dive_widget.ship_x_z_input.value(),  # z位置
+                'ship_v_max': self.sim_dive_widget.ship_v_max_input.value(),  # 最大速度（节）
+                'ship_a_max': self.sim_dive_widget.ship_a_max_input.value(),  # 最大加速度（m/s^2）
+
+                # 空中入水飞行参数
+                'air_t': self.sim_dive_widget.air_t_input.value(),  # 飞行时间(s)
+                'air_L': self.sim_dive_widget.air_L_input.value(),  # 弹道距离(km)
+                'air_theta': self.sim_dive_widget.air_theta_input.value(),  # 入水倾角(deg)
+                'air_v': self.sim_dive_widget.air_v_input.value()  # 入水速度(m/s)
+            }
+
             # 收集UI状态
             ui_state = {
                 "CurrentTab": self.centralWidget().findChild(QTabWidget).currentIndex(),
@@ -366,6 +431,7 @@ class MainWindow(QMainWindow):
             config = {
                 "model_params": model_params,
                 "sim_params": sim_params,
+                "dive_params": dive_params,
                 "ui_state": ui_state,
                 "config_version": "3.0",
                 "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
@@ -378,9 +444,11 @@ class MainWindow(QMainWindow):
             model_params_val = model_params.values()
             sim_params_key = sim_params.keys()
             sim_params_val = sim_params.values()
+            dive_params_key = dive_params.keys()
+            dive_params_value = dive_params.values()
             a = 1
-            names = list(model_params_key) + list(sim_params_key)
-            datas = list(model_params_val) + list(sim_params_val)
+            names = list(model_params_key) + list(sim_params_key) + list(dive_params_key)
+            datas = list(model_params_val) + list(sim_params_val) + list(dive_params_value)
             fid = open(filename, 'w', encoding='utf-8')
             for i in range(len(names)):
                 write_data(fid, 'single', names[i], 'FLT', datas[i])
@@ -472,6 +540,28 @@ class MainWindow(QMainWindow):
                 self.sim_control_widget.k_wx_input.setValue(sp.get('k_wx', None))
                 self.sim_control_widget.k_wy_input.setValue(sp.get('k_wy', None))
                 self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
+                self.sim_control_widget.T1_input.setValue(sp.get('T1', None))
+                self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
+
+            if "dive_params" in config:
+                mmp = config['dive_params']
+                self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))
+                self.sim_dive_widget.ship_M_input.setValue(mmp.get('ship_M', None))
+                self.sim_dive_widget.ship_B_input.setValue(mmp.get('ship_B', None))
+                self.sim_dive_widget.ship_T_input.setValue(mmp.get('ship_T', None))
+                self.sim_dive_widget.burn_N_input.setValue(mmp.get('burn_N', None))
+                self.sim_dive_widget.ship_if.setCurrentIndex(int(mmp.get('ship_if', None))),
+                self.sim_dive_widget.ship_tpye.setCurrentIndex(int(mmp.get('ship_tpye', None)))
+
+                self.sim_dive_widget.ship_x_x_input.setValue(mmp.get('ship_x_x', None))
+                self.sim_dive_widget.ship_x_y_input.setValue(mmp.get('ship_x_y', None))
+                self.sim_dive_widget.ship_x_z_input.setValue(mmp.get('ship_x_z', None))
+                self.sim_dive_widget.ship_v_max_input.setValue(mmp.get('ship_v_max', None))
+                self.sim_dive_widget.ship_a_max_input.setValue(mmp.get('ship_a_max', None))
+                self.sim_dive_widget.air_t_input.setValue(mmp.get('air_t', None))
+                self.sim_dive_widget.air_L_input.setValue(mmp.get('air_L', None))
+                self.sim_dive_widget.air_theta_input.setValue(mmp.get('air_theta', None))
+                self.sim_dive_widget.air_v_input.setValue(mmp.get('air_v', None))
 
             # 加载UI状态
             if "ui_state" in config:
@@ -527,6 +617,9 @@ class MainWindow(QMainWindow):
             k_wx, _, _ = read_data('input.txt', 'k_wx')
             k_wy, _, _ = read_data('input.txt', 'k_wy')
             tend_under, _, _ = read_data('input.txt', 'tend_under')
+            T1, _, _ = read_data('input.txt', 'T1')
+            T2, _, _ = read_data('input.txt', 'T2')
+
             L, _, _ = read_data('input.txt', 'L')
             S, _, _ = read_data('input.txt', 'S')
             V, _, _ = read_data('input.txt', 'V')
@@ -557,6 +650,23 @@ class MainWindow(QMainWindow):
             wxmax, _, _ = read_data('input.txt', 'wxmax')
             dphimax, _, _ = read_data('input.txt', 'dphimax')
 
+            ship_L, _, _ = read_data('input.txt', 'ship_L')
+            ship_M, _, _ = read_data('input.txt', 'ship_M')
+            ship_B, _, _ = read_data('input.txt', 'ship_B')
+            ship_T, _, _ = read_data('input.txt', 'ship_T')
+            burn_N, _, _ = read_data('input.txt', 'burn_N')
+            ship_if, _, _ = read_data('input.txt', 'ship_if')
+            ship_tpye, _, _ = read_data('input.txt', 'ship_tpye')
+            ship_x_x, _, _ = read_data('input.txt', 'ship_x_x')
+            ship_x_y, _, _ = read_data('input.txt', 'ship_x_y')
+            ship_x_z, _, _ = read_data('input.txt', 'ship_x_z')
+            ship_v_max, _, _ = read_data('input.txt', 'ship_v_max')
+            ship_a_max, _, _ = read_data('input.txt', 'ship_a_max')
+            air_t, _, _ = read_data('input.txt', 'air_t')
+            air_L, _, _ = read_data('input.txt', 'air_L')
+            air_theta, _, _ = read_data('input.txt', 'air_theta')
+            air_v, _, _ = read_data('input.txt', 'air_v')
+
             laptop_datas = {
                 't0': t0,
                 'tend': tend,
@@ -578,6 +688,8 @@ class MainWindow(QMainWindow):
                 'k_wx': k_wx,
                 'k_wy': k_wy,
                 'tend_under': tend_under,
+                'T1': T1,
+                'T2': T2,
                 'L': L,
                 'S': S,
                 'V': V,
@@ -607,7 +719,24 @@ class MainWindow(QMainWindow):
                 'wzmax': wzmax,
                 'wxmax': wxmax,
                 'dphimax': dphimax,
+                'ship_L': ship_L,
+                'ship_M': ship_M,
+                'ship_B': ship_B,
+                'ship_T': ship_T,
+                'burn_N': burn_N,
+                'ship_if': ship_if,
+                'ship_tpye': ship_tpye,
+                'ship_x_x': ship_x_x,
+                'ship_x_y': ship_x_y,
+                'ship_x_z': ship_x_z,
+                'ship_v_max': ship_v_max,
+                'ship_a_max': ship_a_max,
+                'air_t': air_t,
+                'air_L': air_L,
+                'air_theta': air_theta,
+                'air_v': air_v,
             }
+
 
             # 验证配置文件
 
@@ -663,6 +792,28 @@ class MainWindow(QMainWindow):
             self.sim_control_widget.k_wx_input.setValue(sp.get('k_wx', None))
             self.sim_control_widget.k_wy_input.setValue(sp.get('k_wy', None))
             self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
+            self.sim_control_widget.T1_input.setValue(sp.get('T1', None))
+            self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
+
+            mmp = laptop_datas
+            self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))
+            self.sim_dive_widget.ship_M_input.setValue(mmp.get('ship_M', None))
+            self.sim_dive_widget.ship_B_input.setValue(mmp.get('ship_B', None))
+            self.sim_dive_widget.ship_T_input.setValue(mmp.get('ship_T', None))
+            self.sim_dive_widget.burn_N_input.setValue(mmp.get('burn_N', None))
+            self.sim_dive_widget.ship_if.setCurrentIndex(int(mmp.get('ship_if', None))),
+            self.sim_dive_widget.ship_tpye.setCurrentIndex(int(mmp.get('ship_tpye', None)))
+
+            self.sim_dive_widget.ship_x_x_input.setValue(mmp.get('ship_x_x', None))
+            self.sim_dive_widget.ship_x_y_input.setValue(mmp.get('ship_x_y', None))
+            self.sim_dive_widget.ship_x_z_input.setValue(mmp.get('ship_x_z', None))
+            self.sim_dive_widget.ship_v_max_input.setValue(mmp.get('ship_v_max', None))
+            self.sim_dive_widget.ship_a_max_input.setValue(mmp.get('ship_a_max', None))
+            self.sim_dive_widget.air_t_input.setValue(mmp.get('air_t', None))
+            self.sim_dive_widget.air_L_input.setValue(mmp.get('air_L', None))
+            self.sim_dive_widget.air_theta_input.setValue(mmp.get('air_theta', None))
+            self.sim_dive_widget.air_v_input.setValue(mmp.get('air_v', None))
+
             # 更新状态栏
             self.status_label.setText(f"配置已从: {filename} 加载")
             QMessageBox.information(self, "加载成功", f"配置已成功从:\n{filename}\n加载")
@@ -780,11 +931,17 @@ class MainWindow(QMainWindow):
         # 显示对话框
         dialog.exec_()
 
+    def custom_export_data(self):
+        """自定义导出数据"""
+        dialog = CustomExportDialog(self.rushui, self)
+        dialog.exec_()
+
     def auto_load(self):
         filename = 'input.txt'
         check_file = os.path.exists("./input.txt")
         if check_file:
             try:
+
                 t0, _, _ = read_data('input.txt', 't0')
                 tend, _, _ = read_data('input.txt', 'tend')
                 dt, _, _ = read_data('input.txt', 'dt')
@@ -805,6 +962,9 @@ class MainWindow(QMainWindow):
                 k_wx, _, _ = read_data('input.txt', 'k_wx')
                 k_wy, _, _ = read_data('input.txt', 'k_wy')
                 tend_under, _, _ = read_data('input.txt', 'tend_under')
+                T1, _, _ = read_data('input.txt', 'T1')
+                T2, _, _ = read_data('input.txt', 'T2')
+
                 L, _, _ = read_data('input.txt', 'L')
                 S, _, _ = read_data('input.txt', 'S')
                 V, _, _ = read_data('input.txt', 'V')
@@ -835,6 +995,23 @@ class MainWindow(QMainWindow):
                 wxmax, _, _ = read_data('input.txt', 'wxmax')
                 dphimax, _, _ = read_data('input.txt', 'dphimax')
 
+                ship_L, _, _ = read_data('input.txt', 'ship_L')
+                ship_M, _, _ = read_data('input.txt', 'ship_M')
+                ship_B, _, _ = read_data('input.txt', 'ship_B')
+                ship_T, _, _ = read_data('input.txt', 'ship_T')
+                burn_N, _, _ = read_data('input.txt', 'burn_N')
+                ship_if, _, _ = read_data('input.txt', 'ship_if')
+                ship_tpye, _, _ = read_data('input.txt', 'ship_tpye')
+                ship_x_x, _, _ = read_data('input.txt', 'ship_x_x')
+                ship_x_y, _, _ = read_data('input.txt', 'ship_x_y')
+                ship_x_z, _, _ = read_data('input.txt', 'ship_x_z')
+                ship_v_max, _, _ = read_data('input.txt', 'ship_v_max')
+                ship_a_max, _, _ = read_data('input.txt', 'ship_a_max')
+                air_t, _, _ = read_data('input.txt', 'air_t')
+                air_L, _, _ = read_data('input.txt', 'air_L')
+                air_theta, _, _ = read_data('input.txt', 'air_theta')
+                air_v, _, _ = read_data('input.txt', 'air_v')
+
                 laptop_datas = {
                     't0': t0,
                     'tend': tend,
@@ -856,6 +1033,8 @@ class MainWindow(QMainWindow):
                     'k_wx': k_wx,
                     'k_wy': k_wy,
                     'tend_under': tend_under,
+                    'T1': T1,
+                    'T2': T2,
                     'L': L,
                     'S': S,
                     'V': V,
@@ -885,6 +1064,22 @@ class MainWindow(QMainWindow):
                     'wzmax': wzmax,
                     'wxmax': wxmax,
                     'dphimax': dphimax,
+                    'ship_L': ship_L,
+                    'ship_M': ship_M,
+                    'ship_B': ship_B,
+                    'ship_T': ship_T,
+                    'burn_N': burn_N,
+                    'ship_if': ship_if,
+                    'ship_tpye': ship_tpye,
+                    'ship_x_x': ship_x_x,
+                    'ship_x_y': ship_x_y,
+                    'ship_x_z': ship_x_z,
+                    'ship_v_max': ship_v_max,
+                    'ship_a_max': ship_a_max,
+                    'air_t': air_t,
+                    'air_L': air_L,
+                    'air_theta': air_theta,
+                    'air_v': air_v,
                 }
 
                 # 验证配置文件
@@ -941,6 +1136,28 @@ class MainWindow(QMainWindow):
                 self.sim_control_widget.k_wx_input.setValue(sp.get('k_wx', None))
                 self.sim_control_widget.k_wy_input.setValue(sp.get('k_wy', None))
                 self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
+                self.sim_control_widget.T1_input.setValue(sp.get('T1', None))
+                self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
+
+                mmp = laptop_datas
+                self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))
+                self.sim_dive_widget.ship_M_input.setValue(mmp.get('ship_M', None))
+                self.sim_dive_widget.ship_B_input.setValue(mmp.get('ship_B', None))
+                self.sim_dive_widget.ship_T_input.setValue(mmp.get('ship_T', None))
+                self.sim_dive_widget.burn_N_input.setValue(mmp.get('burn_N', None))
+                self.sim_dive_widget.ship_if.setCurrentIndex(int(mmp.get('ship_if', None))),
+                self.sim_dive_widget.ship_tpye.setCurrentIndex(int(mmp.get('ship_tpye', None)))
+
+                self.sim_dive_widget.ship_x_x_input.setValue(mmp.get('ship_x_x', None))
+                self.sim_dive_widget.ship_x_y_input.setValue(mmp.get('ship_x_y', None))
+                self.sim_dive_widget.ship_x_z_input.setValue(mmp.get('ship_x_z', None))
+                self.sim_dive_widget.ship_v_max_input.setValue(mmp.get('ship_v_max', None))
+                self.sim_dive_widget.ship_a_max_input.setValue(mmp.get('ship_a_max', None))
+                self.sim_dive_widget.air_t_input.setValue(mmp.get('air_t', None))
+                self.sim_dive_widget.air_L_input.setValue(mmp.get('air_L', None))
+                self.sim_dive_widget.air_theta_input.setValue(mmp.get('air_theta', None))
+                self.sim_dive_widget.air_v_input.setValue(mmp.get('air_v', None))
+
                 # 更新状态栏
                 logging.info("加载配置成功")
 

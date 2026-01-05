@@ -89,7 +89,7 @@
 0
 %end%
 %single tend  FLT %
-0.2
+1
 %end%
 %single dt  FLT %
 0.0002
@@ -119,10 +119,10 @@
 6.63
 %end%
 %single k_wz  FLT %
-0.06
+0.09
 %end%
 %single k_theta  FLT %
-0.04
+0.02
 %end%
 %single kwz  FLT %
 0.312
@@ -142,6 +142,60 @@
 %single k_wy  FLT %
 0.312
 %end%
-%single tend_under_input  FLT %
+%single tend_under  FLT %
 3.41
+%end%
+%single T1  FLT %
+25080.6
+%end%
+%single T2  FLT %
+6971.4
+%end%
+%single ship_L  FLT %
+315.773
+%end%
+%single ship_M  FLT %
+7.8e+07
+%end%
+%single ship_B  FLT %
+76.8096
+%end%
+%single ship_T  FLT %
+10.8966
+%end%
+%single burn_N  FLT %
+3
+%end%
+%single ship_if  FLT %
+0
+%end%
+%single ship_tpye  FLT %
+0
+%end%
+%single ship_x_x  FLT %
+120
+%end%
+%single ship_x_y  FLT %
+0
+%end%
+%single ship_x_z  FLT %
+0
+%end%
+%single ship_v_max  FLT %
+46
+%end%
+%single ship_a_max  FLT %
+2
+%end%
+%single air_t  FLT %
+699.53
+%end%
+%single air_L  FLT %
+519.822
+%end%
+%single air_theta  FLT %
+-10.1
+%end%
+%single air_v  FLT %
+273.63
 %end%

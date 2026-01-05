@@ -1,7 +1,7 @@
 import os
 import time
-
-from tqdm import tqdm
+#
+# from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -405,7 +405,7 @@ class under:
         # 计算发动机推力
         if t < 0.56:
             XT = T1
-        elif t < 2.41:
+        elif t < 100:
             XT = T2
         else:
             XT = 0
@@ -1251,6 +1251,7 @@ class under:
         self.Myb = Myb
         self.Mzb = Mzb
         self.alphat = alphat
+        self.alphay = alphay
 
     def fin_fluid_dynamics(self):
         y = self.y
@@ -2034,7 +2035,7 @@ class under:
         self.t = t
         current_time = time.time()
         last_callback_time = time.time()
-        for i in tqdm(range(len(t_eval))):
+        for i in range(len(t_eval)):
             self.ys.append(self.y.copy())
             self.ts.append(self.t)
             y0 = self.y.copy()
@@ -2055,7 +2056,7 @@ class under:
                     data = {
                         'motions': {
                             't': self.t,
-                            'alphat': self.alphat,
+                            'alphat': self.alphay,
                             'y': self.y
                         },
                         'points': {

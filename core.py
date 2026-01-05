@@ -105,6 +105,7 @@ class Dan:
         self.T1 = 25080.6  # 推力
         self.T2 = 6971.4
         self.TC = self.t0  # 空泡计算时刻
+        # 在这里添加推力时间曲线输入
 
         # === 仿真控制参数 ===
         self.TP = 0.0  # 控制周期时间
@@ -230,11 +231,14 @@ class Dan:
         M.update_callback = self.update_callback
         M.progress_callback = self.progress_callback
 
+        self.M = M
 
         # 获取入水过程中的时间和状态数据
-        t_entry, y_entry = M.get_results()
-
-        print("即将进入水下弹道程序")
+        t_entry, y_entry = self.M.get_results()
+        self.t_entry = t_entry
+        self.y_entry = y_entry
+        M = self.M
+        # print("即将进入水下弹道程序")
 
         N = under()
 
@@ -343,9 +347,10 @@ class Dan:
         N.plot_dan_x = self.plot_dan_x
         N.update_callback = self.update_callback
         N.progress_callback = self.progress_callback
-
-        N.main()
-        return t_entry, y_entry, N.ys, N.ts
+        self.N = N
+        self.N.main()
+        N = self.N
+        return t_entry, y_entry, N.ts, N.ys
 
         # N = xxx
         # N.xxx = xxx

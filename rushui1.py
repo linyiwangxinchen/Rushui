@@ -1113,7 +1113,7 @@ class  Entry:
         # pd.DataFrame(alpha).to_excel('alpha.xlsx', index=False, header=False)
         # pd.DataFrame(t).to_excel('t.xlsx', index=False, header=False)
 
-        print("开始画图...")
+        # print("开始画图...")
 
         # 攻角曲线
         plt.figure(1, figsize=(10, 6))
@@ -1199,12 +1199,12 @@ class  Entry:
         plt.savefig('force_curves.png', dpi=300, bbox_inches='tight')
         #plt.show()
 
-        print("画图结束...")
+        # print("画图结束...")
 
 
     def get_results(self):
 
-        print("开始入水弹道仿真。。。")
+        # print("开始入水弹道仿真。。。")
         self._update_input()
         # 获取弹道参数y和时间t
         y, t = self._equation_solving_()
@@ -1226,7 +1226,7 @@ class  Entry:
         self.y = y
         self.t = t
 
-        print("入水弹道仿真完成")
+        # print("入水弹道仿真完成")
 
         return t, y
 

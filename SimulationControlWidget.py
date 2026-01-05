@@ -2,9 +2,10 @@ import logging
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QDoubleSpinBox, QLabel, QProgressBar, QPushButton, QHBoxLayout, QComboBox, \
-    QGridLayout, QGroupBox, QVBoxLayout, QWidget
+    QGridLayout, QGroupBox, QVBoxLayout, QWidget, QLineEdit
 
 from CalculationThread import CalculationThread
+from ThrustPlotWindow import ThrustPlotWindow
 
 
 class SimulationControlWidget(QWidget):
@@ -36,7 +37,7 @@ class SimulationControlWidget(QWidget):
                                range_check=False)
         self.add_labeled_input(entry_layout, "入水速度 v0 (m/s):", 3, 0, -1000, 1000, 300, 0.1, "v0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "弹道角 theta0 (deg):", 4, 0, -1000, 1000, -10, 0.01, "theta0_input",
+        self.add_labeled_input(entry_layout, "入水角 theta0 (deg):", 4, 0, -1000, 1000, -10, 0.01, "theta0_input",
                                range_check=False)
         self.add_labeled_input(entry_layout, "偏航角 psi0 (deg):", 5, 0, -1000, 1000, 0, 0.01, "psi0_input",
                                range_check=False)
@@ -55,9 +56,9 @@ class SimulationControlWidget(QWidget):
         # ——————————控制参数——————————
         control_group = QGroupBox("控制参数")
         control_layout_data = QGridLayout()
-        self.add_labeled_input(control_layout_data, "横滚角速度增益 k_wz:", 0, 0, -1000, 1000, 0.06, 0.0001, "k_wz_input",
+        self.add_labeled_input(control_layout_data, "横滚角速度增益 k_wz:", 0, 0, -1000, 1000, 0.09, 0.0001, "k_wz_input",
                                range_check=False)
-        self.add_labeled_input(control_layout_data, "俯仰角增益 k_theta:", 1, 0, -1000, 1000, 0.04, 0.0001, "k_theta_input",
+        self.add_labeled_input(control_layout_data, "俯仰角增益 k_theta:", 1, 0, -1000, 1000, 0.02, 0.0001, "k_theta_input",
                                range_check=False)
         control_group.setLayout(control_layout_data)
 
@@ -100,7 +101,41 @@ class SimulationControlWidget(QWidget):
         dive_layout_data.setSpacing(5)
         self.add_labeled_input(dive_layout_data, "水下仿真时间:", 0, 0, -1000, 1000, 3.41, 0.001,
                                "tend_under_input", range_check=False)
+        self.add_labeled_input(dive_layout_data, "加速段推力 T1:", 1, 0, -1000, 1000000, 25080.6, 0.001,
+                               "T1_input", range_check=False)
+        self.add_labeled_input(dive_layout_data, "巡航段推力 T2:", 2, 0, -1000, 1000000, 6971.4, 0.001,
+                               "T2_input", range_check=False)
         dive_group.setLayout(dive_layout_data)
+
+        # ——————————推力设置—————————— (新增部分)
+        thrust_group = QGroupBox("推力设置")
+        thrust_layout = QGridLayout()
+        thrust_layout.setContentsMargins(5, 5, 5, 5)
+        thrust_layout.setSpacing(5)
+
+        # 时间序列输入
+        thrust_layout.addWidget(QLabel("时间序列 (s):"), 0, 0)
+        self.time_sequence_input = QLineEdit()
+        self.time_sequence_input.setPlaceholderText("示例: 0, 0.5, 1.0, 1.5, 2.0")
+        self.time_sequence_input.setText("0, 0.56, 0.57, 100")
+        thrust_layout.addWidget(self.time_sequence_input, 0, 1)
+
+        # 推力序列输入
+        thrust_layout.addWidget(QLabel("推力序列 (N):"), 1, 0)
+        self.thrust_sequence_input = QLineEdit()
+        self.thrust_sequence_input.setPlaceholderText("示例: 25000, 22000, 18000, 15000, 7000")
+        self.thrust_sequence_input.setText("25080.6, 25080.6, 6971.4, 6971.4")
+
+        thrust_layout.addWidget(self.thrust_sequence_input, 1, 1)
+
+        # 展示曲线按钮
+        self.plot_thrust_btn = QPushButton("展示推力时间曲线")
+        self.plot_thrust_btn.setStyleSheet("background-color: #2196F3; color: white;")
+        self.plot_thrust_btn.clicked.connect(self.show_thrust_plot)
+        thrust_layout.addWidget(self.plot_thrust_btn, 2, 0, 1, 2, Qt.AlignCenter)
+
+        thrust_group.setLayout(thrust_layout)
+
 
         # 控制按钮
         control_layout = QHBoxLayout()
@@ -131,12 +166,54 @@ class SimulationControlWidget(QWidget):
         main_layout.addWidget(control_group)
         main_layout.addWidget(control_dive_group)
         main_layout.addWidget(dive_group)
+        main_layout.addWidget(thrust_group)  # 新增的推力设置组
         main_layout.addLayout(control_layout)
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.progress_label)
         main_layout.addStretch()
 
         self.setLayout(main_layout)
+
+    def show_thrust_plot(self):
+        """展示推力-时间曲线"""
+        try:
+            # 获取输入数据
+            time_str = self.time_sequence_input.text().strip()
+            thrust_str = self.thrust_sequence_input.text().strip()
+
+            if not time_str or not thrust_str:
+                QMessageBox.warning(self, "输入错误", "请输入时间序列和推力序列数据")
+                return
+
+            # 解析时间序列
+            time_data = [float(t.strip()) for t in time_str.split(',') if t.strip()]
+            thrust_data = [float(t.strip()) for t in thrust_str.split(',') if t.strip()]
+
+            # 验证数据
+            if len(time_data) != len(thrust_data):
+                QMessageBox.warning(self, "数据错误",
+                                    f"时间点数量({len(time_data)})与推力值数量({len(thrust_data)})不匹配")
+                return
+
+            if len(time_data) < 2:
+                QMessageBox.warning(self, "数据不足", "至少需要两个数据点才能绘制曲线")
+                return
+
+            # 检查时间序列是否单调递增
+            if any(time_data[i] >= time_data[i + 1] for i in range(len(time_data) - 1)):
+                QMessageBox.warning(self, "时间序列错误", "时间序列必须是单调递增的")
+                return
+
+            # 创建并显示绘图窗口
+            plot_window = ThrustPlotWindow(time_data, thrust_data, self)
+            plot_window.exec_()
+
+        except ValueError as e:
+            QMessageBox.critical(self, "解析错误",
+                                 f"数据格式错误: {str(e)}\n请确保输入的是逗号分隔的数字序列")
+        except Exception as e:
+            logging.exception("绘制推力曲线时出错")
+            QMessageBox.critical(self, "错误", f"无法绘制曲线: {str(e)}")
 
     def add_labeled_input(self, layout, label_text, row, col, min_val, max_val, default_val, step, attr_name, range_check=True):
         """添加带标签的输入控件"""
@@ -182,7 +259,14 @@ class SimulationControlWidget(QWidget):
             'k_ph': self.k_ph_input.value(),  # 舵机响应增益
             'k_wx': self.k_wx_input.value(),  # 滚转角速度增益
             'k_wy': self.k_wy_input.value(),  # 垂向控制增益
-            'tend_under_input': self.tend_under_input.value()
+            'tend_under_input': self.tend_under_input.value(),
+            'T1': self.T1_input.value(),
+            'T2': self.T2_input.value(),
+
+            # 两个新增的输入框
+            'time_sequence': self.time_sequence_input.Text(),
+            'thrust_sequence': self.thrust_sequence_input.Text()
+
         }
         self.data_output_signal_f.emit(data)
 
@@ -304,7 +388,8 @@ class SimulationControlWidget(QWidget):
             # Dan类中kps默认等于kth，但UI提供独立控制，此处显式同步
             self.rushui.kps = self.rushui.kth  # 确保姿态同步增益与俯仰增益一致
             self.rushui.tend_under = tend_under
-
+            self.rushui.T1 = self.T1_input.value()
+            self.rushui.T2 = self.T2_input.value()
             self.rushui._recalculate_update_input()
 
             # 如果已有线程，先停止

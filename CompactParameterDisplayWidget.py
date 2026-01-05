@@ -237,7 +237,7 @@ class CompactParameterDisplayWidget(QWidget):
                 if len(motion['y'].shape) == 2:
                     self.pos_label.setText(f"X = {motion['y'][9, 0]:.4f} m, Y = {motion['y'][10, 0]:.4f} m, Z = {motion['y'][11, 0]:.4f} m")
                     self.vel_label.setText(f"Vx = {motion['y'][0, 0]:.4f} m/s, Vy = {motion['y'][1, 0]:.4f} m/s, Vz = {motion['y'][2, 0]:.4f} m/s")
-                    self.angle_label.setText(f"Theta = {motion['y'][6, 0] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7, 0] * self.rushui.RTD:.4f}°, {motion['y'][8, 0] * self.rushui.RTD:.4f}°")
+                    self.angle_label.setText(f"Theta = {motion['y'][6, 0] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7, 0] * self.rushui.RTD:.4f}°, Phi = {motion['y'][8, 0] * self.rushui.RTD:.4f}°")
                     self.omega_label.setText(f"wx = {motion['y'][3, 0] * self.rushui.RTD:.4f} °/s, wy = {motion['y'][4, 0] * self.rushui.RTD:.4f} °/s, wz = {motion['y'][5, 0] * self.rushui.RTD:.4f} °/s")
                 else:
                     self.pos_label.setText(

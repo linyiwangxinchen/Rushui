@@ -5,9 +5,9 @@ from PyQt5.QtWidgets import QMessageBox, QDoubleSpinBox, QLabel, QProgressBar, Q
     QGridLayout, QGroupBox, QVBoxLayout, QWidget
 
 from CalculationThread import CalculationThread
-from MCS import MSC
 
-class SimulationDiveWidget(QWidget):
+
+class SimulationControlWidget(QWidget):
     """仿真控制界面"""
     realtime_update = pyqtSignal(object)  # 修复：添加实时更新信号
     data_output_signal_f = pyqtSignal(dict)
@@ -15,83 +15,63 @@ class SimulationDiveWidget(QWidget):
 
     def __init__(self, stab_instance, parent=None):
         super().__init__(parent)
-        self.stab = stab_instance
+        self.rushui = stab_instance
         self.calc_thread = None
         self.init_ui()
+        a = 1
 
     def init_ui(self):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(5, 5, 5, 5)
         main_layout.setSpacing(5)
+        # 弹体参数
+        dan_group = QGroupBox("弹体参数")
+        dan_layout = QGridLayout()
+        dan_layout.setContentsMargins(5, 5, 5, 5)
+        dan_layout.setSpacing(5)
+
+        self.add_labeled_input(dan_layout, "弹体L:", 0, 0, -1000, 1000, 3.195, 0.0001, "L_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体S:", 1, 0, -1000, 1000, 0.0356, 0.0001, "S_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体V:", 2, 0, -1000, 1000, 0, 0.0001, "V_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体m:", 3, 0, -1000, 1000, 114.7, 0.0001, "m_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体xc:", 4, 0, -1000, 1000, -0.0188, 0.0001, "xc_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体yc:", 5, 0, -1000, 1000, -0.0017, 0.0001, "yc_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体zc:", 6, 0, -1000, 1000, 0.0008, 0.0001, "zc_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体Jxx:", 7, 0, -1000, 1000, 0.63140684, 0.0001, "jxx_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体Jyy:", 8, 0, -1000, 1000, 57.06970864, 0.0001, "jyy_input", range_check=False)
+        self.add_labeled_input(dan_layout, "弹体Jzz:", 9, 0, -1000, 1000, 57.07143674, 0.0001, "jzz_input", range_check=False)
+        dan_group.setLayout(dan_layout)
 
         # 初始条件组
-        init_group = QGroupBox("毁伤目标参数选定")
+        init_group = QGroupBox("积分参数")
         init_layout = QGridLayout()
         init_layout.setContentsMargins(5, 5, 5, 5)
         init_layout.setSpacing(5)
 
-        self.add_labeled_input(init_layout, "目标舰艇长度 ship_L (m):", 0, 0, 0, 20000.0, 315.7728, 1.0, "ship_L_input")
-        self.add_labeled_input(init_layout, "目标舰艇质量 ship_M (kg):", 1, 0, 0, 780000000, 78000000, 100, "ship_M_input")
-        self.add_labeled_input(init_layout, "目标舰艇宽度 ship_B (m):", 2, 0, 0, 10000, 76.8096, 0.1, "ship_B_input")
-        self.add_labeled_input(init_layout, "舰艇吃水深度 ship_T (m):", 3, 0, 0, 10000, 10.8966, 1, "ship_T_input")
+        self.add_labeled_input(init_layout, "积分步长dt:", 0, 0, -1000, 1000, 0.001, 0.0001, "dt_input", range_check=False)
+        self.add_labeled_input(init_layout, "积分起始时间t0:", 1, 0, -1000, 1000, 0.539, 0.01, "t0_input", range_check=False)
+        self.add_labeled_input(init_layout, "积分截止时间tend:", 2, 0, -1000, 1000, 3.41, 1.0, "tend_input", range_check=False)
+        # layout, label_text, row, col, min_val, max_val, default_val, step, attr_name, range_check
         init_group.setLayout(init_layout)
 
         # 仿真设置组
-        sim_group = QGroupBox("武器毁伤多次重复实验")
+        sim_group = QGroupBox("起始条件")
         sim_layout = QGridLayout()
         sim_layout.setContentsMargins(5, 5, 5, 5)
         sim_layout.setSpacing(5)
 
-        self.add_labeled_input(sim_layout, "打靶重复次数:", 0, 0, 1, 100, 3, 1.0, "burn_N_input")
+        self.add_labeled_input(sim_layout, "启控深度YCS (m):", 0, 0, -1000, 1000, -3.45, 1.0, "ycs_input", range_check=False)
+        self.add_labeled_input(sim_layout, "启控俯仰角THETACS (deg):", 1, 0, -1000, 1000, -2.5086, 1.0, "thetacs_input", range_check=False)
+        self.add_labeled_input(sim_layout, "启控垂向速度VYCS (m/s):", 2, 0, -1000, 1000, -0.01323, 1.0, "yvcs_input", range_check=False)
+        self.add_labeled_input(sim_layout, "启控偏航角PSICS (deg):", 3, 0, -1000, 1000, 9.17098, 1.0, "psics_input", range_check=False)
 
-        sim_layout.addWidget(QLabel("是否手动设置舰艇类型:"), 1, 0)
-        self.ship_if = QComboBox()
-        self.ship_if.addItems([
-            "否",
-            "是"
-        ])
-        self.ship_if.setCurrentIndex(0)
-        sim_layout.addWidget(self.ship_if, 1, 1)
-
-        sim_layout.addWidget(QLabel("选择舰艇类型:"), 2, 0)
-        self.ship_tpye = QComboBox()
-        self.ship_tpye.addItems([
-            "福莱斯特",
-            "萨拉托加",
-            "游骑兵",
-            "独立"
-        ])
-        self.ship_tpye.setCurrentIndex(0)
-        sim_layout.addWidget(self.ship_tpye, 2, 1)
+        # 开题
+        # 基于智能预测的高速入水过程
+        # 高速入水过程智能预测方法
+        # 流动控制方法，大量预测，流动外形，开展入水过程流动控制
+        # 流动控制方法实验验证与数据对比分析
 
         sim_group.setLayout(sim_layout)
-
-        ship_x_group = QGroupBox("目标舰艇相关参数（从入水点开始计算）")
-        ship_x_layout = QGridLayout()
-        ship_x_layout.setContentsMargins(5, 5, 5, 5)
-        ship_x_layout.setSpacing(5)
-        self.add_labeled_input(ship_x_layout, "目标舰艇位置x (m):", 0, 0, 0, 1000, 120, 1.0, "ship_x_x_input")
-        self.add_labeled_input(ship_x_layout, "目标舰艇位置y (m):", 1, 0, 0, 1000, 0, 1.0, "ship_x_y_input")
-        self.add_labeled_input(ship_x_layout, "目标舰艇位置z (m):", 2, 0, 0, 1000, 0, 1.0, "ship_x_z_input")
-        self.add_labeled_input(ship_x_layout, "目标舰艇最大速度（节）:", 3, 0, 0, 1000, 46, 1.0, "ship_v_max_input")
-        self.add_labeled_input(ship_x_layout, "目标舰艇最大加速度（m/s^2）:", 4, 0, 0, 1000, 2, 1.0, "ship_a_max_input")
-        ship_x_group.setLayout(ship_x_layout)
-
-        dan_air_group = QGroupBox("空中入水飞行参数（从平台读取）")
-        dan_air_layout = QGridLayout()
-        dan_air_layout.setContentsMargins(5, 5, 5, 5)
-        dan_air_layout.setSpacing(5)
-        # 如果是324，那么就是：
-        # self.add_labeled_input(dan_air_layout, "空中飞行时间t (s):", 0, 0, 0, 1000, 639.0679, 1.0, "air_t_input")
-        # self.add_labeled_input(dan_air_layout, "空中弹道距离L (km):", 1, 0, 0, 1000, 513.54423, 1.0, "air_L_input")
-        # self.add_labeled_input(dan_air_layout, "入水弹道倾角theta (deg):", 2, 0, -1000, 1000, -14.295, 1.0, "air_theta_input")
-        # self.add_labeled_input(dan_air_layout, "入水速度v (m/s):", 3, 0, 0, 1000, 301.6168, 1.0, "air_v_input")
-        # 如果是213，那么就是：
-        self.add_labeled_input(dan_air_layout, "空中飞行时间t (s):", 0, 0, 0, 1000, 699.53, 1.0, "air_t_input")
-        self.add_labeled_input(dan_air_layout, "空中弹道距离L (km):", 1, 0, 0, 1000, 519.8217, 1.0, "air_L_input")
-        self.add_labeled_input(dan_air_layout, "入水弹道倾角theta (deg):", 2, 0, -1000, 1000, -10.1 , 1.0, "air_theta_input")
-        self.add_labeled_input(dan_air_layout, "入水速度v (m/s):", 3, 0, 0, 1000, 273.63, 1.0, "air_v_input")
-        dan_air_group.setLayout(dan_air_layout)
 
         # 控制按钮
         control_layout = QHBoxLayout()
@@ -117,45 +97,18 @@ class SimulationDiveWidget(QWidget):
         self.progress_label.setAlignment(Qt.AlignCenter)
         self.progress_label.setStyleSheet("font-weight: bold;")
 
-        result_group = QGroupBox("计算结果")
-        # 结果显示区域
-        result_layout = QGridLayout()
-        result_layout.setContentsMargins(5, 5, 5, 5)
-        result_layout.setSpacing(3)
-
-        # 计算结果标签
-        self.result_labels = {}
-        result_params = [
-            ("综合毁伤概率", "P", "%"),
-
-        ]
-
-        row = 0
-        for name, key, unit in result_params:
-            result_layout.addWidget(QLabel(f"{name}:"), row, 0)
-            label = QLabel("0.0000")
-            self.result_labels[key] = label
-            result_layout.addWidget(label, row, 1)
-            if unit:
-                result_layout.addWidget(QLabel(unit), row, 2)
-            row += 1
-
-        result_group.setLayout(result_layout)
-
         # 组合布局
+        main_layout.addWidget(dan_group)
         main_layout.addWidget(init_group)
         main_layout.addWidget(sim_group)
-        main_layout.addWidget(ship_x_group)
-        main_layout.addWidget(dan_air_group)
         main_layout.addLayout(control_layout)
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.progress_label)
-        main_layout.addWidget(result_group)
         main_layout.addStretch()
 
         self.setLayout(main_layout)
 
-    def add_labeled_input(self, layout, label_text, row, col, min_val, max_val, default_val, step, attr_name):
+    def add_labeled_input(self, layout, label_text, row, col, min_val, max_val, default_val, step, attr_name, range_check=True):
         """添加带标签的输入控件"""
         layout.addWidget(QLabel(label_text), row, col)
         spin_box = QDoubleSpinBox()
@@ -163,6 +116,7 @@ class SimulationDiveWidget(QWidget):
         spin_box.setRange(min_val, max_val)
         spin_box.setSingleStep(step)
         spin_box.setValue(default_val)
+
         layout.addWidget(spin_box, row, col + 1)
         setattr(self, attr_name, spin_box)
 
@@ -173,29 +127,28 @@ class SimulationDiveWidget(QWidget):
     def to_model(self, Checki):
         # 向model发送数据
         data = {
-            # 毁伤目标参数选定
-            'ship_L': self.ship_L_input.value(),
-            'ship_M': self.ship_M_input.value(),
-            'ship_B': self.ship_B_input.value(),
-            'ship_T': self.ship_T_input.value(),
+                # 弹体参数
+            'L': self.L_input.value(),    # 弹体总长
+            'S': self.S_input.value(),    # 参考面积
+            'V': self.V_input.value(),    # 体积
+            'm': self.m_input.value(),    # 质量
+            'xc': self.xc_input.value(),  # 质心x坐标
+            'yc': self.yc_input.value(),  # 质心y坐标
+            'zc': self.zc_input.value(),  # 质心z坐标
+            'Jxx': self.jxx_input.value(),# x轴转动惯量
+            'Jyy': self.jyy_input.value(),# y轴转动惯量
+            'Jzz': self.jzz_input.value(),# z轴转动惯量
 
-            # 武器毁伤多次重复实验
-            'burn_N': self.burn_N_input.value(),
-            'ship_if': self.ship_if.currentIndex(),  # 是否手动设置舰艇类型
-            'ship_tpye': self.ship_tpye.currentIndex(),  # 选择的舰艇类型（注意变量名拼写）
+            # 积分参数
+            'dt': self.dt_input.value(),  # 积分步长
+            't0': self.t0_input.value(),  # 起始时间
+            'tend': self.tend_input.value(),  # 截止时间
 
-            # 目标舰艇相关参数
-            'ship_x_x': self.ship_x_x_input.value(),  # x位置
-            'ship_x_y': self.ship_x_y_input.value(),  # y位置
-            'ship_x_z': self.ship_x_z_input.value(),  # z位置
-            'ship_v_max': self.ship_v_max_input.value(),  # 最大速度（节）
-            'ship_a_max': self.ship_a_max_input.value(),  # 最大加速度（m/s^2）
-
-            # 空中入水飞行参数
-            'air_t': self.air_t_input.value(),  # 飞行时间(s)
-            'air_L': self.air_L_input.value(),  # 弹道距离(km)
-            'air_theta': self.air_theta_input.value(),  # 入水倾角(deg)
-            'air_v': self.air_v_input.value()  # 入水速度(m/s)
+            # 起始条件
+            'ycs': self.ycs_input.value(),        # 启控深度 (m)
+            'thetacs': self.thetacs_input.value(),# 启控俯仰角 (deg)
+            'yvcs': self.yvcs_input.value(),      # 启控垂向速度 (m/s)
+            'psics': self.psics_input.value()     # 启控偏航角 (deg)
         }
         self.data_output_signal_f.emit(data)
 
@@ -205,19 +158,59 @@ class SimulationDiveWidget(QWidget):
     def start_simulation(self):
         """启动仿真计算"""
         try:
-            # 重置状态
-            self.stab = MSC()
-            self.stab.ship_L = self.ship_L_input.value()
-            self.stab.ship_M = self.ship_M_input.value()
-            self.stab.ship_B = self.ship_B_input.value()
-            self.stab.ship_T = self.ship_T_input.value()
-            self.stab.ifship = self.ship_if.currentIndex()
-            self.stab.ship_kind = self.ship_tpye.currentIndex()
-            self.stab.N_burn = self.burn_N_input.value()
+            # 设置参数
+            self.rushui.L = self.L_input.value()
+            self.rushui.S = self.S_input.value()
+            self.rushui.V = self.V_input.value()
+            self.rushui.m = self.m_input.value()
+            self.rushui.xc = self.xc_input.value()
+            self.rushui.yc = self.yc_input.value()
+            self.rushui.zc = self.zc_input.value()
+            self.rushui.Jxx = self.jxx_input.value()
+            self.rushui.Jyy = self.jyy_input.value()
+            self.rushui.Jzz = self.jzz_input.value()
+            self.rushui.dt = self.dt_input.value()
+            self.rushui.t0 = self.t0_input.value()
+            self.rushui.tend = self.tend_input.value()
+            self.rushui.YCS = self.ycs_input.value()
+            self.rushui.THETACS = self.thetacs_input.value() / self.rushui.RTD
+            self.rushui.VYCS = self.yvcs_input.value()
+            self.rushui.PSICS = self.psics_input.value() / self.rushui.RTD
+            self.ask_model()
+            self.rushui.x0 = self.model_data['x0']
+            self.rushui.y0 = self.model_data['y0']
+            self.rushui.z0 = self.model_data['z0']
+            self.rushui.theta = self.model_data['theta'] / self.rushui.RTD
+            self.rushui.psi = self.model_data['psi'] / self.rushui.RTD
+            self.rushui.phi = self.model_data['phi'] / self.rushui.RTD
+            self.rushui.vx = self.model_data['vx']
+            self.rushui.vy = self.model_data['vy']
+            self.rushui.vz = self.model_data['vz']
+            self.rushui.wx = self.model_data['wx'] / self.rushui.RTD
+            self.rushui.wy = self.model_data['wy'] / self.rushui.RTD
+            self.rushui.wz = self.model_data['wz'] / self.rushui.RTD
+            self.rushui.DK = self.model_data['dk'] / self.rushui.RTD
+            self.rushui.DS = self.model_data['ds'] / self.rushui.RTD
+            self.rushui.DX = self.model_data['dxx'] / self.rushui.RTD
+            self.rushui.dkf = self.model_data['dkf'] / self.rushui.RTD
+            self.rushui.dsf = self.model_data['dsf'] / self.rushui.RTD
+            self.rushui.dxf = self.model_data['dxf'] / self.rushui.RTD
+            self.rushui.t1 = self.model_data['t1']
+            self.rushui.t2 = self.model_data['t2']
+            self.rushui.kth = self.model_data['kth']
+            self.rushui.kps = self.model_data['kps']
+            self.rushui.kph = self.model_data['kph']
+            self.rushui.kwx = self.model_data['kwx']
+            self.rushui.kwz = self.model_data['kwz']
+            self.rushui.kwy = self.model_data['kwy']
 
+            # 如果已有线程，先停止
+            if self.calc_thread and self.calc_thread.isRunning():
+                self.calc_thread.stop()
+                self.calc_thread.wait(2000)  # 等待2秒
 
             # 创建并启动计算线程
-            self.calc_thread = CalculationThread(self.stab)
+            self.calc_thread = CalculationThread(self.rushui)
             self.calc_thread.progress.connect(self.update_progress)
             self.calc_thread.realtime_update.connect(self.handle_realtime_update)
             self.calc_thread.finished.connect(self.simulation_finished)
@@ -231,9 +224,6 @@ class SimulationDiveWidget(QWidget):
             self.progress_bar.setValue(0)
 
             # 重置计算状态
-            self.stab.Jend = 0
-            self.stab.Ihis = 1
-            self.stab.Nhis = -1
 
             self.calc_thread.start()
 
@@ -248,7 +238,6 @@ class SimulationDiveWidget(QWidget):
 
     def handle_realtime_update(self, data):
         """处理实时更新数据并转发信号"""
-        self.result_labels['P'].setText('%.2f' % (sum(data['P_list'])/len(data['P_list']) * 100))
         if self.calc_thread and self.calc_thread.is_running:
             self.realtime_update.emit(data)
 

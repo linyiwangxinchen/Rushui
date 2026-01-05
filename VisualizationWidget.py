@@ -105,8 +105,8 @@ class VisualizationWidget(QWidget):
 
         # 添加标签页
         self.tab_widget.addTab(self.cavity_tab, "空泡形状")
-        self.tab_widget.addTab(trajectory_tab, "轨迹")
-        self.tab_widget.addTab(dynamics_tab, "动力学参数")
+        # self.tab_widget.addTab(trajectory_tab, "轨迹")
+        # self.tab_widget.addTab(dynamics_tab, "动力学参数")
 
         # 实时参数显示
         self.param_display = CompactParameterDisplayWidget(self.stab)

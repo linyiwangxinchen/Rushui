@@ -1,0 +1,30 @@
+%single CxS  FLT %
+0
+%end%
+%single Cya  FLT %
+0
+%end%
+%single Cydc  FLT %
+0
+%end%
+%single Cywz  FLT %
+0
+%end%
+%single Czb  FLT %
+0
+%end%
+%single Czdv  FLT %
+0
+%end%
+%single Czwy  FLT %
+0
+%end%
+%single DK  FLT %
+0
+%end%
+%single DS  FLT %
+0
+%end%
+%single DX  FLT %
+0
+%end%
