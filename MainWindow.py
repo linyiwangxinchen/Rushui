@@ -1,5 +1,7 @@
 import json
 import time
+
+import numpy as np
 import pyqtgraph as pg
 import logging
 import sys
@@ -242,7 +244,9 @@ class MainWindow(QMainWindow):
                 'k_wy': self.sim_control_widget.k_wy_input.value(),  # 垂向控制增益
                 'tend_under': self.sim_control_widget.tend_under_input.value(),
                 'T1': self.sim_control_widget.T1_input.value(),
-                'T2': self.sim_control_widget.T2_input.value()
+                'T2': self.sim_control_widget.T2_input.value(),
+                'time_sequence': self.sim_control_widget.time_sequence_input.text(),
+                'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text()
             }
 
             dive_params = {
@@ -307,7 +311,8 @@ class MainWindow(QMainWindow):
             # datas = list(model_params_val) + list(sim_params_val) + list(dive_params_val)
             # fid = open('output.txt', 'w', encoding='utf-8')
             # for i in range(len(names)):
-            #     write_data(fid, 'single', names[i], 'FLT', datas[i])
+            #     namet, datat = self.get_data_info(datas[i])
+            #     write_data(fid, namet, names[i], datat, datas[i])
             # fid.close()
 
         except Exception as e:
@@ -393,7 +398,9 @@ class MainWindow(QMainWindow):
                 'k_wy': self.sim_control_widget.k_wy_input.value(),  # 垂向控制增益
                 'tend_under': self.sim_control_widget.tend_under_input.value(),
                 'T1': self.sim_control_widget.T1_input.value(),
-                'T2': self.sim_control_widget.T2_input.value()
+                'T2': self.sim_control_widget.T2_input.value(),
+                'time_sequence': self.sim_control_widget.time_sequence_input.text(),
+                'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text()
             }
 
             dive_params = {
@@ -451,7 +458,8 @@ class MainWindow(QMainWindow):
             datas = list(model_params_val) + list(sim_params_val) + list(dive_params_value)
             fid = open(filename, 'w', encoding='utf-8')
             for i in range(len(names)):
-                write_data(fid, 'single', names[i], 'FLT', datas[i])
+                namet, datat = self.get_data_info(datas[i])
+                write_data(fid, namet, names[i], datat, datas[i])
             fid.close()
 
             self.status_label.setText(f"配置已保存至: {filename}")
@@ -542,6 +550,8 @@ class MainWindow(QMainWindow):
                 self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
                 self.sim_control_widget.T1_input.setValue(sp.get('T1', None))
                 self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
+                self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
+                self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
 
             if "dive_params" in config:
                 mmp = config['dive_params']
@@ -597,75 +607,77 @@ class MainWindow(QMainWindow):
             if not filename:
                 return
 
-            t0, _, _ = read_data('input.txt', 't0')
-            tend, _, _ = read_data('input.txt', 'tend')
-            dt, _, _ = read_data('input.txt', 'dt')
-            v0, _, _ = read_data('input.txt', 'v0')
-            theta0, _, _ = read_data('input.txt', 'theta0')
-            psi0, _, _ = read_data('input.txt', 'psi0')
-            phi0, _, _ = read_data('input.txt', 'phi0')
-            alpha0, _, _ = read_data('input.txt', 'alpha0')
-            wx0, _, _ = read_data('input.txt', 'wx0')
-            wy0, _, _ = read_data('input.txt', 'wy0')
-            wz0, _, _ = read_data('input.txt', 'wz0')
-            k_wz, _, _ = read_data('input.txt', 'k_wz')
-            k_theta, _, _ = read_data('input.txt', 'k_theta')
-            kwz, _, _ = read_data('input.txt', 'kwz')
-            ktheta, _, _ = read_data('input.txt', 'ktheta')
-            k_ps, _, _ = read_data('input.txt', 'k_ps')
-            k_ph, _, _ = read_data('input.txt', 'k_ph')
-            k_wx, _, _ = read_data('input.txt', 'k_wx')
-            k_wy, _, _ = read_data('input.txt', 'k_wy')
-            tend_under, _, _ = read_data('input.txt', 'tend_under')
-            T1, _, _ = read_data('input.txt', 'T1')
-            T2, _, _ = read_data('input.txt', 'T2')
+            t0, _, _ = read_data(filename, 't0')
+            tend, _, _ = read_data(filename, 'tend')
+            dt, _, _ = read_data(filename, 'dt')
+            v0, _, _ = read_data(filename, 'v0')
+            theta0, _, _ = read_data(filename, 'theta0')
+            psi0, _, _ = read_data(filename, 'psi0')
+            phi0, _, _ = read_data(filename, 'phi0')
+            alpha0, _, _ = read_data(filename, 'alpha0')
+            wx0, _, _ = read_data(filename, 'wx0')
+            wy0, _, _ = read_data(filename, 'wy0')
+            wz0, _, _ = read_data(filename, 'wz0')
+            k_wz, _, _ = read_data(filename, 'k_wz')
+            k_theta, _, _ = read_data(filename, 'k_theta')
+            kwz, _, _ = read_data(filename, 'kwz')
+            ktheta, _, _ = read_data(filename, 'ktheta')
+            k_ps, _, _ = read_data(filename, 'k_ps')
+            k_ph, _, _ = read_data(filename, 'k_ph')
+            k_wx, _, _ = read_data(filename, 'k_wx')
+            k_wy, _, _ = read_data(filename, 'k_wy')
+            tend_under, _, _ = read_data(filename, 'tend_under')
+            T1, _, _ = read_data(filename, 'T1')
+            T2, _, _ = read_data(filename, 'T2')
+            time_sequence, _, _ = read_data(filename, 'time_sequence')
+            thrust_sequence, _, _ = read_data(filename, 'thrust_sequence')
 
-            L, _, _ = read_data('input.txt', 'L')
-            S, _, _ = read_data('input.txt', 'S')
-            V, _, _ = read_data('input.txt', 'V')
-            m, _, _ = read_data('input.txt', 'm')
-            xc, _, _ = read_data('input.txt', 'xc')
-            yc, _, _ = read_data('input.txt', 'yc')
-            zc, _, _ = read_data('input.txt', 'zc')
-            Jxx, _, _ = read_data('input.txt', 'Jxx')
-            Jyy, _, _ = read_data('input.txt', 'Jyy')
-            Jzz, _, _ = read_data('input.txt', 'Jzz')
-            T, _, _ = read_data('input.txt', 'T')
-            lk, _, _ = read_data('input.txt', 'lk')
-            rk, _, _ = read_data('input.txt', 'rk')
-            sgm, _, _ = read_data('input.txt', 'sgm')
-            dyc, _, _ = read_data('input.txt', 'dyc')
-            SGM, _, _ = read_data('input.txt', 'SGM')
-            LW, _, _ = read_data('input.txt', 'LW')
-            LH, _, _ = read_data('input.txt', 'LH')
-            dkmax, _, _ = read_data('input.txt', 'dkmax')
-            dkmin, _, _ = read_data('input.txt', 'dkmin')
-            dk0, _, _ = read_data('input.txt', 'dk0')
-            deltaymax, _, _ = read_data('input.txt', 'deltaymax')
-            deltavymax, _, _ = read_data('input.txt', 'deltavymax')
-            ddmax, _, _ = read_data('input.txt', 'ddmax')
-            dvmax, _, _ = read_data('input.txt', 'dvmax')
-            dthetamax, _, _ = read_data('input.txt', 'dthetamax')
-            wzmax, _, _ = read_data('input.txt', 'wzmax')
-            wxmax, _, _ = read_data('input.txt', 'wxmax')
-            dphimax, _, _ = read_data('input.txt', 'dphimax')
+            L, _, _ = read_data(filename, 'L')
+            S, _, _ = read_data(filename, 'S')
+            V, _, _ = read_data(filename, 'V')
+            m, _, _ = read_data(filename, 'm')
+            xc, _, _ = read_data(filename, 'xc')
+            yc, _, _ = read_data(filename, 'yc')
+            zc, _, _ = read_data(filename, 'zc')
+            Jxx, _, _ = read_data(filename, 'Jxx')
+            Jyy, _, _ = read_data(filename, 'Jyy')
+            Jzz, _, _ = read_data(filename, 'Jzz')
+            T, _, _ = read_data(filename, 'T')
+            lk, _, _ = read_data(filename, 'lk')
+            rk, _, _ = read_data(filename, 'rk')
+            sgm, _, _ = read_data(filename, 'sgm')
+            dyc, _, _ = read_data(filename, 'dyc')
+            SGM, _, _ = read_data(filename, 'SGM')
+            LW, _, _ = read_data(filename, 'LW')
+            LH, _, _ = read_data(filename, 'LH')
+            dkmax, _, _ = read_data(filename, 'dkmax')
+            dkmin, _, _ = read_data(filename, 'dkmin')
+            dk0, _, _ = read_data(filename, 'dk0')
+            deltaymax, _, _ = read_data(filename, 'deltaymax')
+            deltavymax, _, _ = read_data(filename, 'deltavymax')
+            ddmax, _, _ = read_data(filename, 'ddmax')
+            dvmax, _, _ = read_data(filename, 'dvmax')
+            dthetamax, _, _ = read_data(filename, 'dthetamax')
+            wzmax, _, _ = read_data(filename, 'wzmax')
+            wxmax, _, _ = read_data(filename, 'wxmax')
+            dphimax, _, _ = read_data(filename, 'dphimax')
 
-            ship_L, _, _ = read_data('input.txt', 'ship_L')
-            ship_M, _, _ = read_data('input.txt', 'ship_M')
-            ship_B, _, _ = read_data('input.txt', 'ship_B')
-            ship_T, _, _ = read_data('input.txt', 'ship_T')
-            burn_N, _, _ = read_data('input.txt', 'burn_N')
-            ship_if, _, _ = read_data('input.txt', 'ship_if')
-            ship_tpye, _, _ = read_data('input.txt', 'ship_tpye')
-            ship_x_x, _, _ = read_data('input.txt', 'ship_x_x')
-            ship_x_y, _, _ = read_data('input.txt', 'ship_x_y')
-            ship_x_z, _, _ = read_data('input.txt', 'ship_x_z')
-            ship_v_max, _, _ = read_data('input.txt', 'ship_v_max')
-            ship_a_max, _, _ = read_data('input.txt', 'ship_a_max')
-            air_t, _, _ = read_data('input.txt', 'air_t')
-            air_L, _, _ = read_data('input.txt', 'air_L')
-            air_theta, _, _ = read_data('input.txt', 'air_theta')
-            air_v, _, _ = read_data('input.txt', 'air_v')
+            ship_L, _, _ = read_data(filename, 'ship_L')
+            ship_M, _, _ = read_data(filename, 'ship_M')
+            ship_B, _, _ = read_data(filename, 'ship_B')
+            ship_T, _, _ = read_data(filename, 'ship_T')
+            burn_N, _, _ = read_data(filename, 'burn_N')
+            ship_if, _, _ = read_data(filename, 'ship_if')
+            ship_tpye, _, _ = read_data(filename, 'ship_tpye')
+            ship_x_x, _, _ = read_data(filename, 'ship_x_x')
+            ship_x_y, _, _ = read_data(filename, 'ship_x_y')
+            ship_x_z, _, _ = read_data(filename, 'ship_x_z')
+            ship_v_max, _, _ = read_data(filename, 'ship_v_max')
+            ship_a_max, _, _ = read_data(filename, 'ship_a_max')
+            air_t, _, _ = read_data(filename, 'air_t')
+            air_L, _, _ = read_data(filename, 'air_L')
+            air_theta, _, _ = read_data(filename, 'air_theta')
+            air_v, _, _ = read_data(filename, 'air_v')
 
             laptop_datas = {
                 't0': t0,
@@ -690,6 +702,8 @@ class MainWindow(QMainWindow):
                 'tend_under': tend_under,
                 'T1': T1,
                 'T2': T2,
+                'time_sequence': time_sequence,
+                'thrust_sequence': thrust_sequence,
                 'L': L,
                 'S': S,
                 'V': V,
@@ -794,6 +808,8 @@ class MainWindow(QMainWindow):
             self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
             self.sim_control_widget.T1_input.setValue(sp.get('T1', None))
             self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
+            self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
+            self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
 
             mmp = laptop_datas
             self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))
@@ -828,6 +844,30 @@ class MainWindow(QMainWindow):
         """重置视图"""
         self.visualization_widget.update_plots()
         QMessageBox.information(self, "重置成功", "视图已重置")
+
+    def get_data_info(self, data):
+        """根据数据类型返回对应的write_data参数"""
+        if isinstance(data, str):
+            return 'single', 'STR'
+        elif isinstance(data, (int, float)):
+            return 'single', 'FLT'
+        elif isinstance(data, (list, tuple)):
+            if len(data) == 0:
+                return 'single', 'FLT'
+            elif all(isinstance(x, (int, float)) for x in data):
+                return 'array1', 'FLT'
+            else:
+                return 'array1', 'STR'
+        elif isinstance(data, np.ndarray):
+            if data.ndim == 1:
+                return 'array1', 'FLT'
+            elif data.ndim == 2:
+                return 'array2', 'FLT'
+            else:
+                return 'single', 'FLT'  # 对于高维数组，暂时作为单个值处理
+        else:
+            # 默认处理其他类型
+            return 'single', 'FLT'
 
     def show_about(self):
         """显示关于对话框"""
@@ -964,6 +1004,8 @@ class MainWindow(QMainWindow):
                 tend_under, _, _ = read_data('input.txt', 'tend_under')
                 T1, _, _ = read_data('input.txt', 'T1')
                 T2, _, _ = read_data('input.txt', 'T2')
+                time_sequence, _, _ = read_data('input.txt', 'time_sequence')
+                thrust_sequence, _, _ = read_data('input.txt', 'thrust_sequence')
 
                 L, _, _ = read_data('input.txt', 'L')
                 S, _, _ = read_data('input.txt', 'S')
@@ -1035,6 +1077,8 @@ class MainWindow(QMainWindow):
                     'tend_under': tend_under,
                     'T1': T1,
                     'T2': T2,
+                    'time_sequence': time_sequence,
+                    'thrust_sequence': thrust_sequence,
                     'L': L,
                     'S': S,
                     'V': V,
@@ -1138,6 +1182,8 @@ class MainWindow(QMainWindow):
                 self.sim_control_widget.tend_under_input.setValue(sp.get('tend_under', None))
                 self.sim_control_widget.T1_input.setValue(sp.get('T1', None))
                 self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
+                self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
+                self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
 
                 mmp = laptop_datas
                 self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))

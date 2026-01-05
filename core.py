@@ -66,9 +66,12 @@ class Dan:
         self.dyc = 0  # 全局变量空泡轴线偏离值
 
         # ——————————模型外形——————————
-        self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
-        self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
-        self.zb = np.zeros((1, len(self.yb))).flatten()
+        # self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
+        # self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
+        self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0]) / 213 * 324
+        self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0]) / 213 * 324
+
+        self.zb = self.yb
 
         # ——————————入水参数——————————
         self.t0 = 0      # 仿真起始时间
@@ -106,6 +109,8 @@ class Dan:
         self.T2 = 6971.4
         self.TC = self.t0  # 空泡计算时刻
         # 在这里添加推力时间曲线输入
+        self.time_sequence = None
+        self.thrust_sequence = None
 
         # === 仿真控制参数 ===
         self.TP = 0.0  # 控制周期时间
@@ -255,7 +260,10 @@ class Dan:
         N.dxf = self.dxf
         N.T1 = self.T1   # 推力
         N.T2 = self.T2
+        N.time_sequence = self.time_sequence
+        N.thrust_sequence = self.thrust_sequence
         N.TC = 0   # 空泡计算时刻
+        N.m = self.total.m
 
         # === 仿真控制参数 ===
         N.TP = self.TP   # 控制周期时间
@@ -330,7 +338,7 @@ class Dan:
         N.ds = self.DS
         N.dx = self.DX
 
-
+        N.RK = self.rk
         # === 启控时刻参数 ===  // 需要根据入水时刻
         N.YCS = y_entry[-1, 10]  # 启控深度 (m)
         N.THETACS = y_entry[-1, 6]  # 启控俯仰角 (rad)
@@ -347,6 +355,13 @@ class Dan:
         N.plot_dan_x = self.plot_dan_x
         N.update_callback = self.update_callback
         N.progress_callback = self.progress_callback
+        N.xb = self.lk - self.xb
+        N.yb = self.yb
+        N.zb = self.zb
+        N.yb1 = np.zeros_like(self.yb)
+        N.zb1 = self.yb
+
+
         self.N = N
         self.N.main()
         N = self.N

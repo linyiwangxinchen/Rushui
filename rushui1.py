@@ -119,6 +119,10 @@ class  Entry:
         self.posCav[self.ic - 1, 3] = self.k1 * self.A / 4 * self.Dn * np.cos(self.dk) * self.vx0 * np.sqrt(self.cx0 * (1 + self.sgm))  # dS0
         self.posCav[self.ic - 1, 4] = np.pi * self.Dn ** 2 / 4
         self.isOpen = 1
+        # ——————————空泡模型参数——————————
+        self.A = 2  # 经验常数
+        self.k1 = 4 * np.pi / self.A ** 2
+        self.Dn = 2 * self.rk  # 空化器直径
 
 
     # 设置流体动力系数

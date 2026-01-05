@@ -1,3 +1,4 @@
+import bisect
 import logging
 
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -264,8 +265,8 @@ class SimulationControlWidget(QWidget):
             'T2': self.T2_input.value(),
 
             # 两个新增的输入框
-            'time_sequence': self.time_sequence_input.Text(),
-            'thrust_sequence': self.thrust_sequence_input.Text()
+            'time_sequence': self.time_sequence_input.text().strip(),
+            'thrust_sequence': self.thrust_sequence_input.text().strip()
 
         }
         self.data_output_signal_f.emit(data)
@@ -390,6 +391,14 @@ class SimulationControlWidget(QWidget):
             self.rushui.tend_under = tend_under
             self.rushui.T1 = self.T1_input.value()
             self.rushui.T2 = self.T2_input.value()
+            # 新增推力时间曲线
+            time_str = self.time_sequence_input.text().strip()
+            thrust_str = self.thrust_sequence_input.text().strip()
+            time_data = [float(t.strip()) for t in time_str.split(',') if t.strip()]
+            thrust_data = [float(t.strip()) for t in thrust_str.split(',') if t.strip()]
+            self.rushui.time_sequence = time_data
+            self.rushui.thrust_sequence = thrust_data
+
             self.rushui._recalculate_update_input()
 
             # 如果已有线程，先停止
@@ -441,6 +450,7 @@ class SimulationControlWidget(QWidget):
             logging.info("仿真计算成功完成")
         else:
             self.progress_label.setText("仿真已中止")
+        self.calc_thread = None
 
     def handle_error(self, error_message):
         """处理计算错误"""
@@ -487,6 +497,7 @@ class SimulationControlWidget(QWidget):
             self.progress_bar.setValue(0)
             logging.info("计算已停止")
 
+            self.calc_thread = None
             # 仅在确定线程已终止后重置模型
             try:
                 self.stab.__init__()

@@ -39,7 +39,9 @@ class CalculationThread(QThread):
                 return
 
             self.progress.emit(100, "计算完成")
+            self.finished.emit(1)
 
+            return
 
         except Exception as e:
             logging.exception("计算过程中发生错误")

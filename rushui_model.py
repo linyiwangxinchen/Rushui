@@ -1,3 +1,4 @@
+import bisect
 import os
 import time
 #
@@ -20,6 +21,9 @@ class under:
         self.update_callback = None
         self.progress_callback = None
         self.min_callback_interval = 0.05
+        # 添加推力时间曲线
+        self.time_sequence = None
+        self.thrust_sequence = None
         """初始化所有仿真参数"""
         # 上面是预制参数
         self.dt = 0.0001
@@ -292,6 +296,52 @@ class under:
         self.y1_initial = y1
         self.t0_initial = self.t0
 
+    def get_thrust(self, t, time_sequence, thrust_sequence, tol=1e-9):
+        """
+        根据时间t获取对应的推力值。
+
+        参数:
+        t (float): 需要查询的时间点
+        time_sequence (list): 时间序列，必须是递增的
+        thrust_sequence (list): 推力序列，与时间序列一一对应
+        tol (float): 浮点数比较的容差，默认1e-9
+
+        返回:
+        float: 对应的推力值
+        """
+        # 检查边界：t 小于最小值或大于最大值（考虑容差）
+        if t < time_sequence[0] - tol or t > time_sequence[-1] + tol:
+            return 0.0
+
+        # 调整t到有效范围[min, max]（处理浮点误差）
+        if t < time_sequence[0]:
+            t = time_sequence[0]
+        if t > time_sequence[-1]:
+            t = time_sequence[-1]
+
+        # 使用二分查找定位t的插入位置
+        index = bisect.bisect_left(time_sequence, t)
+
+        # 检查是否精确匹配（考虑容差）
+        if index < len(time_sequence) and abs(time_sequence[index] - t) < tol:
+            return thrust_sequence[index]
+        if index > 0 and abs(time_sequence[index - 1] - t) < tol:
+            return thrust_sequence[index - 1]
+
+        # 线性插值（index一定在1到len(time_sequence)-1之间）
+        t0 = time_sequence[index - 1]
+        t1 = time_sequence[index]
+        f0 = thrust_sequence[index - 1]
+        f1 = thrust_sequence[index]
+
+        # 防止除零错误（理论上时间序列应严格递增）
+        if abs(t1 - t0) < tol:
+            return (f0 + f1) / 2.0
+
+        # 线性插值公式
+        thrust = f0 + (f1 - f0) * (t - t0) / (t1 - t0)
+        return thrust
+
     def control_main(self):
         # 获取当前总体参数
 
@@ -350,15 +400,15 @@ class under:
         alpha = np.arctan(-vy / vx) if vx != 0 else 0
         beta = np.arctan(vz / np.sqrt(vx ** 2 + vy ** 2)) if (vx ** 2 + vy ** 2) != 0 else 0
 
-        # 手动设置轮廓
-        xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
-        yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
-        zb = np.zeros_like(yb)
-
-        # 俯视图轮廓
-        yb1 = np.zeros_like(yb)
-        zb1 = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
-        xb = 1.714 - xb
+        # # 手动设置轮廓
+        # xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
+        # yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
+        # zb = np.zeros_like(yb)
+        #
+        # # 俯视图轮廓
+        # yb1 = np.zeros_like(yb)
+        # zb1 = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
+        # xb = 1.714 - xb
 
         # 解包总体参数
         # 解包个毛线
@@ -402,13 +452,15 @@ class under:
         dJyy = (Jyy - Jyy_prev) / dt
         dJzz = (Jzz - Jzz_prev) / dt
 
-        # 计算发动机推力
-        if t < 0.56:
-            XT = T1
-        elif t < 100:
-            XT = T2
-        else:
-            XT = 0
+        XT = self.get_thrust(t, self.time_sequence, self.thrust_sequence, tol=1e-9)
+
+        # # 计算发动机推力
+        # if t < 0.56:
+        #     XT = T1
+        # elif t < 100:
+        #     XT = T2
+        # else:
+        #     XT = 0
 
         # 控制律参数
 
@@ -530,11 +582,11 @@ class under:
         self.ds = ds
         self.dx = dx
         self.dk = dk
-        self.xb = xb
-        self.yb = yb
-        self.zb = zb
-        self.yb1 = yb1
-        self.zb1 = zb1
+        # self.xb = xb
+        # self.yb = yb
+        # self.zb = zb
+        # self.yb1 = yb1
+        # self.zb1 = zb1
         self.y = y
 
     def initialize_cavity(self, x0: float, y0: float, z0: float, vx: float):
@@ -657,6 +709,27 @@ class under:
         self.cp = cp
         self.sf = sf
         self.cf = cf
+
+    def coordinate_transformation_matrix1(self):
+        y = self.y
+        theta = y[6]
+        psi = y[7]
+        phi = y[8]
+        phi = 0
+        # 求转换矩阵：弹体坐标系到地面系
+        st = np.sin(theta)
+        ct = np.cos(theta)
+        sp = np.sin(psi)
+        cp = np.cos(psi)
+        sf = np.sin(phi)
+        cf = np.cos(phi)
+
+        Cb0 = np.array([
+            [cp * ct, sp * sf - cp * st * cf, sp * cf + cp * st * sf],
+            [st, ct * cf, -ct * sf],
+            [-sp * ct, cp * sf + sp * st * cf, cp * cf - sp * st * sf]
+        ])
+        return Cb0
 
     # 主体部分尾部流体动力
     def tail_fluid_dynamics(self):
@@ -974,8 +1047,9 @@ class under:
                         f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
 
             # 获取弹体位置 - 从弹体系转到地系
-            posb = Cb0 @ np.vstack([xb, yb, zb])
-            posb1 = Cb0 @ np.vstack([xb, yb1, zb1])
+            Cb1 = self.coordinate_transformation_matrix1()
+            posb = Cb1 @ np.vstack([xb, yb, zb])
+            posb1 = Cb1 @ np.vstack([xb, yb1, zb1])
 
             # 将空泡轴线坐标转化为雷体坐标系下
             for j in range(len(CAV)):
@@ -984,7 +1058,7 @@ class under:
                 cav0[j, 2] = CAV[j, 2] - z0  # z坐标
 
             # 坐标转换：地面系 -> 弹体系
-            p = Cb0.T @ cav0[:, 0:3].T
+            p = Cb1.T @ cav0[:, 0:3].T
             cav0 = p.T
 
             # 前视图和俯视图轮廓计算
@@ -1028,11 +1102,11 @@ class under:
                 cav4[j, 1] = 0
 
             # 由弹体坐标系转回地面系
-            cav0 = (Cb0 @ cav0.T).T
-            cav1 = (Cb0 @ cav1.T).T
-            cav2 = (Cb0 @ cav2.T).T
-            cav3 = (Cb0 @ cav3.T).T
-            cav4 = (Cb0 @ cav4.T).T
+            cav0 = (Cb1 @ cav0.T).T
+            cav1 = (Cb1 @ cav1.T).T
+            cav2 = (Cb1 @ cav2.T).T
+            cav3 = (Cb1 @ cav3.T).T
+            cav4 = (Cb1 @ cav4.T).T
 
             # 准备绘图数据
             self.plot_dan_x = posb[0, :]
