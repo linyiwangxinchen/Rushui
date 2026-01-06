@@ -30,7 +30,6 @@ class CalculationThread(QThread):
             self.rushui.update_callback = self.send_update
             self.rushui.progress_callback = self.send_progress
 
-
             # 启动主计算
             self.rushui.main()
 
