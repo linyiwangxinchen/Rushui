@@ -5,7 +5,7 @@ import numpy as np
 import pyqtgraph as pg
 import logging
 import sys
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QMessageBox, QVBoxLayout, QTabWidget, QHBoxLayout, QWidget, QMainWindow, \
     QStatusBar, QLabel, QFileDialog, QDialog, QPushButton
 from ModelParameterWidget import ModelParameterWidget
@@ -28,6 +28,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 class MainWindow(QMainWindow):
     """主窗口"""
+    to_data_signal = pyqtSignal(dict)
 
     def __init__(self):
         super().__init__()
@@ -83,6 +84,11 @@ class MainWindow(QMainWindow):
 
         self.model_param_widget.data_output_signal_m.connect(self.sim_control_widget.get_model)
         self.sim_control_widget.data_output_signal_f.connect(self.model_param_widget.get_model)
+
+        # 连接dive参数
+        self.sim_dive_widget.data_input_signal_f.connect(self.to_all_data)
+        self.to_data_signal.connect(self.sim_dive_widget.get_model)
+
 
         # 组合布局
         main_layout.addWidget(control_panel, 1)
@@ -1209,6 +1215,106 @@ class MainWindow(QMainWindow):
 
             except Exception as e:
                 logging.exception("加载配置时出错")
+
+    def to_all_data(self, Checki):
+
+        # 收集模型参数
+        datas = {
+            # 几何与质量参数
+            'L': self.model_param_widget.L_input.value(),  # 长度 (m)
+            'S': self.model_param_widget.S_input.value(),  # 横截面积 (m²)
+            'V': self.model_param_widget.V_input.value(),  # 体积 (m³)
+            'm': self.model_param_widget.m_input.value(),  # 质量 (kg)
+            'xc': self.model_param_widget.xc_input.value(),  # 重心 x 坐标 (m)
+            'yc': self.model_param_widget.yc_input.value(),  # 重心 y 坐标 (m)
+            'zc': self.model_param_widget.zc_input.value(),  # 重心 z 坐标 (m)
+            'Jxx': self.model_param_widget.Jxx_input.value(),  # 转动惯量 Jxx (kg·m²)
+            'Jyy': self.model_param_widget.Jyy_input.value(),  # 转动惯量 Jyy (kg·m²)
+            'Jzz': self.model_param_widget.Jzz_input.value(),  # 转动惯量 Jzz (kg·m²)
+            'T': self.model_param_widget.T_input.value(),  # 推力 (N)
+
+            # 空泡仿真参数
+            'lk': self.model_param_widget.lk_input.value(),  # 空化器距重心距离 (m)
+            'rk': self.model_param_widget.rk_input.value(),  # 空化器半径 (m)
+            'sgm': self.model_param_widget.sgm_input.value(),  # 全局空化数
+            'dyc': self.model_param_widget.dyc_input.value(),  # 空泡轴线偏离 (m)
+
+            # 水下物理几何参数
+            'SGM': self.model_param_widget.SGM_input.value(),  # 水下空化数
+            'LW': self.model_param_widget.LW_input.value(),  # 水平鳍位置 (m)
+            'LH': self.model_param_widget.LH_input.value(),  # 垂直鳍位置 (m)
+
+            # 舵机与角度限制参数
+            'dkmax': self.model_param_widget.dkmax_input.value(),  # 舵角上限 (°)
+            'dkmin': self.model_param_widget.dkmin_input.value(),  # 舵角下限 (°)
+            'dk0': self.model_param_widget.dk0_input.value(),  # 舵角零位 (°)
+            'deltaymax': self.model_param_widget.deltaymax_input.value(),  # 横向位移限制 (m)
+            'deltavymax': self.model_param_widget.deltavymax_input.value(),  # 垂向位移限制 (m)
+            'ddmax': self.model_param_widget.ddmax_input.value(),  # 最大深度变化率 (°/s²)
+            'dvmax': self.model_param_widget.dvmax_input.value(),  # 最大速度变化率 (°/s²)
+            'dthetamax': self.model_param_widget.dthetamax_input.value(),  # 最大俯仰角速率 (°/s)
+            'wzmax': self.model_param_widget.wzmax_input.value(),  # 最大偏航角速率 (°/s)
+            'wxmax': self.model_param_widget.wxmax_input.value(),  # 最大滚转角速率 (°/s)
+            'dphimax': self.model_param_widget.dphimax_input.value(),  # 最大滚转角加速度 (°/s²)
+
+            # 收集仿真参数
+
+            # ——————————入水参数——————————
+            't0': self.sim_control_widget.t0_input.value(),  # 起始时间 (s)
+            'tend': self.sim_control_widget.tend_input.value(),  # 终止时间 (s)
+            'dt': self.sim_control_widget.dt_input.value(),  # 仿真步长 (s)
+            'v0': self.sim_control_widget.v0_input.value(),  # 入水速度 (m/s)
+            'theta0': self.sim_control_widget.theta0_input.value(),  # 弹道角 (deg)
+            'psi0': self.sim_control_widget.psi0_input.value(),  # 偏航角 (deg)
+            'phi0': self.sim_control_widget.phi0_input.value(),  # 横滚角 (deg)
+            'alpha0': self.sim_control_widget.alpha0_input.value(),  # 攻角 (deg)
+            'wx0': self.sim_control_widget.wx0_input.value(),  # 横滚角速度 (deg/s)
+            'wy0': self.sim_control_widget.wy0_input.value(),  # 偏航角速度 (deg/s)
+            'wz0': self.sim_control_widget.wz0_input.value(),  # 俯仰角速度 (deg/s)
+
+            # ——————————控制参数 (修正分组)——————————
+            # 注：原代码存在分组命名冲突，已按实际参数含义重新分组
+            'k_wz': self.sim_control_widget.k_wz_input.value(),  # 偏航角速度增益 (控制参数)
+            'k_theta': self.sim_control_widget.k_theta_input.value(),  # 俯仰角增益 (控制参数)
+
+            'kwz': self.sim_control_widget.kwz_input.value(),  # 偏航角速度增益 (控制参数)
+            'ktheta': self.sim_control_widget.ktheta_input.value(),  # 俯仰角增益 (控制参数)
+            # ——————————深度控制参数——————————
+            'k_ps': self.sim_control_widget.k_ps_input.value(),  # 姿态同步增益
+            'k_ph': self.sim_control_widget.k_ph_input.value(),  # 舵机响应增益
+            'k_wx': self.sim_control_widget.k_wx_input.value(),  # 滚转角速度增益
+            'k_wy': self.sim_control_widget.k_wy_input.value(),  # 垂向控制增益
+            'tend_under': self.sim_control_widget.tend_under_input.value(),
+            'T1': self.sim_control_widget.T1_input.value(),
+            'T2': self.sim_control_widget.T2_input.value(),
+            'time_sequence': self.sim_control_widget.time_sequence_input.text(),
+            'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text(),
+
+            'ship_L': self.sim_dive_widget.ship_L_input.value(),
+            'ship_M': self.sim_dive_widget.ship_M_input.value(),
+            'ship_B': self.sim_dive_widget.ship_B_input.value(),
+            'ship_T': self.sim_dive_widget.ship_T_input.value(),
+
+            # 武器毁伤多次重复实验
+            'burn_N': self.sim_dive_widget.burn_N_input.value(),
+            'ship_if': self.sim_dive_widget.ship_if.currentIndex(),  # 是否手动设置舰艇类型
+            'ship_tpye': self.sim_dive_widget.ship_tpye.currentIndex(),  # 选择的舰艇类型（注意变量名拼写）
+
+            # 目标舰艇相关参数
+            'ship_x_x': self.sim_dive_widget.ship_x_x_input.value(),  # x位置
+            'ship_x_y': self.sim_dive_widget.ship_x_y_input.value(),  # y位置
+            'ship_x_z': self.sim_dive_widget.ship_x_z_input.value(),  # z位置
+            'ship_v_max': self.sim_dive_widget.ship_v_max_input.value(),  # 最大速度（节）
+            'ship_a_max': self.sim_dive_widget.ship_a_max_input.value(),  # 最大加速度（m/s^2）
+
+            # 空中入水飞行参数
+            'air_t': self.sim_dive_widget.air_t_input.value(),  # 飞行时间(s)
+            'air_L': self.sim_dive_widget.air_L_input.value(),  # 弹道距离(km)
+            'air_theta': self.sim_dive_widget.air_theta_input.value(),  # 入水倾角(deg)
+            'air_v': self.sim_dive_widget.air_v_input.value()  # 入水速度(m/s)
+        }
+
+        self.to_data_signal.emit(datas)
 
 
 if __name__ == "__main__":

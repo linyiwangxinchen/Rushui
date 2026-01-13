@@ -69,7 +69,6 @@ class  Entry:
         self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
         self.zb = np.zeros((1, len(self.yb))).flatten()
 
-
         # ——————————入水参数——————————
         self.t0 = 0      # 仿真起始时间
         self.tend = 0.2  # 仿真终止时间
@@ -90,15 +89,12 @@ class  Entry:
         self.Dn = 2 * self.rk  # 空化器直径
         self.cx0 = 0.82  # 空化器零空化数阻力系数
 
-
-
         # ——————————force_rec.txt相关参数存储——————————
         self.force_data = []
 
         # ——————————控制参数——————————
         self.k_wz = 0.06
         self.k_theta = 0.04
-
         self._update_input()
 
     def _update_input(self):

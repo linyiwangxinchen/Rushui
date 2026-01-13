@@ -32,6 +32,7 @@ class MSC:
         self.v_max = 46 / 3.6
         # no input
         self.dict_shipi = {'ship_L': 315.7728, 'ship_M': 78000000, 'ship_B': 76.8096, 'ship_T': 10.8966}
+        self.model_data = None
 
     def _change_data(self):
         dict1 = {'ship_L': 315.7728, 'ship_M': 78000000, 'ship_B': 76.8096, 'ship_T': 10.8966}
@@ -51,6 +52,120 @@ class MSC:
         # for i in range(N):
         ship_x = self.ship_x
         Dani = Dan()
+        if self.model_data is not None:
+            # 设置参数
+            model_data = self.model_data
+            t0 = model_data['t0']
+            tend = model_data['tend']
+            dt = model_data['dt']
+            v0 = model_data['v0']
+            theta0 = model_data['theta0']
+            psi0 = model_data['psi0']
+            phi0 = model_data['phi0']
+            alpha0 = model_data['alpha0']
+            wx0 = model_data['wx0']
+            wy0 = model_data['wy0']
+            wz0 = model_data['wz0']
+            k_wz = model_data['k_wz']
+            k_theta = model_data['k_theta']
+            k_ps = model_data['k_ps']
+            k_ph = model_data['k_ph']
+            k_wx = model_data['k_wx']
+            k_wy = model_data['k_wy']
+            kwz = model_data['kwz']
+            ktheta = model_data['ktheta']
+            tend_under = model_data['tend_under']
+
+            # 几何与质量参数 (赋值到self.total命名空间)
+            Dani.total.L = model_data['L']  # 长度 (m)
+            Dani.total.S = model_data['S']  # 横截面积 (m²)
+            Dani.total.V = model_data['V']  # 体积 (m³)
+            Dani.total.m = model_data['m']  # 质量 (kg)
+            Dani.total.xc = model_data['xc']  # 重心 x 坐标 (m)
+            Dani.total.yc = model_data['yc']  # 重心 y 坐标 (m)
+            Dani.total.zc = model_data['zc']  # 重心 z 坐标 (m)
+            Dani.total.Jxx = model_data['Jxx']  # 转动惯量 Jxx (kg·m²)
+            Dani.total.Jyy = model_data['Jyy']  # 转动惯量 Jyy (kg·m²)
+            Dani.total.Jzz = model_data['Jzz']  # 转动惯量 Jzz (kg·m²)
+            Dani.total.T = model_data['T']  # 推力 (N)
+
+            # 空泡仿真参数 (直接赋值到实例)
+            Dani.lk = model_data['lk']  # 空化器距重心距离 (m)
+            Dani.rk = model_data['rk']  # 空化器半径 (m)
+            Dani.sgm = model_data['sgm']  # 全局空化数
+            Dani.dyc = model_data['dyc']  # 空泡轴线偏离 (m)
+
+            # 水下物理几何参数 (直接赋值到实例)
+            Dani.SGM = model_data['SGM']  # 水下空化数
+            Dani.LW = model_data['LW']  # 水平鳍位置 (m)
+            Dani.LH = model_data['LH']  # 垂直鳍位置 (m)
+
+            # 舵机与角度限制参数 (需角度转弧度)
+            RTD = Dani.RTD  # 获取弧度-角度转换因子 (180/π)
+
+            # 角度类参数 (° -> rad)
+            Dani.dkmax = model_data['dkmax'] / RTD  # 舵角上限 (rad)
+            Dani.dkmin = model_data['dkmin'] / RTD  # 舵角下限 (rad)
+            Dani.dk0 = model_data['dk0'] / RTD  # 舵角零位 (rad)
+            Dani.ddmax = model_data['ddmax'] / RTD  # 最大深度变化率 (rad/s²)
+            Dani.dvmax = model_data['dvmax'] / RTD  # 最大速度变化率 (rad/s²)
+            Dani.dthetamax = model_data['dthetamax'] / RTD  # 最大俯仰角速率 (rad/s)
+            Dani.wzmax = model_data['wzmax'] / RTD  # 最大偏航角速率 (rad/s)
+            Dani.wxmax = model_data['wxmax'] / RTD  # 最大滚转角速率 (rad/s)
+            Dani.dphimax = model_data['dphimax'] / RTD  # 最大滚转角加速度 (rad/s²)
+
+            # 位移类参数 (直接赋值，单位m)
+            Dani.deltaymax = model_data['deltaymax']  # 横向位移限制 (m)
+            Dani.deltavymax = model_data['deltavymax']  # 垂向位移限制 (m)
+
+            # 入水初始条件
+            Dani.t0 = t0
+            Dani.tend = tend
+            Dani.dt = dt
+            Dani.v0 = v0
+
+            # ——————————入水参数—————————— (角度需转换为弧度)
+            Dani.t0 = t0  # 起始时间 (s)
+            Dani.tend = tend  # 终止时间 (s)
+            Dani.dt = dt  # 仿真步长 (s)
+            Dani.v0 = v0  # 入水速度 (m/s)
+            Dani.theta0 = theta0 / RTD  # 弹道角 (rad)
+            Dani.psi0 = psi0 / RTD  # 偏航角 (rad)
+            Dani.phi0 = phi0 / RTD  # 横滚角 (rad)
+            Dani.alpha0 = alpha0 / RTD  # 攻角 (rad)
+            Dani.wx0 = wx0 / RTD  # 横滚角速度 (rad/s)
+            Dani.wy0 = wy0 / RTD  # 偏航角速度 (rad/s)
+            Dani.wz0 = wz0 / RTD  # 俯仰角速度 (rad/s)
+
+            # ——————————基础控制参数—————————— (无量纲增益，直接赋值)
+            # 注意：这些参数在Dan类中有独立用途
+            Dani.k_wz = k_wz  # 偏航角速度增益
+            Dani.k_theta = k_theta  # 俯仰角增益
+
+            # ——————————深度控制参数—————————— (无量纲增益，直接赋值)
+            # 与基础控制参数不同，这些用于水下控制律
+            Dani.kps = k_ps  # 姿态同步增益 (对应kth)
+            Dani.kph = k_ph  # 舵机响应增益
+            Dani.kwx = k_wx  # 滚转角速度增益
+            Dani.kwy = k_wy  # 垂向控制增益
+            Dani.kwz = kwz  # 偏航角速度增益 (深度控制)
+            Dani.kth = ktheta  # 俯仰角增益 (深度控制)
+
+            # ——————————特殊关联参数——————————
+            # Dan类中kps默认等于kth，但UI提供独立控制，此处显式同步
+            Dani.kps = Dani.kth  # 确保姿态同步增益与俯仰增益一致
+            Dani.tend_under = tend_under
+            Dani.T1 = model_data['T1']
+            Dani.T2 = model_data['T2']
+            # 新增推力时间曲线
+            time_str = model_data['time_sequence']
+            thrust_str = model_data['thrust_sequence']
+            time_data = [float(t.strip()) for t in time_str.split(',') if t.strip()]
+            thrust_data = [float(t.strip()) for t in thrust_str.split(',') if t.strip()]
+            Dani.time_sequence = time_data
+            Dani.thrust_sequence = thrust_data
+            Dani._recalculate_update_input()
+
         dicti = self.dict_shipi
         randomi = random.random() * 2 - 1
         randomj = random.random() * 2 - 1

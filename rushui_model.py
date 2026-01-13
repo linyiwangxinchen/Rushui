@@ -225,7 +225,7 @@ class under:
             if os.path.exists(file):
                 os.remove(file)
 
-        print("仿真环境初始化完成")
+        # print("仿真环境初始化完成")
 
     def set_initial_conditions(self):
         """设置初始条件"""
@@ -2240,7 +2240,7 @@ class under:
 
     def main(self):
         """主程序"""
-        print("开始水下弹道仿真...")
+        # print("开始水下弹道仿真...")
         # self.y1_initial = y1
         # self.t0_initial = t0
 
@@ -2257,21 +2257,21 @@ class under:
         self.initialize_cavity(self.y1_initial[9], self.y1_initial[10], self.y1_initial[11], self.y1_initial[0])
 
         # 求解弹道
-        print("正在求解弹道方程...")
+        # print("正在求解弹道方程...")
         self.solve_trajectory()
 
         # 将角速度从弧度转换回度
         self.ys[:, 3:9] = self.ys[:, 3:9] * self.RTD
 
         # 绘制结果
-        print("正在生成图表...")
+        # print("正在生成图表...")
         self.plot_results()
 
         # 保存结果
-        print("正在保存结果...")
+        # print("正在保存结果...")
         self.save_results()
 
-        print("仿真完成！")
+        # print("仿真完成！")
 
 
 if __name__ == "__main__":

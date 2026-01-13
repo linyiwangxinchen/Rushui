@@ -1,71 +1,30 @@
-t0, _, _ = read_data(filename, 't0')
-tend, _, _ = read_data(filename, 'tend')
-dt, _, _ = read_data(filename, 'dt')
-v0, _, _ = read_data(filename, 'v0')
-theta0, _, _ = read_data(filename, 'theta0')
-psi0, _, _ = read_data(filename, 'psi0')
-phi0, _, _ = read_data(filename, 'phi0')
-alpha0, _, _ = read_data(filename, 'alpha0')
-wx0, _, _ = read_data(filename, 'wx0')
-wy0, _, _ = read_data(filename, 'wy0')
-wz0, _, _ = read_data(filename, 'wz0')
-k_wz, _, _ = read_data(filename, 'k_wz')
-k_theta, _, _ = read_data(filename, 'k_theta')
-kwz, _, _ = read_data(filename, 'kwz')
-ktheta, _, _ = read_data(filename, 'ktheta')
-k_ps, _, _ = read_data(filename, 'k_ps')
-k_ph, _, _ = read_data(filename, 'k_ph')
-k_wx, _, _ = read_data(filename, 'k_wx')
-k_wy, _, _ = read_data(filename, 'k_wy')
-tend_under, _, _ = read_data(filename, 'tend_under')
-T1, _, _ = read_data(filename, 'T1')
-T2, _, _ = read_data(filename, 'T2')
-time_sequence, _, _ = read_data(filename, 'time_sequence')
-thrust_sequence, _, _ = read_data(filename, 'thrust_sequence')
+t0 = model_data['t0']
+tend = model_data['tend']
+dt = model_data['dt']
+v0 = model_data['v0']
+theta0 = model_data['theta0']
+psi0 = model_data['psi0']
+phi0 = model_data['phi0']
+alpha0 = model_data['alpha0']
+wx0 = model_data['wx0']
+wy0 = model_data['wy0']
+wz0 = model_data['wz0']
+k_wz = model_data['k_wz']
+k_theta = model_data['k_theta']
+k_ps = model_data['k_ps']
+k_ph = model_data['k_ph']
+k_wx = model_data['k_wx']
+k_wy = model_data['k_wy']
+kwz = model_data['kwz']
+ktheta = model_data['ktheta']
+tend_under = model_data['tend_under']
 
-L, _, _ = read_data(filename, 'L')
-S, _, _ = read_data(filename, 'S')
-V, _, _ = read_data(filename, 'V')
-m, _, _ = read_data(filename, 'm')
-xc, _, _ = read_data(filename, 'xc')
-yc, _, _ = read_data(filename, 'yc')
-zc, _, _ = read_data(filename, 'zc')
-Jxx, _, _ = read_data(filename, 'Jxx')
-Jyy, _, _ = read_data(filename, 'Jyy')
-Jzz, _, _ = read_data(filename, 'Jzz')
-T, _, _ = read_data(filename, 'T')
-lk, _, _ = read_data(filename, 'lk')
-rk, _, _ = read_data(filename, 'rk')
-sgm, _, _ = read_data(filename, 'sgm')
-dyc, _, _ = read_data(filename, 'dyc')
-SGM, _, _ = read_data(filename, 'SGM')
-LW, _, _ = read_data(filename, 'LW')
-LH, _, _ = read_data(filename, 'LH')
-dkmax, _, _ = read_data(filename, 'dkmax')
-dkmin, _, _ = read_data(filename, 'dkmin')
-dk0, _, _ = read_data(filename, 'dk0')
-deltaymax, _, _ = read_data(filename, 'deltaymax')
-deltavymax, _, _ = read_data(filename, 'deltavymax')
-ddmax, _, _ = read_data(filename, 'ddmax')
-dvmax, _, _ = read_data(filename, 'dvmax')
-dthetamax, _, _ = read_data(filename, 'dthetamax')
-wzmax, _, _ = read_data(filename, 'wzmax')
-wxmax, _, _ = read_data(filename, 'wxmax')
-dphimax, _, _ = read_data(filename, 'dphimax')
 
-ship_L, _, _ = read_data(filename, 'ship_L')
-ship_M, _, _ = read_data(filename, 'ship_M')
-ship_B, _, _ = read_data(filename, 'ship_B')
-ship_T, _, _ = read_data(filename, 'ship_T')
-burn_N, _, _ = read_data(filename, 'burn_N')
-ship_if, _, _ = read_data(filename, 'ship_if')
-ship_tpye, _, _ = read_data(filename, 'ship_tpye')
-ship_x_x, _, _ = read_data(filename, 'ship_x_x')
-ship_x_y, _, _ = read_data(filename, 'ship_x_y')
-ship_x_z, _, _ = read_data(filename, 'ship_x_z')
-ship_v_max, _, _ = read_data(filename, 'ship_v_max')
-ship_a_max, _, _ = read_data(filename, 'ship_a_max')
-air_t, _, _ = read_data(filename, 'air_t')
-air_L, _, _ = read_data(filename, 'air_L')
-air_theta, _, _ = read_data(filename, 'air_theta')
-air_v, _, _ = read_data(filename, 'air_v')
+
+
+
+
+
+
+
+
