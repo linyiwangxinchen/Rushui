@@ -33,6 +33,8 @@ class MSC:
         # no input
         self.dict_shipi = {'ship_L': 315.7728, 'ship_M': 78000000, 'ship_B': 76.8096, 'ship_T': 10.8966}
         self.model_data = None
+        self.ifdian = None
+        self.dian_L = None
 
     def _change_data(self):
         dict1 = {'ship_L': 315.7728, 'ship_M': 78000000, 'ship_B': 76.8096, 'ship_T': 10.8966}
@@ -218,8 +220,19 @@ class MSC:
 
         # 取极小值
         distance_min = np.min(distance_final)
+        if self.ifdian:
+            if self.dian_L > distance_min:
+                pos = -1  # 默认值（未找到）
+                for i, val in enumerate(distance_final):
+                    if val < self.dian_L:
+                        pos = i
+                        break  # 找到第一个后立即退出循环
+                boomi = pos
+            else:
+                boomi = np.argmin(distance_final)
+        else:
+            boomi = np.argmin(distance_final)
         # 爆照点寻找
-        boomi = np.argmin(distance_final)
 
         ship_x_final = ship_x_list[boomi, :]
         dan_x_final = dan_line[boomi, :]

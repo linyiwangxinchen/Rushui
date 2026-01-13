@@ -91,6 +91,18 @@ class SimulationDiveWidget(QWidget):
         self.add_labeled_input(dan_air_layout, "空中弹道距离L (km):", 1, 0, 0, 1000, 519.8217, 1.0, "air_L_input")
         self.add_labeled_input(dan_air_layout, "入水弹道倾角theta (deg):", 2, 0, -1000, 1000, -10.1 , 1.0, "air_theta_input")
         self.add_labeled_input(dan_air_layout, "入水速度v (m/s):", 3, 0, 0, 1000, 273.63, 1.0, "air_v_input")
+
+        dan_air_layout.addWidget(QLabel("是否开启电磁制导:"), 4, 0)
+        self.dan_aim_tpye = QComboBox()
+        self.dan_aim_tpye.addItems([
+            "否",
+            "是"
+        ])
+        self.dan_aim_tpye.setCurrentIndex(0)
+        dan_air_layout.addWidget(self.dan_aim_tpye, 4, 1)
+
+        self.add_labeled_input(dan_air_layout, "不开启电磁制导的起爆距离 (m):", 5, 0, 0, 1000, 10, 1.0, "dan_L_input")
+
         dan_air_group.setLayout(dan_air_layout)
 
         # 控制按钮
@@ -217,6 +229,8 @@ class SimulationDiveWidget(QWidget):
             self.stab.ifship = self.ship_if.currentIndex()
             self.stab.ship_kind = self.ship_tpye.currentIndex()
             self.stab.N_burn = self.burn_N_input.value()
+            self.stab.ifdian = self.ifdian.value()
+            self.stab.dian_L = self.dian_L_input.value()
 
 
             # 创建并启动计算线程

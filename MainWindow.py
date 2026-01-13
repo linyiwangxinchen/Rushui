@@ -32,6 +32,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
         self.setWindowTitle("空水一体弹道与突防效能评估系统")
         self.setGeometry(100, 100, 1400, 900)
 
