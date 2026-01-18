@@ -66,7 +66,7 @@ class SimulationDiveWidget(QWidget):
 
         sim_group.setLayout(sim_layout)
 
-        ship_x_group = QGroupBox("目标舰艇相关参数（从入水点开始计算）")
+        ship_x_group = QGroupBox("目标舰艇相关参数")
         ship_x_layout = QGridLayout()
         ship_x_layout.setContentsMargins(5, 5, 5, 5)
         ship_x_layout.setSpacing(5)
@@ -77,7 +77,7 @@ class SimulationDiveWidget(QWidget):
         self.add_labeled_input(ship_x_layout, "目标舰艇最大加速度（m/s^2）:", 4, 0, 0, 1000, 2, 1.0, "ship_a_max_input")
         ship_x_group.setLayout(ship_x_layout)
 
-        dan_air_group = QGroupBox("空中入水飞行参数（从平台读取）")
+        dan_air_group = QGroupBox("空中入水飞行参数")
         dan_air_layout = QGridLayout()
         dan_air_layout.setContentsMargins(5, 5, 5, 5)
         dan_air_layout.setSpacing(5)
@@ -218,10 +218,10 @@ class SimulationDiveWidget(QWidget):
         """启动仿真计算"""
         try:
             # 重置状态
-            self.ask_model()
+            # self.ask_model()
 
             self.stab = MSC()
-            self.stab.model_data = self.model_data
+            # self.stab.model_data = self.model_data
             self.stab.ship_L = self.ship_L_input.value()
             self.stab.ship_M = self.ship_M_input.value()
             self.stab.ship_B = self.ship_B_input.value()
@@ -229,9 +229,11 @@ class SimulationDiveWidget(QWidget):
             self.stab.ifship = self.ship_if.currentIndex()
             self.stab.ship_kind = self.ship_tpye.currentIndex()
             self.stab.N_burn = self.burn_N_input.value()
-            self.stab.ifdian = self.ifdian.value()
-            self.stab.dian_L = self.dian_L_input.value()
 
+            # self.stab.ifdian = self.dan_aim_tpye.currentIndex()
+            # self.stab.dian_L = self.dan_L_input.value()
+            # self.stab.before_time = self.air_t_input.value()
+            # self.stab.before_L = self.air_L_input.value()
 
             # 创建并启动计算线程
             self.calc_thread = CalculationThread(self.stab)

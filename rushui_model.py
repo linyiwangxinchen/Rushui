@@ -451,16 +451,16 @@ class under:
         dJxx = (Jxx - Jxx_prev) / dt
         dJyy = (Jyy - Jyy_prev) / dt
         dJzz = (Jzz - Jzz_prev) / dt
-
-        XT = self.get_thrust(t, self.time_sequence, self.thrust_sequence, tol=1e-9)
-
-        # # 计算发动机推力
-        # if t < 0.56:
-        #     XT = T1
-        # elif t < 100:
-        #     XT = T2
-        # else:
-        #     XT = 0
+        if self.time_sequence is not None:
+            XT = self.get_thrust(t, self.time_sequence, self.thrust_sequence, tol=1e-9)
+        else:
+            # 计算发动机推力
+            if t < 0.56:
+                XT = T1
+            elif t < 100:
+                XT = T2
+            else:
+                XT = 0
 
         # 控制律参数
 

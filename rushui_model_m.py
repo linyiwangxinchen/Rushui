@@ -95,6 +95,13 @@ class under:
         self.VYCS = -0.01323  # 启控垂向速度 (m/s)
         self.PSICS = 9.17098 / self.RTD  # 启控偏航角 (rad)
 
+        # === 末端导引参数 ===
+        self.x_aim = 0.0  # 目标点x坐标
+        self.y_aim = 0.0  # 目标点y坐标
+        self.z_aim = 0.0  # 目标点z坐标
+        self.guidance_distance = 2000.0  # 导引距离阈值 (2km)
+
+
         # === 动态数据数组 ===
         self.AF = np.zeros((80, 6))  # 空泡延迟历史数组
         self.INDEX = 0  # 当前索引
@@ -296,6 +303,17 @@ class under:
         self.y1_initial = y1
         self.t0_initial = self.t0
 
+    def set_target_position(self, x_aim, y_aim, z_aim):
+        """
+        设置目标点位置
+        :param x_aim: 目标点x坐标
+        :param y_aim: 目标点y坐标
+        :param z_aim: 目标点z坐标
+        """
+        self.x_aim = x_aim
+        self.y_aim = y_aim
+        self.z_aim = z_aim
+
     def get_thrust(self, t, time_sequence, thrust_sequence, tol=1e-9):
         """
         根据时间t获取对应的推力值。
@@ -452,7 +470,16 @@ class under:
         dJyy = (Jyy - Jyy_prev) / dt
         dJzz = (Jzz - Jzz_prev) / dt
 
-        XT = self.get_thrust(t, self.time_sequence, self.thrust_sequence, tol=1e-9)
+        if self.time_sequence is None:
+            # 计算发动机推力
+            if t < 0.56:
+                XT = T1
+            elif t < 100:
+                XT = T2
+            else:
+                XT = 0
+        else:
+            XT = self.get_thrust(t, self.time_sequence, self.thrust_sequence, tol=1e-9)
 
         # # 计算发动机推力
         # if t < 0.56:
@@ -491,32 +518,68 @@ class under:
 
         # 控制周期判断
         if (t - self.TP) >= cc and t > tcs:
-            # --------------俯仰通道控制--------------
-            h0 = -2.5
 
-            # 深度偏差
-            deltay = h0 + (YCS - h0) * np.exp(-(t - tcs) / 0.2) - y0
-            deltay = np.sign(deltay) * min(abs(deltay), deltaymax)
+            # 计算与目标点的距离
+            distance_to_target = np.sqrt((x0 - self.x_aim) ** 2 + (y0 - self.y_aim) ** 2 + (z0 - self.z_aim) ** 2)
 
-            # 垂向速度偏差
-            deltavy = (VYCS - 0) * np.exp(-(t - tcs) / 0.2) - vy
-            deltavy = np.sign(deltavy) * min(abs(deltavy), deltavymax)
+            # 如果距离小于导引距离阈值，则启用末端导引
+            if distance_to_target < self.guidance_distance:
+                # 末端导引模式
+                # 计算视线角
+                sight_angle_theta = np.arctan2(-(y0 - self.y_aim),
+                                               np.sqrt((x0 - self.x_aim) ** 2 + (z0 - self.z_aim) ** 2))
+                sight_angle_psi = np.arctan2(z0 - self.z_aim, x0 - self.x_aim)
 
-            # 俯仰角控制目标
-            thetac = ((THETACS * RTD - 0.084743) * np.exp(-(t - tcs) / 0.2) + 0.084743 +
-                      (0.02 * deltay + 0.003 * deltavy) * RTD) / RTD
-            dtheta = theta - thetac
-            dtheta = np.sign(dtheta) * min(abs(dtheta), dthetamax)
+                # 俯仰角控制目标 - 朝向目标
+                thetac = sight_angle_theta
+                dtheta = theta - thetac
+                dtheta = np.sign(dtheta) * min(abs(dtheta), dthetamax)
 
-            # 俯仰角速度限幅
-            wz = np.sign(wz) * min(abs(wz), wzmax)
+                # 偏航角控制目标 - 朝向目标
+                psic = sight_angle_psi
+                dpsi = psi - psic
+                dpsi = np.sign(dpsi) * min(abs(dpsi), dthetamax)
 
-            # 因为dk符号定义的是反的，所以式子里的符号也与控制率中的符号相反
-            dk = dk0 + kth * dtheta + kwz * wz
-            dk = np.clip(dk, dkmin, dkmax)
+                # 俯仰角速度限幅
+                wz = np.sign(wz) * min(abs(wz), wzmax)
 
-            # --------------偏航通道（简化）--------------
-            dv = 0
+                # 偏航角速度限幅
+                wy = np.sign(wy) * min(abs(wy), wzmax)
+
+                # 计算舵角 - 俯仰和偏航控制
+                dk = dk0 + kth * dtheta + kwz * wz
+                dv = kth * dpsi + kwz * wy  # 使用偏航通道控制
+
+                # 舵角限幅
+                dk = np.clip(dk, dkmin, dkmax)
+                dv = np.sign(dv) * min(abs(dv), ddmax)
+            else:
+                # --------------俯仰通道控制--------------
+                h0 = -2.5
+
+                # 深度偏差
+                deltay = h0 + (YCS - h0) * np.exp(-(t - tcs) / 0.2) - y0
+                deltay = np.sign(deltay) * min(abs(deltay), deltaymax)
+
+                # 垂向速度偏差
+                deltavy = (VYCS - 0) * np.exp(-(t - tcs) / 0.2) - vy
+                deltavy = np.sign(deltavy) * min(abs(deltavy), deltavymax)
+
+                # 俯仰角控制目标
+                thetac = ((THETACS * RTD - 0.084743) * np.exp(-(t - tcs) / 0.2) + 0.084743 +
+                          (0.02 * deltay + 0.003 * deltavy) * RTD) / RTD
+                dtheta = theta - thetac
+                dtheta = np.sign(dtheta) * min(abs(dtheta), dthetamax)
+
+                # 俯仰角速度限幅
+                wz = np.sign(wz) * min(abs(wz), wzmax)
+
+                # 因为dk符号定义的是反的，所以式子里的符号也与控制率中的符号相反
+                dk = dk0 + kth * dtheta + kwz * wz
+                dk = np.clip(dk, dkmin, dkmax)
+
+                # --------------偏航通道（简化）--------------
+                dv = 0
 
             # --------------横滚通道--------------
             if t < 1.5:
