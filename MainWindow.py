@@ -12,7 +12,7 @@ from ModelParameterWidget import ModelParameterWidget
 from SimulationControlWidget import SimulationControlWidget
 from VisualizationWidget import VisualizationWidget
 # from rushui_model import Rushui
-from core import Dan as Rushui
+from core_m import Dan as Rushui
 from SimulationDiveWidget import SimulationDiveWidget
 from PyQt5.QtGui import QPainter, QLinearGradient, QColor, QPalette, QBrush, QPixmap
 import json
@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
 
         # 添加垂直入水界面
         self.sim_control_widget = SimulationControlWidget(self.rushui)
-        control_panel.addTab(self.sim_control_widget, "积分参量")
+        control_panel.addTab(self.sim_control_widget, "弹道仿真")
 
         self.sim_dive_widget = SimulationDiveWidget(self.rushui)
         control_panel.addTab(self.sim_dive_widget, "毁伤模块")
@@ -1285,7 +1285,7 @@ class MainWindow(QMainWindow):
             'k_ph': self.sim_control_widget.k_ph_input.value(),  # 舵机响应增益
             'k_wx': self.sim_control_widget.k_wx_input.value(),  # 滚转角速度增益
             'k_wy': self.sim_control_widget.k_wy_input.value(),  # 垂向控制增益
-            'tend_under': self.sim_control_widget.tend_under_input.value(),
+            'tend_under': self.sim_control_widget.tend_under_input.value(), # 水下仿真时间
             'T1': self.sim_control_widget.T1_input.value(),
             'T2': self.sim_control_widget.T2_input.value(),
             'time_sequence': self.sim_control_widget.time_sequence_input.text(),

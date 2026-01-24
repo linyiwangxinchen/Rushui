@@ -1,5 +1,6 @@
 import bisect
 import os
+import random
 import time
 #
 # from tqdm import tqdm
@@ -100,7 +101,6 @@ class under:
         self.y_aim = 0.0  # 目标点y坐标
         self.z_aim = 0.0  # 目标点z坐标
         self.guidance_distance = 2000.0  # 导引距离阈值 (2km)
-
 
         # === 动态数据数组 ===
         self.AF = np.zeros((80, 6))  # 空泡延迟历史数组
@@ -223,6 +223,18 @@ class under:
         self.dJxx = None
         self.dxc = None
         self.dm = None
+
+        # 把舰艇的参数送进来，没办法了真的
+        self.v_ship_0 = [1, 0, 0]
+        # 传入航行约束
+        self.v_max = 46 / 3.6
+        self.a_max = 2
+        # 记录参量
+        self.ship_x_list = None
+        self.ship_v_list = None
+        # 是否进入导引模式
+        self.guidance_model = False
+        self.aim_change = False
 
     def initialize_simulation(self):
         """初始化仿真环境"""
@@ -524,6 +536,9 @@ class under:
 
             # 如果距离小于导引距离阈值，则启用末端导引
             if distance_to_target < self.guidance_distance:
+                self.guidance_model = True
+
+            if self.guidance_model == True and self.aim_change == True:
                 # 末端导引模式
                 # 计算视线角
                 sight_angle_theta = np.arctan2(-(y0 - self.y_aim),
@@ -553,6 +568,8 @@ class under:
                 # 舵角限幅
                 dk = np.clip(dk, dkmin, dkmax)
                 dv = np.sign(dv) * min(abs(dv), ddmax)
+                aa = 1
+
             else:
                 # --------------俯仰通道控制--------------
                 h0 = -2.5
@@ -2148,6 +2165,45 @@ class under:
         y0 = y[10]  # 深度坐标
         return y0 + 100  # 当深度小于-100米时停止
 
+    def closest_point_position(self, v_dan, x_dan, v_s, x_s):
+        """
+        计算导弹与船最接近时船的位置
+
+        参数:
+        v_dan -- 导弹速度 (3D向量, array-like)
+        x_dan -- 导弹初始位置 (3D向量, array-like)
+        v_s   -- 船速度 (3D向量, array-like)
+        x_s   -- 船初始位置 (3D向量, array-like)
+
+        返回:
+        x_s_min -- 最接近时刻船的位置 (numpy数组)
+        """
+        # 转换为numpy数组
+        v_dan = np.array(v_dan, dtype=float)
+        x_dan = np.array(x_dan, dtype=float)
+        v_s = np.array(v_s, dtype=float)
+        x_s = np.array(x_s, dtype=float)
+
+        # 计算相对位置和相对速度
+        delta_x = x_dan - x_s  # 初始相对位置
+        delta_v = v_dan - v_s  # 相对速度
+
+        # 计算二次函数系数 (d^2 = a*t^2 + b*t + c)
+        a = np.dot(delta_v, delta_v)
+        b = 2 * np.dot(delta_x, delta_v)
+
+        # 计算最小距离对应的时间 t_min
+        if a < 1e-12:  # 处理相对速度为零的情况
+            t_min = 0.0
+        else:
+            t_min = -b / (2 * a)
+            if t_min < 0:  # 确保时间非负
+                t_min = 0.0
+
+        # 计算最接近时刻船的位置
+        x_s_min = x_s + t_min * v_s
+        return x_s_min
+
     def solve_trajectory(self):
         """求解弹道方程"""
         t0 = self.t0
@@ -2172,6 +2228,11 @@ class under:
         self.t = t
         current_time = time.time()
         last_callback_time = time.time()
+
+        x = np.array([self.ship_x_list[-1, :]])
+        v = np.array([self.ship_v_list[-1, :]])
+        ship_x_list = self.ship_x_list
+        ship_v_list = self.ship_v_list
         for i in range(len(t_eval)):
             self.ys.append(self.y.copy())
             self.ts.append(self.t)
@@ -2179,6 +2240,51 @@ class under:
             self.overall_fluid_dynamic_calculation()
             self.y = y0 + self.dydt * dt
             self.t = self.t + dt
+            # 在这里新增舰船的
+
+            if not self.aim_change:
+                x = x + v * dt
+                v = v
+                if np.linalg.norm(v) > self.v_max:
+                    v = v / np.linalg.norm(v) * self.v_max
+                ship_x_list = np.vstack((ship_x_list, x[0, :]))
+                ship_v_list = np.vstack((ship_v_list, v[0, :]))
+            else:
+                theta = random.random() * 2 * np.pi
+                a = self.a_max * np.array([np.cos(theta), np.sin(theta), 0])
+                x = x + v * dt
+                v = v + a * dt
+                if np.linalg.norm(v) > self.v_max:
+                    v = v / np.linalg.norm(v) * self.v_max
+                ship_x_list = np.vstack((ship_x_list, x[0, :]))
+                ship_v_list = np.vstack((ship_v_list, v[0, :]))
+
+
+            if not self.guidance_model and not self.aim_change:
+                self.x_aim = x[0, 0]
+                self.y_aim = x[0, 1]
+                self.z_aim = x[0, 2]
+            elif self.guidance_model and not self.aim_change:
+                v_dan = self.y[0:3]
+                x_dan = self.y[9:12]
+                v_s = ship_v_list[-1, :]
+                x_s = ship_x_list[-1, :]
+                x_s_min = self.closest_point_position(v_dan, x_dan, v_s, x_s)
+                self.x_aim = x_s_min[0]
+                self.y_aim = x_s_min[1]
+                self.z_aim = x_s_min[2]
+                self.aim_change = True
+            else:
+                v_dan = self.y[0:3]
+                x_dan = self.y[9:12]
+                v_s = ship_v_list[-1, :]
+                x_s = ship_x_list[-1, :]
+                x_s_min = self.closest_point_position(v_dan, x_dan, v_s, x_s)
+                self.x_aim = x_s_min[0]
+                self.y_aim = x_s_min[1]
+                self.z_aim = x_s_min[2]
+
+
             current_time = time.time()
             if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:
                 last_callback_time = current_time

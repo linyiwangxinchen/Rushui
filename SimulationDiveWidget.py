@@ -218,10 +218,10 @@ class SimulationDiveWidget(QWidget):
         """启动仿真计算"""
         try:
             # 重置状态
-            # self.ask_model()
+            self.ask_model()
 
             self.stab = MSC()
-            # self.stab.model_data = self.model_data
+            self.stab.model_data = self.model_data
             self.stab.ship_L = self.ship_L_input.value()
             self.stab.ship_M = self.ship_M_input.value()
             self.stab.ship_B = self.ship_B_input.value()

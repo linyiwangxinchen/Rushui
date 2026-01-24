@@ -68,8 +68,8 @@ class Dan:
         # ——————————模型外形——————————
         # self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
         # self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
-        self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0]) / 213 * 324
-        self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0]) / 213 * 324
+        self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
+        self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
 
         self.zb = self.yb
 
@@ -92,7 +92,7 @@ class Dan:
         self.k_theta = 0.04
 
         ## 水下部分参数
-        self.tend_under = 1  # 水下仿真时长
+        self.tend_under = 10  # 水下仿真时长
 
         self.RTD = 180 / np.pi  # 弧度到角度转换
         RTD = self.RTD
@@ -166,6 +166,17 @@ class Dan:
         self.n26 = 0
         self.n44 = 0
         self.n66 = 0
+
+        # 传入目标舰船的位置
+        self.ship_x = [2100, 0, 0]
+        self.v_ship_0 = [46 / 3.6, 0, 0]
+        # 传入航行约束
+        self.v_max = 46 / 3.6
+        self.a_max = 2
+        # 记录参量
+        self.ship_x_list = None
+        self.ship_v_list = None
+
         self._recalculate_update_input()
 
     def _recalculate_update_input(self):
@@ -173,6 +184,8 @@ class Dan:
             [self.CxS, self.mxdd, self.mxwx, self.Cya, self.Cydc, self.Cywz, self.mza, self.mzdc, self.mzwz,
              self.Czb, self.Czdv, self.Czwy, self.myb, self.mydv, self.mywy, self.n11, self.n22, self.n44, self.n66,
              self.n26])
+
+
 
     def main(self):
 
@@ -235,17 +248,49 @@ class Dan:
         M.plot_dan_x = self.plot_dan_x
         M.update_callback = self.update_callback
         M.progress_callback = self.progress_callback
-
         self.M = M
-
         # 获取入水过程中的时间和状态数据
         t_entry, y_entry = self.M.get_results()
         self.t_entry = t_entry
         self.y_entry = y_entry
         M = self.M
+
+
+
+
+        # 插入目标弹体的航行
+        v_max = self.v_max
+        dan_t = t_entry
+        ship_x = self.ship_x
+        v_ship_0 = self.v_ship_0
+        # 由于目标舰船这段默认不发现，所以就正常跑就行
+        dt = self.dt
+        x = np.array([ship_x])
+        v = np.array([v_ship_0])
+        ship_x_list = x
+        ship_v_list = v
+        for i in range(len(dan_t) - 1):
+            x = x + v * dt
+            v = v
+            if np.linalg.norm(v) > v_max:
+                v = v / np.linalg.norm(v) * v_max
+            ship_x_list = np.vstack((ship_x_list, x[0, :]))
+            ship_v_list = np.vstack((ship_v_list, v[0, :]))
         # print("即将进入水下弹道程序")
+        self.ship_x_list = ship_x_list
+        self.ship_v_list = ship_v_list
+
 
         N = under()
+        N.x_aim = ship_x_list[-1, 0]
+        N.y_aim = ship_x_list[-1, 1]
+        N.z_aim = ship_x_list[-1, 2]
+        # 传入舰船
+        N.ship_x_list = self.ship_x_list
+        N.ship_v_list = self.ship_v_list
+        N.v_ship_0 = self.v_ship_0
+        N.v_max = self.v_max
+        N.a_max = self.a_max
 
         ## 水下部分参数
         N.tend = self.tend_under  # 水下仿真时长

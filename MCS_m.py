@@ -4,7 +4,7 @@ from core import Dan
 from burn_cal import underwater_explosion_damage
 import random
 import numpy as np
-from core import Dan
+from core_m import Dan
 
 
 class MSC:
