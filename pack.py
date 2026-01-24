@@ -9,6 +9,8 @@ if __name__ == '__main__':
         '--name=Amphoreus',
         '--clean',  # 添加清理选项
     ]
+
+
     # opts = [
     #     'MainWindow.py',
     #     '--onedir',

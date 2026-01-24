@@ -280,8 +280,8 @@ class Dan:
         self.ship_x_list = ship_x_list
         self.ship_v_list = ship_v_list
 
-
         N = under()
+        N.dt = self.dt
         N.x_aim = ship_x_list[-1, 0]
         N.y_aim = ship_x_list[-1, 1]
         N.z_aim = ship_x_list[-1, 2]

@@ -11,7 +11,6 @@ import pandas as pd
 
 class under:
     def __init__(self):
-
         self.plot_pao_down_y = None
         self.plot_pao_down_x = None
         self.plot_pao_up_y = None
@@ -123,14 +122,13 @@ class under:
         self.dthetamax = 5 / RTD
         self.wzmax = 30 / RTD
         self.wxmax = 300 / RTD
-        self.wymax = 30 / RTD
         self.dphimax = 60 / RTD
         self.kth = 4
         self.kps = self.kth
         self.kph = 0.08
         self.kwx = 0.0016562
         self.kwz = 0.312
-        self.kwy = 0.08
+        self.kwy = self.kwz
         # 初始条件
         self.y1_initial = np.array(
             [self.vx, self.vy, self.vz, self.wx, self.wy, self.wz, self.theta, self.psi, self.phi, self.x0, self.y0,
@@ -237,22 +235,6 @@ class under:
         # 是否进入导引模式
         self.guidance_model = False
         self.aim_change = False
-        # 记录启控点相关参量
-        self.start_guidance_point = None
-        self.start_guidance_t = None
-        self.aim_guidance_t = None
-
-        # === 末端导引参数 ===
-        self.guidance_activated = False  # 导引激活标志
-        self.guidance_start_time = 0.0  # 导引开始时间
-        self.los_psi_prev = 0.0  # 上一时刻视线角(水平)
-        self.los_theta_prev = 0.0  # 上一时刻视线角(垂直)
-        self.prev_time = 0.0  # 上一时刻时间
-        self.k_psi = 0.8  # 偏航通道增益
-        self.k_theta = 0.8  # 俯仰通道增益
-        self.guidance_switch_time = 0  # 导引开始时间
-        self.guidance_mode = "line_of_sight"  # 导引模式: "line_of_sight" or "proportional_navigation"
-        self.navigation_constant = 3.5  # 比例导引导航常数
 
     def initialize_simulation(self):
         """初始化仿真环境"""
@@ -548,81 +530,46 @@ class under:
 
         # 控制周期判断
         if (t - self.TP) >= cc and t > tcs:
+
             # 计算与目标点的距离
             distance_to_target = np.sqrt((x0 - self.x_aim) ** 2 + (y0 - self.y_aim) ** 2 + (z0 - self.z_aim) ** 2)
 
             # 如果距离小于导引距离阈值，则启用末端导引
             if distance_to_target < self.guidance_distance:
                 self.guidance_model = True
-                # 在这里记录启控点，用来指导后续的h0取值
-                self.start_guidance_point = [x0, y0, z0]
-                self.start_guidance_t = t
 
             if self.guidance_model == True and self.aim_change == True:
-                # --------------俯仰通道控制--------------
-                h1 = (self.y_aim - self.start_guidance_point[1])/(self.aim_guidance_t - self.start_guidance_t) * (t - self.start_guidance_t) + self.start_guidance_point[1]
-                h0 = -2.5
-                if h1 > h0:
-                    h0 = h1
+                # 末端导引模式
+                # 计算视线角
+                sight_angle_theta = np.arctan2(-(y0 - self.y_aim),
+                                               np.sqrt((x0 - self.x_aim) ** 2 + (z0 - self.z_aim) ** 2))
+                sight_angle_psi = np.arctan2(z0 - self.z_aim, x0 - self.x_aim)
 
-                # 深度偏差
-                deltay = h0 + (YCS - h0) * np.exp(-(t - tcs) / 0.2) - y0
-                deltay = np.sign(deltay) * min(abs(deltay), deltaymax)
-
-                # 垂向速度偏差
-                deltavy = (VYCS - 0) * np.exp(-(t - tcs) / 0.2) - vy
-                deltavy = np.sign(deltavy) * min(abs(deltavy), deltavymax)
-
-                # 俯仰角控制目标
-                thetac = ((THETACS * RTD - 0.084743) * np.exp(-(t - tcs) / 0.2) + 0.084743 +
-                          (0.02 * deltay + 0.003 * deltavy) * RTD) / RTD
+                # 俯仰角控制目标 - 朝向目标
+                thetac = sight_angle_theta
                 dtheta = theta - thetac
                 dtheta = np.sign(dtheta) * min(abs(dtheta), dthetamax)
+
+                # 偏航角控制目标 - 朝向目标
+                psic = sight_angle_psi
+                dpsi = psi - psic
+                dpsi = np.sign(dpsi) * min(abs(dpsi), dthetamax)
 
                 # 俯仰角速度限幅
                 wz = np.sign(wz) * min(abs(wz), wzmax)
 
-                # 因为dk符号定义的是反的，所以式子里的符号也与控制率中的符号相反
+                # 偏航角速度限幅
+                wy = np.sign(wy) * min(abs(wy), wzmax)
+
+                # 计算舵角 - 俯仰和偏航控制
                 dk = dk0 + kth * dtheta + kwz * wz
+                dv = kth * dpsi + kwz * wy  # 使用偏航通道控制
+
+                # 舵角限幅
                 dk = np.clip(dk, dkmin, dkmax)
+                dv = np.sign(dv) * min(abs(dv), ddmax)
+                aa = 1
 
-                # --------------偏航通道（简化）--------------
-
-                dv = 0
-                dx = self.x_aim - x0
-                dy = self.z_aim - z0  # 横向偏差 (z轴)
-                los_psi = np.arctan2(dy, dx) if dx != 0 else 0  # 水平面视线角
-                dpsi = (los_psi - psi)
-
-                wy = np.sign(wy) * min(abs(wy), self.wymax)
-                dv = self.kps * dpsi + self.kwy * wy
-                dv = self.kps * dpsi / 10
-                dv = np.sign(dv) * min(abs(dv), dvmax)
-                # dv = 0
-
-                # --------------横滚通道--------------
-                if t < 1.5:
-                    phic = 0 / RTD
-                elif t < 2:
-                    phic = (t - 1.5) / 0.5 * 12 * (psi - PSICS)
-                else:
-                    phic = 12 * (psi - PSICS)
-
-                # 横滚偏差限幅
-                dphi = phi - phic
-                dphi = np.sign(phi) * min(abs(dphi), dphimax)
-
-                # 横滚角速度限幅
-                wx = np.sign(wx) * min(abs(wx), wxmax)
-
-                dd = kph * dphi + kwx * wx
-                dd = np.sign(dd) * min(abs(dd), ddmax)
-
-                # --------------舵角分配--------------
-                ds = dd + dv
-                dx = -dd + dv
-                ds = np.sign(ds) * min(abs(ds), dvmax)
-                dx = np.sign(dx) * min(abs(dx), dvmax)
             else:
                 # --------------俯仰通道控制--------------
                 h0 = -2.5
@@ -651,29 +598,29 @@ class under:
                 # --------------偏航通道（简化）--------------
                 dv = 0
 
-                # --------------横滚通道--------------
-                if t < 1.5:
-                    phic = 0 / RTD
-                elif t < 2:
-                    phic = (t - 1.5) / 0.5 * 12 * (psi - PSICS)
-                else:
-                    phic = 12 * (psi - PSICS)
+            # --------------横滚通道--------------
+            if t < 1.5:
+                phic = 0 / RTD
+            elif t < 2:
+                phic = (t - 1.5) / 0.5 * 12 * (psi - PSICS)
+            else:
+                phic = 12 * (psi - PSICS)
 
-                # 横滚偏差限幅
-                dphi = phi - phic
-                dphi = np.sign(phi) * min(abs(dphi), dphimax)
+            # 横滚偏差限幅
+            dphi = phi - phic
+            dphi = np.sign(phi) * min(abs(dphi), dphimax)
 
-                # 横滚角速度限幅
-                wx = np.sign(wx) * min(abs(wx), wxmax)
+            # 横滚角速度限幅
+            wx = np.sign(wx) * min(abs(wx), wxmax)
 
-                dd = kph * dphi + kwx * wx
-                dd = np.sign(dd) * min(abs(dd), ddmax)
+            dd = kph * dphi + kwx * wx
+            dd = np.sign(dd) * min(abs(dd), ddmax)
 
-                # --------------舵角分配--------------
-                ds = dd + dv
-                dx = -dd + dv
-                ds = np.sign(ds) * min(abs(ds), dvmax)
-                dx = np.sign(dx) * min(abs(dx), dvmax)
+            # --------------舵角分配--------------
+            ds = dd + dv
+            dx = -dd + dv
+            ds = np.sign(ds) * min(abs(ds), dvmax)
+            dx = np.sign(dx) * min(abs(dx), dvmax)
 
             self.TP = t  # 更新时间
 
@@ -2255,7 +2202,7 @@ class under:
 
         # 计算最接近时刻船的位置
         x_s_min = x_s + t_min * v_s
-        return x_s_min, t_min
+        return x_s_min
 
     def solve_trajectory(self):
         """求解弹道方程"""
@@ -2312,8 +2259,6 @@ class under:
                 ship_x_list = np.vstack((ship_x_list, x[0, :]))
                 ship_v_list = np.vstack((ship_v_list, v[0, :]))
 
-            self.ship_x_list = ship_x_list
-            self.ship_v_list = ship_v_list
 
             if not self.guidance_model and not self.aim_change:
                 self.x_aim = x[0, 0]
@@ -2324,8 +2269,7 @@ class under:
                 x_dan = self.y[9:12]
                 v_s = ship_v_list[-1, :]
                 x_s = ship_x_list[-1, :]
-                x_s_min, t_min = self.closest_point_position(v_dan, x_dan, v_s, x_s)
-                self.aim_guidance_t = t_min
+                x_s_min = self.closest_point_position(v_dan, x_dan, v_s, x_s)
                 self.x_aim = x_s_min[0]
                 self.y_aim = x_s_min[1]
                 self.z_aim = x_s_min[2]
@@ -2335,10 +2279,11 @@ class under:
                 x_dan = self.y[9:12]
                 v_s = ship_v_list[-1, :]
                 x_s = ship_x_list[-1, :]
-                x_s_min, t_min = self.closest_point_position(v_dan, x_dan, v_s, x_s)
+                x_s_min = self.closest_point_position(v_dan, x_dan, v_s, x_s)
                 self.x_aim = x_s_min[0]
                 self.y_aim = x_s_min[1]
                 self.z_aim = x_s_min[2]
+
 
             current_time = time.time()
             if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:
