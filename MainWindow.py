@@ -12,7 +12,7 @@ from ModelParameterWidget import ModelParameterWidget
 from SimulationControlWidget import SimulationControlWidget
 from VisualizationWidget import VisualizationWidget
 # from rushui_model import Rushui
-from core_m import Dan as Rushui
+from core import Dan as Rushui
 from SimulationDiveWidget import SimulationDiveWidget
 from PyQt5.QtGui import QPainter, QLinearGradient, QColor, QPalette, QBrush, QPixmap
 import json

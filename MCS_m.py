@@ -1,6 +1,4 @@
 import time
-
-from core import Dan
 from burn_cal import underwater_explosion_damage
 import random
 import numpy as np
@@ -23,6 +21,8 @@ class MSC:
         self.ship_B = 76.8096
         self.ship_T = 10.8966
         self.ship_x = [120, 0, 0]
+        self.v_ship_0 = [17, 0, 0]
+        self.guidance_distance = 2000
         self.N_burn = 3
         self.ifship = 0
         self.ship_kind = 0
@@ -169,6 +169,12 @@ class MSC:
             thrust_data = [float(t.strip()) for t in thrust_str.split(',') if t.strip()]
             Dani.time_sequence = time_data
             Dani.thrust_sequence = thrust_data
+
+            Dani.ship_x = self.ship_x
+            Dani.v_ship_0 = self.v_ship_0
+            Dani.v_max = self.v_max
+            Dani.a_max = self.a_max
+            Dani.guidance_distance = self.guidance_distance
             Dani._recalculate_update_input()
 
         dicti = self.dict_shipi
@@ -191,7 +197,7 @@ class MSC:
         # 最大速度
         v_max = self.v_max
         # 初始速度
-        v_ship_0 = [0, 0, 0]
+        v_ship_0 = self.v_ship_0
         # 是否被发现概率
         if_find = random.random() > (1 - 0.2)
         if_find = 1
@@ -216,6 +222,9 @@ class MSC:
         else:
             # 要不就原地不动
             ship_x_list = np.zeros((len(dan_line), 3))
+
+        ship_x_list = Dani.ship_x_list
+        ship_v_list = Dani.ship_v_list
 
         # 此时寻找弹体与舰艇最近的点,先计算距离
         distance = ship_x_list - dan_line
@@ -295,3 +304,6 @@ class MSC:
                     self.update_callback(data)
 
 
+if __name__ == '__main__':
+    M = MSC()
+    M.main()

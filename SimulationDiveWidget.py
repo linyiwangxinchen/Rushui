@@ -70,11 +70,14 @@ class SimulationDiveWidget(QWidget):
         ship_x_layout = QGridLayout()
         ship_x_layout.setContentsMargins(5, 5, 5, 5)
         ship_x_layout.setSpacing(5)
-        self.add_labeled_input(ship_x_layout, "目标舰艇位置x (m):", 0, 0, 0, 1000, 120, 1.0, "ship_x_x_input")
+        self.add_labeled_input(ship_x_layout, "目标舰艇位置x (m):", 0, 0, 0, 1000, 2100, 1.0, "ship_x_x_input")
         self.add_labeled_input(ship_x_layout, "目标舰艇位置y (m):", 1, 0, 0, 1000, 0, 1.0, "ship_x_y_input")
         self.add_labeled_input(ship_x_layout, "目标舰艇位置z (m):", 2, 0, 0, 1000, 0, 1.0, "ship_x_z_input")
         self.add_labeled_input(ship_x_layout, "目标舰艇最大速度（节）:", 3, 0, 0, 1000, 46, 1.0, "ship_v_max_input")
         self.add_labeled_input(ship_x_layout, "目标舰艇最大加速度（m/s^2）:", 4, 0, 0, 1000, 2, 1.0, "ship_a_max_input")
+        self.add_labeled_input(ship_x_layout, "目标舰艇速度Vx (m/s):", 5, 0, 0, 1000, 12.7, 1.0, "ship_v_x_input")
+        self.add_labeled_input(ship_x_layout, "目标舰艇速度Vy (m/s):", 6, 0, 0, 1000, 0, 1.0, "ship_v_y_input")
+        self.add_labeled_input(ship_x_layout, "目标舰艇速度Vz (m/s):", 7, 0, 0, 1000, 0, 1.0, "ship_v_z_input")
         ship_x_group.setLayout(ship_x_layout)
 
         dan_air_group = QGroupBox("空中入水飞行参数")
@@ -102,6 +105,17 @@ class SimulationDiveWidget(QWidget):
         dan_air_layout.addWidget(self.dan_aim_tpye, 4, 1)
 
         self.add_labeled_input(dan_air_layout, "不开启电磁制导的起爆距离 (m):", 5, 0, 0, 1000, 10, 1.0, "dan_L_input")
+
+        dan_air_layout.addWidget(QLabel("是否开启末端导引:"), 6, 0)
+        self.dan_guide_tpye = QComboBox()
+        self.dan_guide_tpye.addItems([
+            "否",
+            "是"
+        ])
+        self.dan_guide_tpye.setCurrentIndex(1)
+        dan_air_layout.addWidget(self.dan_guide_tpye, 6, 1)
+        self.add_labeled_input(dan_air_layout, "开启末端导引距离 (m):", 7, 0, 0, 10000, 2000, 1.0, "guidance_distance_input")
+
 
         dan_air_group.setLayout(dan_air_layout)
 

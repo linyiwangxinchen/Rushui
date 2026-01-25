@@ -92,7 +92,7 @@ class Dan:
         self.k_theta = 0.04
 
         ## 水下部分参数
-        self.tend_under = 10  # 水下仿真时长
+        self.tend_under = 1  # 水下仿真时长
 
         self.RTD = 180 / np.pi  # 弧度到角度转换
         RTD = self.RTD
@@ -173,6 +173,7 @@ class Dan:
         # 传入航行约束
         self.v_max = 46 / 3.6
         self.a_max = 2
+        self.guidance_distance = 2000
         # 记录参量
         self.ship_x_list = None
         self.ship_v_list = None
@@ -410,6 +411,8 @@ class Dan:
         self.N = N
         self.N.main()
         N = self.N
+        self.ship_x_list = N.ship_x_list
+        self.ship_v_list = N.ship_v_list
         return t_entry, y_entry, N.ts, N.ys
 
         # N = xxx

@@ -2,7 +2,6 @@ import bisect
 import os
 import random
 import time
-#
 # from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -2382,6 +2381,10 @@ class under:
         self.ts.append(self.t)
         self.ys = np.array(self.ys)
         self.ts = np.array(self.ts)
+        ship_x_list = np.vstack((ship_x_list, x[0, :]))
+        ship_v_list = np.vstack((ship_v_list, v[0, :]))
+        self.ship_x_list = ship_x_list
+        self.ship_v_list = ship_v_list
 
     def plot_results(self):
         pass
