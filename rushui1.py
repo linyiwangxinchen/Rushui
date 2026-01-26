@@ -574,12 +574,16 @@ class  Entry:
                 self.posCav[i - 1, 4] = self.posCav[i - 1, 4] + self.posCav[i - 1, 3] * self.dt
                 # 更新空泡半径扩张率
                 p8 = 101325 - self.rho * self.g * self.posCav[i - 1, 1]  # 切片所在深度水压力
+                pv = 3540
                 # 泡内压力，由实验数据给出
                 # 压力修正系数：0.75
                 kpc = 1
                 pc1 = self.presRec[self.ip - 1, 1] * 1e3 * kpc
                 dp = p8 - pc1
                 self.sgm = dp / (0.5 * self.rho * vk ** 2)
+
+                if abs(self.posCav[i - 1, 1]) > 3:
+                    self.sgm = (p8 - pv) / (0.5 * self.rho * vk ** 2)
                 if self.posCav[i - 1, 4] > 0:
                     # 如果空泡尚未闭合，计算空泡截面扩张率
                     self.posCav[i - 1, 3] = self.posCav[i - 1, 3] - self.k1 * dp / self.rho * self.dt
@@ -1085,7 +1089,9 @@ class  Entry:
                             'ts': T,
                             'ys': Y
 
-                        }
+                        },
+                        'Pi': self.P,
+                        'P_list': np.array(self.P_list)
                     }
                     # 调用回调函数
                     self.update_callback(data)

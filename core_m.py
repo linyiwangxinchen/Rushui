@@ -34,6 +34,8 @@ class Dan:
         self.update_callback = None
         self.progress_callback = None
         self.min_callback_interval = 0.05
+        self.P = 0
+        self.P_list = [0]
 
         # 入水部分参数
         # ——————————基本常量——————————
@@ -168,7 +170,7 @@ class Dan:
         self.n66 = 0
 
         # 传入目标舰船的位置
-        self.ship_x = [2100, 0, 0]
+        self.ship_x = [500, 0, 0]
         self.v_ship_0 = [46 / 3.6, 0, 0]
         # 传入航行约束
         self.v_max = 46 / 3.6
@@ -185,7 +187,6 @@ class Dan:
             [self.CxS, self.mxdd, self.mxwx, self.Cya, self.Cydc, self.Cywz, self.mza, self.mzdc, self.mzwz,
              self.Czb, self.Czdv, self.Czwy, self.myb, self.mydv, self.mywy, self.n11, self.n22, self.n44, self.n66,
              self.n26])
-
 
 
     def main(self):
@@ -249,6 +250,8 @@ class Dan:
         M.plot_dan_x = self.plot_dan_x
         M.update_callback = self.update_callback
         M.progress_callback = self.progress_callback
+        M.P = self.P
+        M.P_list = self.P_list
         self.M = M
         # 获取入水过程中的时间和状态数据
         t_entry, y_entry = self.M.get_results()
@@ -407,7 +410,8 @@ class Dan:
         N.yb1 = np.zeros_like(self.yb)
         N.zb1 = self.yb
 
-
+        N.P = self.P
+        N.P_list = self.P_list
         self.N = N
         self.N.main()
         N = self.N

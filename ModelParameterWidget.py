@@ -30,8 +30,6 @@ class ModelParameterWidget(QWidget):
         # 创建分组框
         geometry_group = QGroupBox("总体参数")
 
-
-
         # 初始位置&姿态条件
         geo_layout = QGridLayout()
         geo_layout.setContentsMargins(5, 5, 5, 5)
@@ -42,8 +40,9 @@ class ModelParameterWidget(QWidget):
                              range_check=True)
         self.add_param_input(geo_layout, "横截面积 S (m²):", start_row + 1, 0.001, 1.0, 0.0356, 0.0001, "S_input",
                              range_check=True)
-        self.add_param_input(geo_layout, "体积 V (m³):", start_row + 2, 0.0, 10.0, 0.0, 0.001, "V_input",
+        self.add_param_input_noVisible(geo_layout, "初始沾湿体积 V (m³):", start_row + 2, 0.0, 10.0, 0.0, 0.001, "V_input",
                              range_check=True)
+
         self.add_param_input(geo_layout, "质量 m (kg):", start_row + 3, 1.0, 1000.0, 114.7, 0.1, "m_input",
                              range_check=True)
         self.add_param_input(geo_layout, "重心 xc (m):", start_row + 4, -5.0, 5.0, -0.0188, 0.0001, "xc_input",
@@ -64,7 +63,7 @@ class ModelParameterWidget(QWidget):
 
 
         # 空化器参数
-        mass_group = QGroupBox("空泡仿真参数")
+        mass_group = QGroupBox("构型参数")
         mass_layout = QGridLayout()
         mass_layout.setContentsMargins(5, 5, 5, 5)
         mass_layout.setSpacing(5)
@@ -72,27 +71,28 @@ class ModelParameterWidget(QWidget):
                              range_check=False)
         self.add_param_input(mass_layout, "空化器半径 rk (m):", 1, -1000, 1000, 0.021, 0.001, "rk_input",
                              range_check=False)
-        self.add_param_input(mass_layout, "全局空化数 sgm:", 2, -1000, 1000, 0, 0.1, "sgm_input", range_check=False)
-        self.add_param_input(mass_layout, "空泡轴线偏离 dyc (m):", 3, -1000, 1000, 0, 0.001, "dyc_input",
+        self.add_param_input(mass_layout, "初始空化数 sgm:", 2, -1000, 1000, 0, 0.1, "sgm_input", range_check=False)
+        self.add_param_input_noVisible(mass_layout, "空泡轴线偏离 dyc (m):", 3, -1000, 1000, 0, 0.001, "dyc_input",
                              range_check=False)
+        self.add_param_input(mass_layout, "水平鳍位置 LW(m):", 4, -1000, 1000, 0.021, 0.001, "LW_input",
+                             range_check=False)
+        self.add_param_input(mass_layout, "垂直鳍位置 LH (m):", 5, -1000, 1000, 0, 0.1, "LH_input", range_check=False)
+
         mass_group.setLayout(mass_layout)
 
         # 物理几何参数
-        dive_model_group = QGroupBox("水下物理几何参数")
+        dive_model_group = QGroupBox("水下航行参数")
         dive_model_layout = QGridLayout()
         dive_model_layout.setContentsMargins(5, 5, 5, 5)
         dive_model_layout.setSpacing(5)
-        self.add_param_input(dive_model_layout, "水下空化数 SGM:", 0, -1000, 1000, 0.018, 0.01, "SGM_input",
+        self.add_param_input(dive_model_layout, "巡航空化数 SGM:", 0, -1000, 1000, 0.018, 0.01, "SGM_input",
                              range_check=False)
-        self.add_param_input(dive_model_layout, "水平鳍位置 LW(m):", 1, -1000, 1000, 0.021, 0.001, "LW_input",
-                             range_check=False)
-        self.add_param_input(dive_model_layout, "垂直鳍位置 LH (m):", 2, -1000, 1000, 0, 0.1, "LH_input", range_check=False)
 
         dive_model_group.setLayout(dive_model_layout)
 
         # 仿真控制参数
         # ============= 舵机与角度限制参数 =============
-        control_limits_group = QGroupBox("舵机与角度限制参数")
+        control_limits_group = QGroupBox("控制限幅参数")
         control_limits_layout = QGridLayout()
         control_limits_layout.setContentsMargins(5, 5, 5, 5)
         control_limits_layout.setSpacing(5)
@@ -151,6 +151,20 @@ class ModelParameterWidget(QWidget):
         spin_box.setRange(min_val, max_val)
         spin_box.setSingleStep(step)
         spin_box.setValue(default_val)
+        layout.addWidget(spin_box, row, 1)
+        setattr(self, attr_name, spin_box)
+
+    def add_param_input_noVisible(self, layout, label_text, row, min_val, max_val, default_val, step, attr_name, range_check=True):
+        labeli = QLabel(label_text)
+        labeli.setVisible(False)
+        layout.addWidget(labeli, row, 0)
+        spin_box = QDoubleSpinBox()
+        spin_box.setDecimals(6)
+        # if range_check:
+        spin_box.setRange(min_val, max_val)
+        spin_box.setSingleStep(step)
+        spin_box.setValue(default_val)
+        spin_box.setVisible(False)
         layout.addWidget(spin_box, row, 1)
         setattr(self, attr_name, spin_box)
 

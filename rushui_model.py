@@ -1,7 +1,6 @@
 import bisect
 import os
 import time
-#
 # from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -2149,7 +2148,9 @@ class under:
                         'datas': {
                             'ts': self.ts,
                             'ys': self.ys
-                        }
+                        },
+                        'Pi': self.P,
+                        'P_list': np.array(self.P_list)
                     }
                     # 调用回调函数
                     self.update_callback(data)

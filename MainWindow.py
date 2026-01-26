@@ -91,6 +91,10 @@ class MainWindow(QMainWindow):
         self.to_data_signal.connect(self.sim_dive_widget.get_model)
 
 
+        self.sim_dive_widget.realtime_update.connect(self.visualization_widget.handle_realtime_update)
+
+
+
         # 组合布局
         main_layout.addWidget(control_panel, 1)
         main_layout.addLayout(right_panel, 4)
@@ -278,7 +282,16 @@ class MainWindow(QMainWindow):
                 'air_t': self.sim_dive_widget.air_t_input.value(),  # 飞行时间(s)
                 'air_L': self.sim_dive_widget.air_L_input.value(),  # 弹道距离(km)
                 'air_theta': self.sim_dive_widget.air_theta_input.value(),  # 入水倾角(deg)
-                'air_v': self.sim_dive_widget.air_v_input.value()  # 入水速度(m/s)
+                'air_v': self.sim_dive_widget.air_v_input.value(),  # 入水速度(m/s)
+                # 新增的
+                'ship_v_x': self.sim_dive_widget.ship_v_x_input.value(),
+                'ship_v_y': self.sim_dive_widget.ship_v_y_input.value(),
+                'ship_v_z': self.sim_dive_widget.ship_v_z_input.value(),
+                'guidance_distance': self.sim_dive_widget.guidance_distance_input.value(),
+                'dan_aim_tpye': self.sim_dive_widget.dan_aim_tpye.currentIndex(),
+                'dan_L': self.sim_dive_widget.dan_L_input.value(),
+                'dan_guide_type': self.sim_dive_widget.dan_guide_type.currentIndex(),
+
             }
 
             # 收集UI状态
@@ -432,7 +445,18 @@ class MainWindow(QMainWindow):
                 'air_t': self.sim_dive_widget.air_t_input.value(),  # 飞行时间(s)
                 'air_L': self.sim_dive_widget.air_L_input.value(),  # 弹道距离(km)
                 'air_theta': self.sim_dive_widget.air_theta_input.value(),  # 入水倾角(deg)
-                'air_v': self.sim_dive_widget.air_v_input.value()  # 入水速度(m/s)
+                'air_v': self.sim_dive_widget.air_v_input.value(),  # 入水速度(m/s)
+
+                # 新增的
+                # 新增的
+                'ship_v_x': self.sim_dive_widget.ship_v_x_input.value(),
+                'ship_v_y': self.sim_dive_widget.ship_v_y_input.value(),
+                'ship_v_z': self.sim_dive_widget.ship_v_z_input.value(),
+                'guidance_distance': self.sim_dive_widget.guidance_distance_input.value(),
+                'dan_aim_tpye': self.sim_dive_widget.dan_aim_tpye.currentIndex(),
+                'dan_L': self.sim_dive_widget.dan_L_input.value(),
+                'dan_guide_type': self.sim_dive_widget.dan_guide_type.currentIndex(),
+
             }
 
             # 收集UI状态
@@ -580,7 +604,16 @@ class MainWindow(QMainWindow):
                 self.sim_dive_widget.air_theta_input.setValue(mmp.get('air_theta', None))
                 self.sim_dive_widget.air_v_input.setValue(mmp.get('air_v', None))
 
-            # 加载UI状态
+                self.sim_dive_widget.ship_v_x_input.setValue(mmp.get('ship_v_x', None))
+                self.sim_dive_widget.ship_v_y_input.setValue(mmp.get('ship_v_y', None))
+                self.sim_dive_widget.ship_v_z_input.setValue(mmp.get('ship_v_z', None))
+                self.sim_dive_widget.guidance_distance_input.setValue(mmp.get('guidance_distance', None))
+                self.sim_dive_widget.dan_L_input.setValue(mmp.get('dan_L', None))
+                self.sim_dive_widget.dan_aim_tpye.setCurrentIndex(int(mmp.get('dan_aim_tpye', None)))
+                self.sim_dive_widget.dan_guide_type.setCurrentIndex(int(mmp.get('dan_guide_type', None)))
+
+
+                # 加载UI状态
             if "ui_state" in config:
                 ui = config["ui_state"]
                 # 设置当前选中的标签页
@@ -686,6 +719,14 @@ class MainWindow(QMainWindow):
             air_theta, _, _ = read_data(filename, 'air_theta')
             air_v, _, _ = read_data(filename, 'air_v')
 
+            ship_v_x, _, _ = read_data('input.txt', 'ship_v_x')
+            ship_v_y, _, _ = read_data('input.txt', 'ship_v_y')
+            ship_v_z, _, _ = read_data('input.txt', 'ship_v_z')
+            guidance_distance, _, _ = read_data('input.txt', 'guidance_distance')
+            dan_aim_tpye, _, _ = read_data('input.txt', 'dan_aim_tpye')
+            dan_L, _, _ = read_data('input.txt', 'dan_L')
+            dan_guide_type, _, _ = read_data('input.txt', 'dan_guide_type')
+
             laptop_datas = {
                 't0': t0,
                 'tend': tend,
@@ -756,6 +797,14 @@ class MainWindow(QMainWindow):
                 'air_L': air_L,
                 'air_theta': air_theta,
                 'air_v': air_v,
+
+                'ship_v_x': ship_v_x,
+                'ship_v_y': ship_v_y,
+                'ship_v_z': ship_v_z,
+                'guidance_distance': guidance_distance,
+                'dan_aim_tpye': dan_aim_tpye,
+                'dan_L': dan_L,
+                'dan_guide_type': dan_guide_type,
             }
 
 
@@ -836,6 +885,14 @@ class MainWindow(QMainWindow):
             self.sim_dive_widget.air_L_input.setValue(mmp.get('air_L', None))
             self.sim_dive_widget.air_theta_input.setValue(mmp.get('air_theta', None))
             self.sim_dive_widget.air_v_input.setValue(mmp.get('air_v', None))
+
+            self.sim_dive_widget.ship_v_x_input.setValue(mmp.get('ship_v_x', None))
+            self.sim_dive_widget.ship_v_y_input.setValue(mmp.get('ship_v_y', None))
+            self.sim_dive_widget.ship_v_z_input.setValue(mmp.get('ship_v_z', None))
+            self.sim_dive_widget.guidance_distance_input.setValue(mmp.get('guidance_distance', None))
+            self.sim_dive_widget.dan_L_input.setValue(mmp.get('dan_L', None))
+            self.sim_dive_widget.dan_aim_tpye.setCurrentIndex(int(mmp.get('dan_aim_tpye', None)))
+            self.sim_dive_widget.dan_guide_type.setCurrentIndex(int(mmp.get('dan_guide_type', None)))
 
             # 更新状态栏
             self.status_label.setText(f"配置已从: {filename} 加载")
@@ -988,7 +1045,6 @@ class MainWindow(QMainWindow):
         check_file = os.path.exists("./input.txt")
         if check_file:
             try:
-
                 t0, _, _ = read_data('input.txt', 't0')
                 tend, _, _ = read_data('input.txt', 'tend')
                 dt, _, _ = read_data('input.txt', 'dt')
@@ -1061,6 +1117,14 @@ class MainWindow(QMainWindow):
                 air_theta, _, _ = read_data('input.txt', 'air_theta')
                 air_v, _, _ = read_data('input.txt', 'air_v')
 
+                ship_v_x, _, _ = read_data('input.txt', 'ship_v_x')
+                ship_v_y, _, _ = read_data('input.txt', 'ship_v_y')
+                ship_v_z, _, _ = read_data('input.txt', 'ship_v_z')
+                guidance_distance, _, _ = read_data('input.txt', 'guidance_distance')
+                dan_aim_tpye, _, _ = read_data('input.txt', 'dan_aim_tpye')
+                dan_L, _, _ = read_data('input.txt', 'dan_L')
+                dan_guide_type, _, _ = read_data('input.txt', 'dan_guide_type')
+
                 laptop_datas = {
                     't0': t0,
                     'tend': tend,
@@ -1131,6 +1195,25 @@ class MainWindow(QMainWindow):
                     'air_L': air_L,
                     'air_theta': air_theta,
                     'air_v': air_v,
+
+
+                    'ship_v_x': ship_v_x,
+                    'ship_v_y': ship_v_y,
+                    'ship_v_z': ship_v_z,
+                    'guidance_distance': guidance_distance,
+                    'dan_aim_tpye': dan_aim_tpye,
+                    'dan_L': dan_L,
+                    'dan_guide_type': dan_guide_type,
+
+
+                    # # 新增的
+                    # 'ship_v_x': self.sim_dive_widget.ship_v_x_input.value(),
+                    # 'ship_v_y': self.sim_dive_widget.ship_v_y_input.value(),
+                    # 'ship_v_z': self.sim_dive_widget.ship_v_z_input.value(),
+                    # 'guidance_distance': self.sim_dive_widget.guidance_distance_input.value(),
+                    # 'dan_aim_tpye': self.sim_dive_widget.dan_aim_tpye.currentIndex(),
+                    # 'dan_L': self.sim_dive_widget.dan_L_input.value(),
+                    # 'dan_guide_type': self.sim_dive_widget.dan_guide_type.currentIndex(),
                 }
 
                 # 验证配置文件
@@ -1210,6 +1293,23 @@ class MainWindow(QMainWindow):
                 self.sim_dive_widget.air_L_input.setValue(mmp.get('air_L', None))
                 self.sim_dive_widget.air_theta_input.setValue(mmp.get('air_theta', None))
                 self.sim_dive_widget.air_v_input.setValue(mmp.get('air_v', None))
+
+                # # 新增的
+                # 'ship_v_x': self.sim_dive_widget.ship_v_x_input.value(),
+                # 'ship_v_y': self.sim_dive_widget.ship_v_y_input.value(),
+                # 'ship_v_z': self.sim_dive_widget.ship_v_z_input.value(),
+                # 'guidance_distance': self.sim_dive_widget.guidance_distance_input.value(),
+                # 'dan_aim_tpye': self.sim_dive_widget.dan_aim_tpye.currentIndex(),
+                # 'dan_L': self.sim_dive_widget.dan_L_input.value(),
+                # 'dan_guide_type': self.sim_dive_widget.dan_guide_type.currentIndex(),
+
+                self.sim_dive_widget.ship_v_x_input.setValue(mmp.get('ship_v_x', None))
+                self.sim_dive_widget.ship_v_y_input.setValue(mmp.get('ship_v_y', None))
+                self.sim_dive_widget.ship_v_z_input.setValue(mmp.get('ship_v_z', None))
+                self.sim_dive_widget.guidance_distance_input.setValue(mmp.get('guidance_distance', None))
+                self.sim_dive_widget.dan_L_input.setValue(mmp.get('dan_L', None))
+                self.sim_dive_widget.dan_aim_tpye.setCurrentIndex(int(mmp.get('dan_aim_tpye', None)))
+                self.sim_dive_widget.dan_guide_type.setCurrentIndex(int(mmp.get('dan_guide_type', None)))
 
                 # 更新状态栏
                 logging.info("加载配置成功")
@@ -1312,7 +1412,17 @@ class MainWindow(QMainWindow):
             'air_t': self.sim_dive_widget.air_t_input.value(),  # 飞行时间(s)
             'air_L': self.sim_dive_widget.air_L_input.value(),  # 弹道距离(km)
             'air_theta': self.sim_dive_widget.air_theta_input.value(),  # 入水倾角(deg)
-            'air_v': self.sim_dive_widget.air_v_input.value()  # 入水速度(m/s)
+            'air_v': self.sim_dive_widget.air_v_input.value(),  # 入水速度(m/s)
+
+            # 新增的
+            'ship_v_x': self.sim_dive_widget.ship_v_x_input.value(),
+            'ship_v_y': self.sim_dive_widget.ship_v_y_input.value(),
+            'ship_v_z': self.sim_dive_widget.ship_v_z_input.value(),
+            'guidance_distance': self.sim_dive_widget.guidance_distance_input.value(),
+            'dan_aim_tpye': self.sim_dive_widget.dan_aim_tpye.currentIndex(),
+            'dan_L': self.sim_dive_widget.dan_L_input.value(),
+            'dan_guide_type': self.sim_dive_widget.dan_guide_type.currentIndex(),
+
         }
 
         self.to_data_signal.emit(datas)

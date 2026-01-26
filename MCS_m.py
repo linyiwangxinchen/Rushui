@@ -20,7 +20,7 @@ class MSC:
         self.ship_M = 78000000
         self.ship_B = 76.8096
         self.ship_T = 10.8966
-        self.ship_x = [120, 0, 0]
+        self.ship_x = [500, 0, 0]
         self.v_ship_0 = [17, 0, 0]
         self.guidance_distance = 2000
         self.N_burn = 3
@@ -37,6 +37,9 @@ class MSC:
         self.dian_L = None
         self.before_time = None
         self.before_L = None
+        self.P = 0
+        self.P_list = [0]
+        self.point_dict = []
 
 
     def _change_data(self):
@@ -176,12 +179,15 @@ class MSC:
             Dani.a_max = self.a_max
             Dani.guidance_distance = self.guidance_distance
             Dani._recalculate_update_input()
+            Dani.update_callback = self.update_callback
 
         dicti = self.dict_shipi
         randomi = random.random() * 2 - 1
         randomj = random.random() * 2 - 1
-        Dani.theta0 = Dani.theta0 * (1 + 0.05 * randomi)
-        Dani.v0 = Dani.v0 * (1 + 0.05 * randomj)
+        Dani.theta0 = Dani.theta0 * (1 + 0.01 * randomi)
+        Dani.v0 = Dani.v0 * (1 + 0.01 * randomj)
+        Dani.P = self.P
+        Dani.P_list = self.P_list
 
         t0, y0, t1, y1 = Dani.main()
         # 整理弹道数据
@@ -225,6 +231,13 @@ class MSC:
 
         ship_x_list = Dani.ship_x_list
         ship_v_list = Dani.ship_v_list
+
+
+        self.ship_x_list = ship_x_list
+        self.ship_v_list = ship_v_list
+        self.dan_line = dan_line
+        self.dan_v_list = dan_v_list
+        self.dan_t = dan_t
 
         # 此时寻找弹体与舰艇最近的点,先计算距离
         distance = ship_x_list - dan_line
@@ -283,6 +296,8 @@ class MSC:
             P = self.burn_one()
             Ps.append(P)
             print(P)
+            self.P = P
+            self.P_list = Ps
             current_time = time.time()
             if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:
                 last_callback_time = current_time
@@ -302,7 +317,14 @@ class MSC:
 
                     # 调用回调函数
                     self.update_callback(data)
-
+            dicti = {
+                'ship_x_list': self.ship_x_list,
+                'ship_v_list': self.ship_v_list,
+                'dan_line': self.dan_line,
+                'dan_v_list ': self.dan_v_list ,
+                't_list': self.dan_t
+            }
+            self.point_dict.append(dicti)
 
 if __name__ == '__main__':
     M = MSC()

@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QMessageBox, QDoubleSpinBox, QLabel, QProgressBar, Q
 
 from CalculationThread import CalculationThread
 from MCS import MSC
+from MCS_m import MSC as MSC_M
+from TrajectoryPlotWindow import TrajectoryPlotWindow
 
 class SimulationDiveWidget(QWidget):
     """仿真控制界面"""
@@ -15,7 +17,8 @@ class SimulationDiveWidget(QWidget):
 
     def __init__(self, stab_instance, parent=None):
         super().__init__(parent)
-        self.stab = stab_instance
+        self.stab = None
+        self.rushui = stab_instance
         self.calc_thread = None
         self.init_ui()
 
@@ -70,9 +73,9 @@ class SimulationDiveWidget(QWidget):
         ship_x_layout = QGridLayout()
         ship_x_layout.setContentsMargins(5, 5, 5, 5)
         ship_x_layout.setSpacing(5)
-        self.add_labeled_input(ship_x_layout, "目标舰艇位置x (m):", 0, 0, 0, 1000, 2100, 1.0, "ship_x_x_input")
-        self.add_labeled_input(ship_x_layout, "目标舰艇位置y (m):", 1, 0, 0, 1000, 0, 1.0, "ship_x_y_input")
-        self.add_labeled_input(ship_x_layout, "目标舰艇位置z (m):", 2, 0, 0, 1000, 0, 1.0, "ship_x_z_input")
+        self.add_labeled_input(ship_x_layout, "目标舰艇位置x (m):", 0, 0, 0, 10000, 480, 1.0, "ship_x_x_input")
+        self.add_labeled_input(ship_x_layout, "目标舰艇位置y (m):", 1, 0, 0, 10000, 0, 1.0, "ship_x_y_input")
+        self.add_labeled_input(ship_x_layout, "目标舰艇位置z (m):", 2, 0, 0, 10000, 0, 1.0, "ship_x_z_input")
         self.add_labeled_input(ship_x_layout, "目标舰艇最大速度（节）:", 3, 0, 0, 1000, 46, 1.0, "ship_v_max_input")
         self.add_labeled_input(ship_x_layout, "目标舰艇最大加速度（m/s^2）:", 4, 0, 0, 1000, 2, 1.0, "ship_a_max_input")
         self.add_labeled_input(ship_x_layout, "目标舰艇速度Vx (m/s):", 5, 0, 0, 1000, 12.7, 1.0, "ship_v_x_input")
@@ -80,7 +83,7 @@ class SimulationDiveWidget(QWidget):
         self.add_labeled_input(ship_x_layout, "目标舰艇速度Vz (m/s):", 7, 0, 0, 1000, 0, 1.0, "ship_v_z_input")
         ship_x_group.setLayout(ship_x_layout)
 
-        dan_air_group = QGroupBox("空中入水飞行参数")
+        dan_air_group = QGroupBox("空中飞行和入水参数")
         dan_air_layout = QGridLayout()
         dan_air_layout.setContentsMargins(5, 5, 5, 5)
         dan_air_layout.setSpacing(5)
@@ -94,30 +97,38 @@ class SimulationDiveWidget(QWidget):
         self.add_labeled_input(dan_air_layout, "空中弹道距离L (km):", 1, 0, 0, 1000, 519.8217, 1.0, "air_L_input")
         self.add_labeled_input(dan_air_layout, "入水弹道倾角theta (deg):", 2, 0, -1000, 1000, -10.1 , 1.0, "air_theta_input")
         self.add_labeled_input(dan_air_layout, "入水速度v (m/s):", 3, 0, 0, 1000, 273.63, 1.0, "air_v_input")
+        dan_air_group.setLayout(dan_air_layout)
 
-        dan_air_layout.addWidget(QLabel("是否开启电磁制导:"), 4, 0)
+
+        dan_guide_group = QGroupBox("末制导参数")
+        dan_guide_layout = QGridLayout()
+        dan_guide_layout.setContentsMargins(5, 5, 5, 5)
+        dan_guide_layout.setSpacing(5)
+
+        dan_guide_layout.addWidget(QLabel("是否开启电磁制导:"), 4, 0)
         self.dan_aim_tpye = QComboBox()
         self.dan_aim_tpye.addItems([
             "否",
             "是"
         ])
+
         self.dan_aim_tpye.setCurrentIndex(0)
-        dan_air_layout.addWidget(self.dan_aim_tpye, 4, 1)
+        dan_guide_layout.addWidget(self.dan_aim_tpye, 4, 1)
 
-        self.add_labeled_input(dan_air_layout, "不开启电磁制导的起爆距离 (m):", 5, 0, 0, 1000, 10, 1.0, "dan_L_input")
+        self.add_labeled_input(dan_guide_layout, "无制导起爆距离 (m):", 5, 0, 0, 1000, 10, 1.0, "dan_L_input")
 
-        dan_air_layout.addWidget(QLabel("是否开启末端导引:"), 6, 0)
-        self.dan_guide_tpye = QComboBox()
-        self.dan_guide_tpye.addItems([
+        dan_guide_layout.addWidget(QLabel("是否开启末端导引:"), 6, 0)
+        self.dan_guide_type = QComboBox()
+        self.dan_guide_type.addItems([
             "否",
             "是"
         ])
-        self.dan_guide_tpye.setCurrentIndex(1)
-        dan_air_layout.addWidget(self.dan_guide_tpye, 6, 1)
-        self.add_labeled_input(dan_air_layout, "开启末端导引距离 (m):", 7, 0, 0, 10000, 2000, 1.0, "guidance_distance_input")
+        self.dan_guide_type.setCurrentIndex(1)
+        dan_guide_layout.addWidget(self.dan_guide_type, 6, 1)
+        self.add_labeled_input(dan_guide_layout, "开启末端导引距离 (m):", 7, 0, 0, 10000, 2000, 1.0, "guidance_distance_input")
 
 
-        dan_air_group.setLayout(dan_air_layout)
+        dan_guide_group.setLayout(dan_guide_layout)
 
         # 控制按钮
         control_layout = QHBoxLayout()
@@ -166,6 +177,11 @@ class SimulationDiveWidget(QWidget):
                 result_layout.addWidget(QLabel(unit), row, 2)
             row += 1
 
+        self.plot_thrust_btn = QPushButton("展示打靶轨迹")
+        self.plot_thrust_btn.setStyleSheet("background-color: #2196F3; color: white;")
+        self.plot_thrust_btn.clicked.connect(self.show_line_plot)
+        result_layout.addWidget(self.plot_thrust_btn, 5, 0, 1, 2, Qt.AlignCenter)
+
         result_group.setLayout(result_layout)
 
         # 组合布局
@@ -173,6 +189,7 @@ class SimulationDiveWidget(QWidget):
         main_layout.addWidget(sim_group)
         main_layout.addWidget(ship_x_group)
         main_layout.addWidget(dan_air_group)
+        main_layout.addWidget(dan_guide_group)
         main_layout.addLayout(control_layout)
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.progress_label)
@@ -180,6 +197,21 @@ class SimulationDiveWidget(QWidget):
         main_layout.addStretch()
 
         self.setLayout(main_layout)
+
+    def show_line_plot(self):
+        """展示推力-时间曲线"""
+        try:
+
+            if not hasattr(self.stab, 'point_dict'):
+                QMessageBox.warning(self, "提示", "无仿真数据可供展示")
+                return
+
+            traj_window = TrajectoryPlotWindow(self.stab.point_dict, parent=self)
+            traj_window.exec_()  # 模态对话框
+
+        except:
+            logging.exception("绘制曲线时出错")
+            QMessageBox.critical(self, "错误", f"无法绘制曲线: {str(e)}")
 
     def add_labeled_input(self, layout, label_text, row, col, min_val, max_val, default_val, step, attr_name):
         """添加带标签的输入控件"""
@@ -234,20 +266,48 @@ class SimulationDiveWidget(QWidget):
             # 重置状态
             self.ask_model()
 
-            self.stab = MSC()
-            self.stab.model_data = self.model_data
-            self.stab.ship_L = self.ship_L_input.value()
-            self.stab.ship_M = self.ship_M_input.value()
-            self.stab.ship_B = self.ship_B_input.value()
-            self.stab.ship_T = self.ship_T_input.value()
-            self.stab.ifship = self.ship_if.currentIndex()
-            self.stab.ship_kind = self.ship_tpye.currentIndex()
-            self.stab.N_burn = self.burn_N_input.value()
+            # 首先检查是否开启末端导引
+            check_guide = self.dan_guide_type.currentIndex()
+            if check_guide == 0:
+                self.stab = MSC()
+                self.stab.model_data = self.model_data
+                self.stab.ship_L = self.ship_L_input.value()
+                self.stab.ship_M = self.ship_M_input.value()
+                self.stab.ship_B = self.ship_B_input.value()
+                self.stab.ship_T = self.ship_T_input.value()
+                self.stab.ifship = self.ship_if.currentIndex()
+                self.stab.ship_kind = self.ship_tpye.currentIndex()
+                self.stab.N_burn = self.burn_N_input.value()
+                # 把之前没加的一起塞进去
+                self.stab.ship_x = [self.ship_x_x_input.value(), self.ship_x_y_input.value(), self.ship_x_z_input.value()]
+                self.stab.v_ship_0 = [self.ship_v_x_input.value(), self.ship_v_y_input.value(), self.ship_v_z_input.value()]
+                self.stab.a_max = self.ship_a_max_input.value()
+                self.stab.v_max = self.ship_v_max_input.value()
+                self.stab.ifdian = self.dan_aim_tpye.currentIndex()
+                self.stab.dian_L = self.dan_L_input.value()
+                self.stab.before_time = self.air_t_input.value()
+                self.stab.before_L = self.air_L_input.value()
 
-            # self.stab.ifdian = self.dan_aim_tpye.currentIndex()
-            # self.stab.dian_L = self.dan_L_input.value()
-            # self.stab.before_time = self.air_t_input.value()
-            # self.stab.before_L = self.air_L_input.value()
+            else:
+                self.stab = MSC_M()
+                self.stab.model_data = self.model_data
+                self.stab.ship_L = self.ship_L_input.value()
+                self.stab.ship_M = self.ship_M_input.value()
+                self.stab.ship_B = self.ship_B_input.value()
+                self.stab.ship_T = self.ship_T_input.value()
+                self.stab.ifship = self.ship_if.currentIndex()
+                self.stab.ship_kind = self.ship_tpye.currentIndex()
+                self.stab.N_burn = self.burn_N_input.value()
+                self.stab.ship_x = [self.ship_x_x_input.value(), self.ship_x_y_input.value(), self.ship_x_z_input.value()]
+                self.stab.v_ship_0 = [self.ship_v_x_input.value(), self.ship_v_y_input.value(), self.ship_v_z_input.value()]
+                self.stab.a_max = self.ship_a_max_input.value()
+                self.stab.v_max = self.ship_v_max_input.value()
+                self.stab.ifdian = self.dan_aim_tpye.currentIndex()
+                self.stab.dian_L = self.dan_L_input.value()
+                self.stab.before_time = self.air_t_input.value()
+                self.stab.before_L = self.air_L_input.value()
+                # 由于将舰船移动放进去了，这里要额外进行一些赋值
+
 
             # 创建并启动计算线程
             self.calc_thread = CalculationThread(self.stab)
@@ -297,6 +357,7 @@ class SimulationDiveWidget(QWidget):
             logging.info("仿真计算成功完成")
         else:
             self.progress_label.setText("仿真已中止")
+        self.rushui.point_dict = self.stab.point_dict
 
     def handle_error(self, error_message):
         """处理计算错误"""

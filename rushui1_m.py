@@ -40,7 +40,7 @@ class  Entry:
         self.total.L = 3.195   # 长度
         self.total.S = 0.0356  # 横截面积
 
-        self.total.V = 0     # 体积
+        self.total.V = 0     # 初始沾湿体积
         self.total.m = 114.7   # 重量
         self.total.xc = -0.0188    # 重心坐标，体坐标系原点位于重心所在横截面中心
         self.total.yc = -0.0017
@@ -75,6 +75,7 @@ class  Entry:
         self.tp = 0      # 全局变量：上一步仿真时间
         self.dt = 2e-4   # 仿真步长
         self.v0 = 300  # 入水速度
+
         self.theta0 = -10 / self.rtd  # 入水弹道角
         self.psi0 = 0 / self.rtd  # 入水偏航角
         self.phi0 = 0 / self.rtd  # 入水横滚角
@@ -119,7 +120,6 @@ class  Entry:
         self.A = 2  # 经验常数
         self.k1 = 4 * np.pi / self.A ** 2
         self.Dn = 2 * self.rk  # 空化器直径
-
 
     # 设置流体动力系数
     def _setFluid_(self, isCav, sgm):
@@ -576,6 +576,7 @@ class  Entry:
                 pc1 = self.presRec[self.ip - 1, 1] * 1e3 * kpc
                 dp = p8 - pc1
                 self.sgm = dp / (0.5 * self.rho * vk ** 2)
+
                 if self.posCav[i - 1, 4] > 0:
                     # 如果空泡尚未闭合，计算空泡截面扩张率
                     self.posCav[i - 1, 3] = self.posCav[i - 1, 3] - self.k1 * dp / self.rho * self.dt
@@ -1081,7 +1082,9 @@ class  Entry:
                             'ts': T,
                             'ys': Y
 
-                        }
+                        },
+                        'Pi': self.P,
+                        'P_list': np.array(self.P_list)
                     }
                     # 调用回调函数
                     self.update_callback(data)

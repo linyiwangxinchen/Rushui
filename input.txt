@@ -122,7 +122,7 @@
 0.09
 %end%
 %single k_theta  FLT %
-0.02
+0.022
 %end%
 %single kwz  FLT %
 0.312
@@ -155,7 +155,7 @@
 0, 0.56, 0.57, 100
 %end%
 %single thrust_sequence  STR %
-25080.6, 25080.6, 6971.4, 6971.4
+25080.6, 25080.6, 8971.4, 8971.4
 %end%
 %single ship_L  FLT %
 315.773
@@ -179,7 +179,7 @@
 0
 %end%
 %single ship_x_x  FLT %
-120
+480
 %end%
 %single ship_x_y  FLT %
 0
@@ -204,4 +204,25 @@
 %end%
 %single air_v  FLT %
 273.63
+%end%
+%single ship_v_x  FLT %
+12.7
+%end%
+%single ship_v_y  FLT %
+0
+%end%
+%single ship_v_z  FLT %
+0
+%end%
+%single guidance_distance  FLT %
+2000
+%end%
+%single dan_aim_tpye  FLT %
+0
+%end%
+%single dan_L  FLT %
+10
+%end%
+%single dan_guide_type  FLT %
+1
 %end%

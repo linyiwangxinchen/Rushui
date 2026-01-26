@@ -32,110 +32,100 @@ class SimulationControlWidget(QWidget):
         entry_layout = QGridLayout()
         self.add_labeled_input(entry_layout, "起始时间 t0 (s):", 0, 0, -1000, 1000, 0, 0.001, "t0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "终止时间 tend (s):", 1, 0, -1000, 1000, 0.2, 0.001, "tend_input",
+        self.add_labeled_input(entry_layout, "终止时间 tend (s):", 1, 0, -1000, 1000, 1, 0.001, "tend_input",
                                range_check=False)
         self.add_labeled_input(entry_layout, "仿真步长 dt (s):", 2, 0, -1000, 1000, 0.0002, 0.00001, "dt_input",
                                range_check=False)
         self.add_labeled_input(entry_layout, "入水速度 v0 (m/s):", 3, 0, -1000, 1000, 300, 0.1, "v0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "入水角 theta0 (deg):", 4, 0, -1000, 1000, -10, 0.01, "theta0_input",
+        self.add_labeled_input(entry_layout, "初始入水角 theta0 (deg):", 4, 0, -1000, 1000, -10, 0.01, "theta0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "偏航角 psi0 (deg):", 5, 0, -1000, 1000, 0, 0.01, "psi0_input",
+        self.add_labeled_input(entry_layout, "初始偏航角 psi0 (deg):", 5, 0, -1000, 1000, 0, 0.01, "psi0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "横滚角 phi0 (deg):", 6, 0, -1000, 1000, 0, 0.01, "phi0_input",
+        self.add_labeled_input(entry_layout, "初始横滚角 phi0 (deg):", 6, 0, -1000, 1000, 0, 0.01, "phi0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "攻角 alpha0 (deg):", 7, 0, -1000, 1000, 0.03138, 0.0001, "alpha0_input",
+        self.add_labeled_input(entry_layout, "初始攻角 alpha0 (deg):", 7, 0, -1000, 1000, 0.03138, 0.0001, "alpha0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "横滚角速度 wx0 (deg/s):", 8, 0, -1000, 1000, 0, 0.01, "wx0_input",
+        self.add_labeled_input(entry_layout, "初始横滚角速度 wx0 (deg/s):", 8, 0, -1000, 1000, 0, 0.01, "wx0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "偏航角速度 wy0 (deg/s):", 9, 0, -1000, 1000, 0, 0.01, "wy0_input",
+        self.add_labeled_input(entry_layout, "初始偏航角速度 wy0 (deg/s):", 9, 0, -1000, 1000, 0, 0.01, "wy0_input",
                                range_check=False)
-        self.add_labeled_input(entry_layout, "俯仰角速度 wz0 (deg/s):", 10, 0, -1000, 1000, 6.63, 0.01, "wz0_input",
+        self.add_labeled_input(entry_layout, "初始俯仰角速度 wz0 (deg/s):", 10, 0, -1000, 1000, 6.63, 0.01, "wz0_input",
                                range_check=False)
         entry_group.setLayout(entry_layout)
 
         # ——————————控制参数——————————
-        control_group = QGroupBox("控制参数")
+        control_group = QGroupBox("PID控制参数")
         control_layout_data = QGridLayout()
         self.add_labeled_input(control_layout_data, "横滚角速度增益 k_wz:", 0, 0, -1000, 1000, 0.09, 0.0001, "k_wz_input",
                                range_check=False)
         self.add_labeled_input(control_layout_data, "俯仰角增益 k_theta:", 1, 0, -1000, 1000, 0.02, 0.0001, "k_theta_input",
                                range_check=False)
-        control_group.setLayout(control_layout_data)
 
-        # ——————————控制参数——————————
-        control_dive_group = QGroupBox("控制参数")
-        control_dive_layout_data = QGridLayout()
-        control_dive_layout_data.setContentsMargins(5, 5, 5, 5)
-        control_dive_layout_data.setSpacing(5)
+
 
         # 俯仰角增益 kth (对应原self.kth)
-        self.add_labeled_input(control_dive_layout_data, "俯仰角增益 ktheta:", 0, 0, -1000, 1000, 4, 0.1,
+        self.add_labeled_input(control_layout_data, "俯仰角增益 ktheta:", 2, 0, -1000, 1000, 4, 0.1,
                                "ktheta_input", range_check=False)
 
         # 姿态同步增益 kps (关联kth)
-        self.add_labeled_input(control_dive_layout_data, "姿态同步增益 k_ps:", 1, 0, -1000, 1000, 4, 0.1, "k_ps_input",
+        self.add_labeled_input(control_layout_data, "姿态同步增益 k_ps:", 3, 0, -1000, 1000, 4, 0.1, "k_ps_input",
                                range_check=False)
 
         # 舵机响应增益 kph
-        self.add_labeled_input(control_dive_layout_data, "舵机响应增益 k_ph:", 2, 0, -1000, 1000, 0.08, 0.01,
+        self.add_labeled_input(control_layout_data, "舵机响应增益 k_ph:", 4, 0, -1000, 1000, 0.08, 0.01,
                                "k_ph_input", range_check=False)
 
         # 滚转角速度增益 kwx
-        self.add_labeled_input(control_dive_layout_data, "滚转角速度增益 k_wx:", 3, 0, -1000, 1000, 0.0016562, 0.000001,
+        self.add_labeled_input(control_layout_data, "滚转角速度增益 k_wx:", 5, 0, -1000, 1000, 0.0016562, 0.000001,
                                "k_wx_input", range_check=False)
 
         # 偏航角速度增益 kwz
-        self.add_labeled_input(control_dive_layout_data, "偏航角速度增益 kwz:", 4, 0, -1000, 1000, 0.312, 0.001,
+        self.add_labeled_input(control_layout_data, "偏航角速度增益 kwz:", 6, 0, -1000, 1000, 0.312, 0.001,
                                "kwz_input", range_check=False)
 
         # 垂向控制增益 kwy (关联kwz)
-        self.add_labeled_input(control_dive_layout_data, "垂向控制增益 k_wy:", 5, 0, -1000, 1000, 0.312, 0.001,
+        self.add_labeled_input(control_layout_data, "垂向控制增益 k_wy:", 7, 0, -1000, 1000, 0.312, 0.001,
                                "k_wy_input", range_check=False)
 
-        control_dive_group.setLayout(control_dive_layout_data)
+        control_group.setLayout(control_layout_data)
 
         # ——————————控制参数——————————
-        dive_group = QGroupBox("控制参数")
+        dive_group = QGroupBox("发动机参数")
         dive_layout_data = QGridLayout()
         dive_layout_data.setContentsMargins(5, 5, 5, 5)
         dive_layout_data.setSpacing(5)
         self.add_labeled_input(dive_layout_data, "水下仿真时间:", 0, 0, -1000, 1000, 3.41, 0.001,
                                "tend_under_input", range_check=False)
-        self.add_labeled_input(dive_layout_data, "加速段推力 T1:", 1, 0, -1000, 1000000, 25080.6, 0.001,
+        self.add_labeled_input_no_Visible(dive_layout_data, "加速段推力 T1:", 1, 0, -1000, 1000000, 25080.6, 0.001,
                                "T1_input", range_check=False)
-        self.add_labeled_input(dive_layout_data, "巡航段推力 T2:", 2, 0, -1000, 1000000, 6971.4, 0.001,
+        self.add_labeled_input_no_Visible(dive_layout_data, "巡航段推力 T2:", 2, 0, -1000, 1000000, 6971.4, 0.001,
                                "T2_input", range_check=False)
-        dive_group.setLayout(dive_layout_data)
 
-        # ——————————推力设置—————————— (新增部分)
-        thrust_group = QGroupBox("推力设置")
-        thrust_layout = QGridLayout()
-        thrust_layout.setContentsMargins(5, 5, 5, 5)
-        thrust_layout.setSpacing(5)
+
 
         # 时间序列输入
-        thrust_layout.addWidget(QLabel("时间序列 (s):"), 0, 0)
+        dive_layout_data.addWidget(QLabel("时间序列 (s):"), 3, 0)
         self.time_sequence_input = QLineEdit()
         self.time_sequence_input.setPlaceholderText("示例: 0, 0.5, 1.0, 1.5, 2.0")
         self.time_sequence_input.setText("0, 0.56, 0.57, 100")
-        thrust_layout.addWidget(self.time_sequence_input, 0, 1)
+        dive_layout_data.addWidget(self.time_sequence_input, 3, 1)
 
         # 推力序列输入
-        thrust_layout.addWidget(QLabel("推力序列 (N):"), 1, 0)
+        dive_layout_data.addWidget(QLabel("推力序列 (N):"), 4, 0)
         self.thrust_sequence_input = QLineEdit()
         self.thrust_sequence_input.setPlaceholderText("示例: 25000, 22000, 18000, 15000, 7000")
         self.thrust_sequence_input.setText("25080.6, 25080.6, 6971.4, 6971.4")
 
-        thrust_layout.addWidget(self.thrust_sequence_input, 1, 1)
+        dive_layout_data.addWidget(self.thrust_sequence_input, 4, 1)
 
         # 展示曲线按钮
         self.plot_thrust_btn = QPushButton("展示推力时间曲线")
         self.plot_thrust_btn.setStyleSheet("background-color: #2196F3; color: white;")
         self.plot_thrust_btn.clicked.connect(self.show_thrust_plot)
-        thrust_layout.addWidget(self.plot_thrust_btn, 2, 0, 1, 2, Qt.AlignCenter)
+        dive_layout_data.addWidget(self.plot_thrust_btn, 5, 0, 1, 2, Qt.AlignCenter)
 
-        thrust_group.setLayout(thrust_layout)
+        dive_group.setLayout(dive_layout_data)
 
 
         # 控制按钮
@@ -165,9 +155,7 @@ class SimulationControlWidget(QWidget):
         # 组合布局
         main_layout.addWidget(entry_group)
         main_layout.addWidget(control_group)
-        main_layout.addWidget(control_dive_group)
         main_layout.addWidget(dive_group)
-        main_layout.addWidget(thrust_group)  # 新增的推力设置组
         main_layout.addLayout(control_layout)
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.progress_label)
@@ -227,6 +215,21 @@ class SimulationControlWidget(QWidget):
 
         layout.addWidget(spin_box, row, col + 1)
         setattr(self, attr_name, spin_box)
+
+    def add_labeled_input_no_Visible(self, layout, label_text, row, col, min_val, max_val, default_val, step, attr_name, range_check=True):
+        """添加带标签的输入控件"""
+        labeli = QLabel(label_text)
+        labeli.setVisible(False)
+        layout.addWidget(labeli, row, col)
+        spin_box = QDoubleSpinBox()
+        spin_box.setDecimals(6)
+        spin_box.setRange(min_val, max_val)
+        spin_box.setSingleStep(step)
+        spin_box.setValue(default_val)
+        spin_box.setVisible(False)
+        layout.addWidget(spin_box, row, col + 1)
+        setattr(self, attr_name, spin_box)
+
 
     def ask_model(self):
         # 告诉model我要数据

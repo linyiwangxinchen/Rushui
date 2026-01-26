@@ -34,6 +34,8 @@ class Dan:
         self.update_callback = None
         self.progress_callback = None
         self.min_callback_interval = 0.05
+        self.P = 0
+        self.P_list = [0]
 
         # 入水部分参数
         # ——————————基本常量——————————
@@ -235,7 +237,8 @@ class Dan:
         M.plot_dan_x = self.plot_dan_x
         M.update_callback = self.update_callback
         M.progress_callback = self.progress_callback
-
+        M.P = self.P
+        M.P_list = self.P_list
         self.M = M
 
         # 获取入水过程中的时间和状态数据
@@ -361,7 +364,8 @@ class Dan:
         N.zb = self.zb
         N.yb1 = np.zeros_like(self.yb)
         N.zb1 = self.yb
-
+        N.P = self.P
+        N.P_list = self.P_list
 
         self.N = N
         self.N.main()

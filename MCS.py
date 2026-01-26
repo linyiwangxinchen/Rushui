@@ -37,6 +37,9 @@ class MSC:
         self.dian_L = None
         self.before_time = None
         self.before_L = None
+        self.P = 0
+        self.P_list = [0]
+        self.point_dict = []
 
 
     def _change_data(self):
@@ -170,12 +173,15 @@ class MSC:
             Dani.time_sequence = time_data
             Dani.thrust_sequence = thrust_data
             Dani._recalculate_update_input()
+            Dani.update_callback = self.update_callback
 
         dicti = self.dict_shipi
         randomi = random.random() * 2 - 1
         randomj = random.random() * 2 - 1
         Dani.theta0 = Dani.theta0 * (1 + 0.05 * randomi)
         Dani.v0 = Dani.v0 * (1 + 0.05 * randomj)
+        Dani.P = self.P
+        Dani.P_list = self.P_list
 
         t0, y0, t1, y1 = Dani.main()
         # 整理弹道数据
@@ -216,6 +222,12 @@ class MSC:
         else:
             # 要不就原地不动
             ship_x_list = np.zeros((len(dan_line), 3))
+
+        self.ship_x_list = ship_x_list
+        self.ship_v_list = ship_v_list
+        self.dan_line = dan_line
+        self.dan_v_list = dan_v_list
+        self.dan_t = dan_t
 
         # 此时寻找弹体与舰艇最近的点,先计算距离
         distance = ship_x_list - dan_line
@@ -270,7 +282,9 @@ class MSC:
         N = int(self.N_burn)
         Ps = []
         last_callback_time = time.time()
+
         for i in range(N):
+            dicti = {}
             P = self.burn_one()
             Ps.append(P)
             print(P)
@@ -293,5 +307,16 @@ class MSC:
 
                     # 调用回调函数
                     self.update_callback(data)
+
+            dicti = {
+                'ship_x_list': self.ship_x_list,
+                'ship_v_list': self.ship_v_list,
+                'dan_line': self.dan_line,
+                'dan_v_list ': self.dan_v_list ,
+                't_list': self.dan_t
+            }
+            self.point_dict.append(dicti)
+
+
 
 

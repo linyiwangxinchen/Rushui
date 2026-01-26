@@ -620,6 +620,9 @@ class under:
                 # --------------舵角分配--------------
                 ds = dd + dv
                 dx = -dd + dv
+                if abs(ds) >= dvmax or abs(dx) >= dvmax:
+                    ds = dd
+                    dx = -dd
                 ds = np.sign(ds) * min(abs(ds), dvmax)
                 dx = np.sign(dx) * min(abs(dx), dvmax)
             else:
@@ -2372,7 +2375,9 @@ class under:
                         'datas': {
                             'ts': self.ts,
                             'ys': self.ys
-                        }
+                        },
+                        'Pi': self.P,
+                        'P_list': np.array(self.P_list)
                     }
                     # 调用回调函数
                     self.update_callback(data)
