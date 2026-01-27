@@ -369,6 +369,21 @@ class Dan:
         N.P = self.P
         N.P_list = self.P_list
 
+        N.L = self.total.L
+        N.S = self.total.S
+        N.V = self.total.V
+        N.m = self.total.m
+        N.xc = self.total.xc
+        N.yc = self.total.yc
+        N.zc = self.total.zc
+        N.Jxx = self.total.Jxx
+        N.Jyy = self.total.Jyy
+        N.Jzz = self.total.Jzz
+        N.LK = self.lk
+        N.RK = self.rk
+
+
+
         self.N = N
         self.N.main()
         N = self.N

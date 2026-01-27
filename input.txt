@@ -7,6 +7,9 @@
 %single V  FLT %
 0
 %end%
+%single dan_type  FLT %
+0
+%end%
 %single m  FLT %
 114.7
 %end%

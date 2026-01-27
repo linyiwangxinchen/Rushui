@@ -432,7 +432,7 @@ class under:
         # 插值获取当前时刻的参数
         m = np.interp(t, q[:, 0], q[:, 1])
         xc_interp = np.interp(t, q[:, 0], q[:, 2])
-        xc = 1.714 - 0.001 * xc_interp
+        xc = self.LK - 0.001 * xc_interp
         Jxx = np.interp(t, q[:, 0], q[:, 3])
         Jyy = np.interp(t, q[:, 0], q[:, 4])
         Jzz = np.interp(t, q[:, 0], q[:, 5])
@@ -440,7 +440,7 @@ class under:
         # 计算变质量引起的导数（数值微分）
         dt = 0.1
         m_prev = np.interp(t - dt, q[:, 0], q[:, 1])
-        xc_prev = 1.714 - 0.001 * np.interp(t - dt, q[:, 0], q[:, 2])
+        xc_prev = self.LK - 0.001 * np.interp(t - dt, q[:, 0], q[:, 2])
         Jxx_prev = np.interp(t - dt, q[:, 0], q[:, 3])
         Jyy_prev = np.interp(t - dt, q[:, 0], q[:, 4])
         Jzz_prev = np.interp(t - dt, q[:, 0], q[:, 5])
@@ -986,7 +986,7 @@ class under:
         Lc = RK / SGM * (1.92 - 3 * SGM)
 
         # 计算空化器在地面系坐标
-        dlk = Cb0 @ np.array([1.714, 0, 0])
+        dlk = Cb0 @ np.array([self.LK, 0, 0])
         xn = x0 + dlk[0]
         yn = y0 + dlk[1]
         zn = z0 + dlk[2]

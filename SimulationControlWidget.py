@@ -1,6 +1,7 @@
 import bisect
 import logging
 
+import numpy as np
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QDoubleSpinBox, QLabel, QProgressBar, QPushButton, QHBoxLayout, QComboBox, \
     QGridLayout, QGroupBox, QVBoxLayout, QWidget, QLineEdit
@@ -52,6 +53,15 @@ class SimulationControlWidget(QWidget):
                                range_check=False)
         self.add_labeled_input(entry_layout, "初始俯仰角速度 wz0 (deg/s):", 10, 0, -1000, 1000, 6.63, 0.01, "wz0_input",
                                range_check=False)
+        entry_layout.addWidget(QLabel("选择弹体类型:"), 11, 0)
+        self.dan_type = QComboBox()
+        self.dan_type.addItems([
+            "213",
+            "324"
+        ])
+        self.dan_type.setCurrentIndex(0)
+        entry_layout.addWidget(self.dan_type, 11, 1)
+
         entry_group.setLayout(entry_layout)
 
         # ——————————控制参数——————————
@@ -314,6 +324,15 @@ class SimulationControlWidget(QWidget):
 
             model_data = self.model_data
             # 几何与质量参数 (赋值到self.total命名空间)
+            if self.dan_type.currentIndex() == 0:
+                self.rushui.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
+                self.rushui.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
+                self.rushui.zb = self.rushui.yb
+            elif self.dan_type.currentIndex() == 1:
+                self.rushui.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])/213*324
+                self.rushui.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])/213*324
+                self.rushui.zb = self.rushui.yb
+
             self.rushui.total.L = model_data['L']  # 长度 (m)
             self.rushui.total.S = model_data['S']  # 横截面积 (m²)
             self.rushui.total.V = model_data['V']  # 体积 (m³)

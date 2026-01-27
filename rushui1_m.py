@@ -571,6 +571,7 @@ class  Entry:
                 # 更新空泡半径扩张率
                 p8 = 101325 - self.rho * self.g * self.posCav[i - 1, 1]  # 切片所在深度水压力
                 # 泡内压力，由实验数据给出
+                pv = 3540
                 # 压力修正系数：0.75
                 kpc = 1
                 pc1 = self.presRec[self.ip - 1, 1] * 1e3 * kpc

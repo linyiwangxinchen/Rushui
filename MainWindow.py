@@ -266,7 +266,8 @@ class MainWindow(QMainWindow):
                 'T1': self.sim_control_widget.T1_input.value(),
                 'T2': self.sim_control_widget.T2_input.value(),
                 'time_sequence': self.sim_control_widget.time_sequence_input.text(),
-                'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text()
+                'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text(),
+                'dan_type': self.sim_control_widget.dan_type.currentIndex(),
             }
 
             dive_params = {
@@ -429,7 +430,8 @@ class MainWindow(QMainWindow):
                 'T1': self.sim_control_widget.T1_input.value(),
                 'T2': self.sim_control_widget.T2_input.value(),
                 'time_sequence': self.sim_control_widget.time_sequence_input.text(),
-                'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text()
+                'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text(),
+                'dan_type': self.sim_control_widget.dan_type.currentIndex(),
             }
 
             dive_params = {
@@ -592,6 +594,7 @@ class MainWindow(QMainWindow):
                 self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
                 self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
                 self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
+                self.sim_control_widget.dan_type.setCurrentIndex(int(sp.get('dan_type', None)))
 
             if "dive_params" in config:
                 mmp = config['dive_params']
@@ -710,6 +713,7 @@ class MainWindow(QMainWindow):
             wzmax, _, _ = read_data(filename, 'wzmax')
             wxmax, _, _ = read_data(filename, 'wxmax')
             dphimax, _, _ = read_data(filename, 'dphimax')
+            dan_type, _, _ = read_data('input.txt', 'dan_type')
 
             ship_L, _, _ = read_data(filename, 'ship_L')
             ship_M, _, _ = read_data(filename, 'ship_M')
@@ -790,6 +794,7 @@ class MainWindow(QMainWindow):
                 'wzmax': wzmax,
                 'wxmax': wxmax,
                 'dphimax': dphimax,
+                'dan_type': dan_type,
                 'ship_L': ship_L,
                 'ship_M': ship_M,
                 'ship_B': ship_B,
@@ -875,6 +880,7 @@ class MainWindow(QMainWindow):
             self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
             self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
             self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
+            self.sim_control_widget.dan_type.setCurrentIndex(int(sp.get('dan_type', None)))
 
             mmp = laptop_datas
             self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))
@@ -1108,6 +1114,7 @@ class MainWindow(QMainWindow):
                 wzmax, _, _ = read_data('input.txt', 'wzmax')
                 wxmax, _, _ = read_data('input.txt', 'wxmax')
                 dphimax, _, _ = read_data('input.txt', 'dphimax')
+                dan_type, _, _ = read_data('input.txt', 'dan_type')
 
                 ship_L, _, _ = read_data('input.txt', 'ship_L')
                 ship_M, _, _ = read_data('input.txt', 'ship_M')
@@ -1188,6 +1195,7 @@ class MainWindow(QMainWindow):
                     'wzmax': wzmax,
                     'wxmax': wxmax,
                     'dphimax': dphimax,
+                    'dan_type': dan_type,
                     'ship_L': ship_L,
                     'ship_M': ship_M,
                     'ship_B': ship_B,
@@ -1283,6 +1291,7 @@ class MainWindow(QMainWindow):
                 self.sim_control_widget.T2_input.setValue(sp.get('T2', None))
                 self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
                 self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
+                self.sim_control_widget.dan_type.setCurrentIndex(int(sp.get('dan_type', None)))
 
                 mmp = laptop_datas
                 self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))
@@ -1417,6 +1426,8 @@ class MainWindow(QMainWindow):
             'T2': self.sim_control_widget.T2_input.value(),
             'time_sequence': self.sim_control_widget.time_sequence_input.text(),
             'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text(),
+            'dan_type': self.sim_control_widget.dan_type.currentIndex(),
+
 
             'ship_L': self.sim_dive_widget.ship_L_input.value(),
             'ship_M': self.sim_dive_widget.ship_M_input.value(),
@@ -1449,7 +1460,6 @@ class MainWindow(QMainWindow):
             'dan_aim_tpye': self.sim_dive_widget.dan_aim_tpye.currentIndex(),
             'dan_L': self.sim_dive_widget.dan_L_input.value(),
             'dan_guide_type': self.sim_dive_widget.dan_guide_type.currentIndex(),
-
         }
 
         self.to_data_signal.emit(datas)
