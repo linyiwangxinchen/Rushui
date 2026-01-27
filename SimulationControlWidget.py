@@ -401,6 +401,7 @@ class SimulationControlWidget(QWidget):
             thrust_data = [float(t.strip()) for t in thrust_str.split(',') if t.strip()]
             self.rushui.time_sequence = time_data
             self.rushui.thrust_sequence = thrust_data
+            self.rushui.min_callback_interval = self.rushui.min_callback_interval1
 
             self.rushui._recalculate_update_input()
 

@@ -20,6 +20,7 @@ from read_data import read_data
 from write_data import write_data
 import os
 from CustomExportDialog import CustomExportDialog
+from MinCallbackIntervalDialog import MinCallbackIntervalDialog
 import math
 
 # 配置日志
@@ -38,6 +39,9 @@ class MainWindow(QMainWindow):
 
         # 创建Stab实例
         self.rushui = Rushui()
+        # 初始化界面更新时间差参数
+        self.min_callback_interval = 0.05  # 默认值
+        self.rushui.min_callback_interval1 = 0.05
 
         # 创建中心部件
         central_widget = QWidget()
@@ -159,6 +163,11 @@ class MainWindow(QMainWindow):
         # 自定义导出数据功能
         custom_export_action = file_menu.addAction("自定义导出数据")
         custom_export_action.triggered.connect(self.custom_export_data)
+
+
+        # 添加设置界面更新时间差的菜单项
+        callback_interval_action = file_menu.addAction("设置界面更新时间差")
+        callback_interval_action.triggered.connect(self.open_callback_interval_dialog)
 
         file_menu.addSeparator()
 
@@ -1316,6 +1325,24 @@ class MainWindow(QMainWindow):
 
             except Exception as e:
                 logging.exception("加载配置时出错")
+
+    def open_callback_interval_dialog(self):
+        """打开设置界面更新时间差的对话框"""
+        dialog = MinCallbackIntervalDialog(current_interval=self.min_callback_interval, parent=self)
+
+        # 连接信号，当用户确认设置时更新参数
+        dialog.interval_changed.connect(self.update_callback_interval)
+
+        # 显示对话框
+        dialog.exec_()
+
+    def update_callback_interval(self, new_interval):
+        """更新界面更新时间差参数"""
+        self.min_callback_interval = new_interval
+        self.rushui.min_callback_interval1 = self.min_callback_interval
+        self.status_label.setText(f"界面更新时间差已设置为: {new_interval:.3f}秒")
+        logging.info(f"界面更新时间差已更新为: {new_interval:.3f}秒")
+
 
     def to_all_data(self, Checki):
 

@@ -180,7 +180,7 @@ class MSC:
             Dani.guidance_distance = self.guidance_distance
             Dani._recalculate_update_input()
             Dani.update_callback = self.update_callback
-
+        Dani.min_callback_interval = self.min_callback_interval
         dicti = self.dict_shipi
         randomi = random.random() * 2 - 1
         randomj = random.random() * 2 - 1

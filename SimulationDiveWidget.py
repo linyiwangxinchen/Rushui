@@ -308,6 +308,7 @@ class SimulationDiveWidget(QWidget):
                 self.stab.before_L = self.air_L_input.value()
                 # 由于将舰船移动放进去了，这里要额外进行一些赋值
 
+            self.stab.min_callback_interval = self.rushui.min_callback_interval1
 
             # 创建并启动计算线程
             self.calc_thread = CalculationThread(self.stab)
