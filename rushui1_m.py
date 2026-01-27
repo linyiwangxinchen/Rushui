@@ -597,7 +597,11 @@ class  Entry:
 
             if self.ic < self.nc - 1:
                 self.ic += 1
-
+            else:
+                self.posCav = np.r_[self.posCav, np.array([[0, 0, 0, 0, 0]])]
+                self.cav0 = np.r_[self.cav0, np.array([[0, 0, 0]])]
+                self.nc = self.nc + 1
+                self.ic = self.ic + 1
             self.tp = t
 
             # 保存空泡轴线到文件

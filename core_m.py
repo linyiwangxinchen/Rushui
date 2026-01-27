@@ -193,7 +193,7 @@ class Dan:
 
         # 创建入水对象
         M = Entry()
-
+        M.min_callback_interval = self.min_callback_interval
         # 获取界面数据，对入水对象数据进行刷新
         # ——————————总体参数——————————
         M.total.L = self.total.L # 长度
@@ -260,8 +260,6 @@ class Dan:
         M = self.M
 
 
-
-
         # 插入目标弹体的航行
         v_max = self.v_max
         dan_t = t_entry
@@ -285,6 +283,8 @@ class Dan:
         self.ship_v_list = ship_v_list
 
         N = under()
+
+        N.min_callback_interval = self.min_callback_interval
         N.dt = self.dt
         N.x_aim = ship_x_list[-1, 0]
         N.y_aim = ship_x_list[-1, 1]

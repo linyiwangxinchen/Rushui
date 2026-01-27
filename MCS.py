@@ -270,8 +270,8 @@ class MSC:
                                                      dicti['ship_B'], dicti['ship_T'], dan_x_final1[0, :], Dani.total.m/5,
                                                      dan_v)
         P = damage_results['P_sink']
-        if P < 0.85:
-            P = 0.85 + random.random() * 0.15
+        # if P < 0.85:
+        #     P = 0.85 + random.random() * 0.15
         return P
 
     def burn_two(self):

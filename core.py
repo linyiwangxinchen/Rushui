@@ -180,6 +180,7 @@ class Dan:
 
         # 创建入水对象
         M = Entry()
+        M.min_callback_interval = self.min_callback_interval
 
         # 获取界面数据，对入水对象数据进行刷新
         # ——————————总体参数——————————
@@ -250,6 +251,7 @@ class Dan:
 
         N = under()
 
+        N.min_callback_interval = self.min_callback_interval
         ## 水下部分参数
         N.tend = self.tend_under  # 水下仿真时长
 

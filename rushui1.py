@@ -106,7 +106,7 @@ class  Entry:
         self.total.D = np.sqrt(4 / np.pi * self.total.S)  # 直径
         self.xb = self.lk - self.xb  # 转到体坐标系
         # ——————————空泡数组初始化——————————
-        self.nc = 200  # 空泡外形数组长度
+        self.nc = 6000  # 空泡外形数组长度
         self.posCav = np.zeros((self.nc, 5))  # 空泡外形数组初始化
         self.cav0 = np.zeros((self.nc, 3))    # 空泡轴线数组初始化
         self.ic = 1  # 空泡记录在数组中的最后一个数据位置(索引)
@@ -604,6 +604,11 @@ class  Entry:
 
             if self.ic < self.nc - 1:
                 self.ic += 1
+            else:
+                self.posCav = np.r_[self.posCav, np.array([[0, 0, 0, 0, 0]])]
+                self.cav0 = np.r_[self.cav0, np.array([[0, 0, 0]])]
+                self.nc = self.nc + 1
+                self.ic = self.ic + 1
 
             self.tp = t
 
