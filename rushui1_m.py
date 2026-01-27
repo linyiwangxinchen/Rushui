@@ -575,6 +575,9 @@ class  Entry:
                 kpc = 1
                 pc1 = self.presRec[self.ip - 1, 1] * 1e3 * kpc
                 dp = p8 - pc1
+
+                if abs(self.posCav[i - 1, 1]) > 5:
+                    dp = p8 - pv
                 self.sgm = dp / (0.5 * self.rho * vk ** 2)
 
                 if self.posCav[i - 1, 4] > 0:
