@@ -25,6 +25,7 @@ class under:
         self.thrust_sequence = None
         """初始化所有仿真参数"""
         # 上面是预制参数
+        self.nc = 200
         self.dt = 0.0001
         self.tend = 3.41
         self.RTD = 180 / np.pi  # 弧度到角度转换
@@ -100,7 +101,7 @@ class under:
         self.TT = 0.0  # 上次记录时间
 
         # === 空泡数据 ===
-        self.CAV = np.zeros((200, 8))  # 空泡数据数组
+        self.CAV = np.zeros((self.nc, 8))  # 空泡数据数组
 
         # 控制律参数
         RTD = self.RTD
@@ -431,8 +432,9 @@ class under:
 
         # 插值获取当前时刻的参数
         m = np.interp(t, q[:, 0], q[:, 1])
+        m = self.m
         xc_interp = np.interp(t, q[:, 0], q[:, 2])
-        xc = self.LK - 0.001 * xc_interp
+        xc = 1.714 - 0.001 * xc_interp
         Jxx = np.interp(t, q[:, 0], q[:, 3])
         Jyy = np.interp(t, q[:, 0], q[:, 4])
         Jzz = np.interp(t, q[:, 0], q[:, 5])
@@ -440,7 +442,7 @@ class under:
         # 计算变质量引起的导数（数值微分）
         dt = 0.1
         m_prev = np.interp(t - dt, q[:, 0], q[:, 1])
-        xc_prev = self.LK - 0.001 * np.interp(t - dt, q[:, 0], q[:, 2])
+        xc_prev = 1.714 - 0.001 * np.interp(t - dt, q[:, 0], q[:, 2])
         Jxx_prev = np.interp(t - dt, q[:, 0], q[:, 3])
         Jyy_prev = np.interp(t - dt, q[:, 0], q[:, 4])
         Jzz_prev = np.interp(t - dt, q[:, 0], q[:, 5])
@@ -476,6 +478,7 @@ class under:
         # 控制律
         cc = 0.01  # 控制周期
         tcs = 0.36  # 启控时间
+        tcs = 0.02
         YCS = self.YCS
         VYCS = self.VYCS
         THETACS = self.THETACS
@@ -600,7 +603,7 @@ class under:
         Lc = RK / SGM * (1.92 - 3 * SGM)
 
         # 初始化空泡中心线
-        for i in range(200):
+        for i in range(self.nc):
             CAV[i, 0] = x0 + LK - vx * i * 0.001  # x坐标
             CAV[i, 1] = 0 + y0  # y坐标
             CAV[i, 2] = 0 + z0  # z坐标
@@ -611,7 +614,7 @@ class under:
             CAV[i, 7] = RK  # 初始半径
 
         # 计算空泡半径分布
-        for i in range(1, 200):
+        for i in range(1, self.nc):
             # 计算空泡中心弧线长
             length = 0
             for j in range(1, i + 1):
@@ -1005,7 +1008,7 @@ class under:
         if (t - self.TC) >= 0.001:
             # 更新空泡数组
             # 数组元素一次后移一位，相当于更新空泡的绝对状态值
-            for i in range(199, 0, -1):
+            for i in range(self.nc - 1, 0, -1):
                 # 上一刻的值往下移。符合独立膨胀原理的规律
                 # 空泡先扩张后收缩，后部的空泡重复前端坐标空泡的扩张收缩行为
                 CAV[i] = CAV[i - 1]
@@ -1019,7 +1022,7 @@ class under:
             self.TC = t
 
             # 刷新空泡直径
-            for i in range(1, 200):  # 相当于MATLAB的i=2:200，注意索引调整
+            for i in range(1, self.nc):  # 相当于MATLAB的i=2:200，注意索引调整
                 # 计算空泡中心弧线长
                 # 最简单的两点（三维）之间求直线距离
                 length = 0.0
@@ -1061,7 +1064,7 @@ class under:
             cav0 = p.T
 
             # 前视图和俯视图轮廓计算
-            for j in range(199):  # 相当于MATLAB的j=1:199
+            for j in range(self.nc - 1):  # 相当于MATLAB的j=1:199
                 # 前视图计算
                 if j == 0:  # 第一个点
                     angle = CAV[j, 6]  # 空泡截面与弹体纵切面的夹角（舵角）
@@ -1116,6 +1119,7 @@ class under:
             self.plot_pao_up_y = cav1[:, 1]
             self.plot_pao_down_x = cav2[:, 0]
             self.plot_pao_down_y = cav2[:, 1]
+            aaaa = 1
 
 
 

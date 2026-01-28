@@ -713,7 +713,7 @@ class MainWindow(QMainWindow):
             wzmax, _, _ = read_data(filename, 'wzmax')
             wxmax, _, _ = read_data(filename, 'wxmax')
             dphimax, _, _ = read_data(filename, 'dphimax')
-            dan_type, _, _ = read_data('input.txt', 'dan_type')
+            dan_type, _, _ = read_data(filename, 'dan_type')
 
             ship_L, _, _ = read_data(filename, 'ship_L')
             ship_M, _, _ = read_data(filename, 'ship_M')

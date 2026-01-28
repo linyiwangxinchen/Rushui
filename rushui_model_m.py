@@ -533,6 +533,7 @@ class under:
         # 控制律
         cc = 0.01  # 控制周期
         tcs = 0.36  # 启控时间
+        tcs = 0.02
         YCS = self.YCS
         VYCS = self.VYCS
         THETACS = self.THETACS

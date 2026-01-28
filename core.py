@@ -70,9 +70,9 @@ class Dan:
         # ——————————模型外形——————————
         # self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
         # self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
-        self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
-        self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
 
+        self.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])/213*324
+        self.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])/213*324
         self.zb = self.yb
 
         # ——————————入水参数——————————
@@ -369,20 +369,19 @@ class Dan:
         N.P = self.P
         N.P_list = self.P_list
 
-        N.L = self.total.L
+        # === 弹体总体相关参数 === #
+        N.L =  self.total.L
         N.S = self.total.S
         N.V = self.total.V
-        N.m = self.total.m
-        N.xc = self.total.xc
-        N.yc = self.total.yc
-        N.zc = self.total.zc
+        N.m =  self.total.m
+        N.xc =  self.total.xc
+        N.yc =  self.total.yc
+        N.zc =  self.total.zc
         N.Jxx = self.total.Jxx
         N.Jyy = self.total.Jyy
         N.Jzz = self.total.Jzz
         N.LK = self.lk
         N.RK = self.rk
-
-
 
         self.N = N
         self.N.main()
