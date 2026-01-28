@@ -27,6 +27,7 @@ class under:
         self.thrust_sequence = None
         """初始化所有仿真参数"""
         # 上面是预制参数
+        self.nc = 200
         self.dt = 0.0001
         self.tend = 3.41
         self.RTD = 180 / np.pi  # 弧度到角度转换
@@ -108,7 +109,7 @@ class under:
         self.TT = 0.0  # 上次记录时间
 
         # === 空泡数据 ===
-        self.CAV = np.zeros((200, 8))  # 空泡数据数组
+        self.CAV = np.zeros((self.nc, 8))  # 空泡数据数组
 
         # 控制律参数
         RTD = self.RTD
@@ -461,6 +462,7 @@ class under:
         # 解包个毛线
 
         # 变质量参数插值表
+        # q = np.loadtxt('m_interp.txt')
         q = np.array([
             [0, 114.7, 1732.8, 0.63140684, 57.06970864, 57.07143674],
             [0.16, 112.9, 1731.3, 0.623028517, 56.86812779, 56.86986447],
@@ -533,6 +535,7 @@ class under:
         # 控制律
         cc = 0.01  # 控制周期
         tcs = 0.36  # 启控时间
+        tcs = 0.02
         YCS = self.YCS
         VYCS = self.VYCS
         THETACS = self.THETACS
@@ -592,11 +595,12 @@ class under:
                 dx = self.x_aim - x0
                 dy = self.z_aim - z0  # 横向偏差 (z轴)
                 los_psi = np.arctan2(dy, dx) if dx != 0 else 0  # 水平面视线角
-                dpsi = (los_psi - psi)
+                dpsi = psi - los_psi
+
 
                 wy = np.sign(wy) * min(abs(wy), self.wymax)
                 dv = self.kps * dpsi + self.kwy * wy
-                dv = self.kps * dpsi / 10
+                dv = dv / 10
                 dv = np.sign(dv) * min(abs(dv), dvmax)
                 # dv = 0
 
@@ -737,7 +741,7 @@ class under:
         Lc = RK / SGM * (1.92 - 3 * SGM)
 
         # 初始化空泡中心线
-        for i in range(200):
+        for i in range(self.nc):
             CAV[i, 0] = x0 + LK - vx * i * 0.001  # x坐标
             CAV[i, 1] = 0 + y0  # y坐标
             CAV[i, 2] = 0 + z0  # z坐标
@@ -748,7 +752,7 @@ class under:
             CAV[i, 7] = RK  # 初始半径
 
         # 计算空泡半径分布
-        for i in range(1, 200):
+        for i in range(1, self.nc):
             # 计算空泡中心弧线长
             length = 0
             for j in range(1, i + 1):
@@ -1123,7 +1127,7 @@ class under:
         Lc = RK / SGM * (1.92 - 3 * SGM)
 
         # 计算空化器在地面系坐标
-        dlk = Cb0 @ np.array([1.714, 0, 0])
+        dlk = Cb0 @ np.array([self.LK, 0, 0])
         xn = x0 + dlk[0]
         yn = y0 + dlk[1]
         zn = z0 + dlk[2]
@@ -1142,7 +1146,7 @@ class under:
         if (t - self.TC) >= 0.001:
             # 更新空泡数组
             # 数组元素一次后移一位，相当于更新空泡的绝对状态值
-            for i in range(199, 0, -1):
+            for i in range(self.nc - 1, 0, -1):
                 # 上一刻的值往下移。符合独立膨胀原理的规律
                 # 空泡先扩张后收缩，后部的空泡重复前端坐标空泡的扩张收缩行为
                 CAV[i] = CAV[i - 1]
@@ -1156,7 +1160,7 @@ class under:
             self.TC = t
 
             # 刷新空泡直径
-            for i in range(1, 200):  # 相当于MATLAB的i=2:200，注意索引调整
+            for i in range(1, self.nc):  # 相当于MATLAB的i=2:200，注意索引调整
                 # 计算空泡中心弧线长
                 # 最简单的两点（三维）之间求直线距离
                 length = 0.0
@@ -1198,7 +1202,7 @@ class under:
             cav0 = p.T
 
             # 前视图和俯视图轮廓计算
-            for j in range(199):  # 相当于MATLAB的j=1:199
+            for j in range(self.nc - 1):  # 相当于MATLAB的j=1:199
                 # 前视图计算
                 if j == 0:  # 第一个点
                     angle = CAV[j, 6]  # 空泡截面与弹体纵切面的夹角（舵角）

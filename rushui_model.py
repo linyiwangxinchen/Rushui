@@ -25,6 +25,9 @@ class under:
         self.thrust_sequence = None
         """初始化所有仿真参数"""
         # 上面是预制参数
+        self.start_tcs = True
+        self.write1 = True
+        self.nc = 200
         self.dt = 0.0001
         self.tend = 3.41
         self.RTD = 180 / np.pi  # 弧度到角度转换
@@ -53,6 +56,7 @@ class under:
         self.T1 = 25080.6  # 推力
         self.T2 = 6971.4
         self.TC = self.t0  # 空泡计算时刻
+
 
         # === 弹体总体相关参数 === #
         self.L = 3.195  # 总长
@@ -92,7 +96,7 @@ class under:
         self.YCS = -3.45  # 启控深度 (m)
         self.THETACS = -2.5086 / self.RTD  # 启控俯仰角 (rad)
         self.VYCS = -0.01323  # 启控垂向速度 (m/s)
-        self.PSICS = 9.17098 / self.RTD  # 启控偏航角 (rad)
+        self.PSICS = 2.17098 / self.RTD  # 启控偏航角 (rad)
 
         # === 动态数据数组 ===
         self.AF = np.zeros((80, 6))  # 空泡延迟历史数组
@@ -100,7 +104,7 @@ class under:
         self.TT = 0.0  # 上次记录时间
 
         # === 空泡数据 ===
-        self.CAV = np.zeros((200, 8))  # 空泡数据数组
+        self.CAV = np.zeros((self.nc, 8))  # 空泡数据数组
 
         # 控制律参数
         RTD = self.RTD
@@ -114,6 +118,7 @@ class under:
         self.dthetamax = 5 / RTD
         self.wzmax = 30 / RTD
         self.wxmax = 300 / RTD
+        self.wymax = 30 / RTD
         self.dphimax = 60 / RTD
         self.kth = 4
         self.kps = self.kth
@@ -413,6 +418,8 @@ class under:
         # 解包个毛线
 
         # 变质量参数插值表
+        # q = np.loadtxt('m_interp.txt')
+
         q = np.array([
             [0, 114.7, 1732.8, 0.63140684, 57.06970864, 57.07143674],
             [0.16, 112.9, 1731.3, 0.623028517, 56.86812779, 56.86986447],
@@ -428,11 +435,10 @@ class under:
             [3.6, 101.6, 1732.4, 0.587238036, 56.48086209, 56.4827153],
             [3.61, 101.6, 1732.4, 0.587236388, 56.47912611, 56.48097931]
         ])
-
         # 插值获取当前时刻的参数
         m = np.interp(t, q[:, 0], q[:, 1])
         xc_interp = np.interp(t, q[:, 0], q[:, 2])
-        xc = self.LK - 0.001 * xc_interp
+        xc = 1.714 - 0.001 * xc_interp
         Jxx = np.interp(t, q[:, 0], q[:, 3])
         Jyy = np.interp(t, q[:, 0], q[:, 4])
         Jzz = np.interp(t, q[:, 0], q[:, 5])
@@ -440,7 +446,7 @@ class under:
         # 计算变质量引起的导数（数值微分）
         dt = 0.1
         m_prev = np.interp(t - dt, q[:, 0], q[:, 1])
-        xc_prev = self.LK - 0.001 * np.interp(t - dt, q[:, 0], q[:, 2])
+        xc_prev = 1.714 - 0.001 * np.interp(t - dt, q[:, 0], q[:, 2])
         Jxx_prev = np.interp(t - dt, q[:, 0], q[:, 3])
         Jyy_prev = np.interp(t - dt, q[:, 0], q[:, 4])
         Jzz_prev = np.interp(t - dt, q[:, 0], q[:, 5])
@@ -474,8 +480,9 @@ class under:
         dxf = np.sign(dxf) * min(abs(dxf), ddmax)
 
         # 控制律
-        cc = 0.01  # 控制周期
+        cc = 0.001  # 控制周期
         tcs = 0.36  # 启控时间
+        tcs = 0.002
         YCS = self.YCS
         VYCS = self.VYCS
         THETACS = self.THETACS
@@ -491,7 +498,18 @@ class under:
         # 控制周期判断
         if (t - self.TP) >= cc and t > tcs:
             # --------------俯仰通道控制--------------
+            if self.start_tcs:
+                self.start_tcs = False
+                self.h0_start = YCS
+                self.t0_start = t
+
+            h1 = (-2.5 - self.h0_start) / (3 - self.t0_start) * (
+                        t - self.t0_start) + self.h0_start
             h0 = -2.5
+            if h1 < h0:
+                h0 = (h0 + h1) / 2
+            else:
+                h0 = h0
 
             # 深度偏差
             deltay = h0 + (YCS - h0) * np.exp(-(t - tcs) / 0.2) - y0
@@ -516,6 +534,12 @@ class under:
 
             # --------------偏航通道（简化）--------------
             dv = 0
+            los_psi = 0
+            dpsi = psi - los_psi
+            wy = np.sign(wy) * min(abs(wy), self.wymax)
+            dv = self.kps * dpsi + self.kwy * wy
+            dv = dv / 10
+            dv = np.sign(dv) * min(abs(dv), dvmax)
 
             # --------------横滚通道--------------
             if t < 1.5:
@@ -538,15 +562,19 @@ class under:
             # --------------舵角分配--------------
             ds = dd + dv
             dx = -dd + dv
+            if abs(ds) >= dvmax or abs(dx) >= dvmax:
+                ds = dd
+                dx = -dd
             ds = np.sign(ds) * min(abs(ds), dvmax)
             dx = np.sign(dx) * min(abs(dx), dvmax)
 
             self.TP = t  # 更新时间
-
-            # 保存舵角历史
-            with open('rudder.txt', 'a') as f:
-                f.write(f'{t:8.3f} {dk * RTD:8.6f} {ds * RTD:8.6f} {dx * RTD:8.6f} '
-                        f'{dkf * RTD:8.6f} {dsf * RTD:8.6f} {dxf * RTD:8.6f}\n')
+            if self.write1:
+                # 保存舵角历史
+                with open('rudder.txt', 'a') as f:
+                    f.write(f'{t:8.3f} {dk * RTD:8.6f} {ds * RTD:8.6f} {dx * RTD:8.6f} '
+                            f'{dkf * RTD:8.6f} {dsf * RTD:8.6f} {dxf * RTD:8.6f}\n')
+                    f.close()
 
             y[0], y[1], y[2] = vx, vy, vz
             y[3], y[4], y[5] = wx, wy, wz
@@ -557,9 +585,9 @@ class under:
             self.dx = dx
             self.dk = dk
         else:
+            dk = self.dk
             ds = self.ds
             dx = self.dx
-            dk = self.dk
         self.m = m
         self.xc = xc
         self.dm = dm
@@ -600,7 +628,7 @@ class under:
         Lc = RK / SGM * (1.92 - 3 * SGM)
 
         # 初始化空泡中心线
-        for i in range(200):
+        for i in range(self.nc):
             CAV[i, 0] = x0 + LK - vx * i * 0.001  # x坐标
             CAV[i, 1] = 0 + y0  # y坐标
             CAV[i, 2] = 0 + z0  # z坐标
@@ -611,7 +639,7 @@ class under:
             CAV[i, 7] = RK  # 初始半径
 
         # 计算空泡半径分布
-        for i in range(1, 200):
+        for i in range(1, self.nc):
             # 计算空泡中心弧线长
             length = 0
             for j in range(1, i + 1):
@@ -1005,7 +1033,7 @@ class under:
         if (t - self.TC) >= 0.001:
             # 更新空泡数组
             # 数组元素一次后移一位，相当于更新空泡的绝对状态值
-            for i in range(199, 0, -1):
+            for i in range(self.nc - 1, 0, -1):
                 # 上一刻的值往下移。符合独立膨胀原理的规律
                 # 空泡先扩张后收缩，后部的空泡重复前端坐标空泡的扩张收缩行为
                 CAV[i] = CAV[i - 1]
@@ -1019,7 +1047,7 @@ class under:
             self.TC = t
 
             # 刷新空泡直径
-            for i in range(1, 200):  # 相当于MATLAB的i=2:200，注意索引调整
+            for i in range(1, self.nc):  # 相当于MATLAB的i=2:200，注意索引调整
                 # 计算空泡中心弧线长
                 # 最简单的两点（三维）之间求直线距离
                 length = 0.0
@@ -1041,9 +1069,11 @@ class under:
                     CAV[i, 7] = 0.0  # 空泡已闭合
 
             # 保存空泡数据
-            with open('cavity.txt', 'a') as f:
-                f.write(f'{t:5.3f} {x0:8.3f} {y0:8.3f} {z0:8.3f} '
-                        f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
+            if self.write1:
+                with open('cavity.txt', 'a') as f:
+                    f.write(f'{t:5.3f} {x0:8.3f} {y0:8.3f} {z0:8.3f} '
+                            f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
+                    f.close()
 
             # 获取弹体位置 - 从弹体系转到地系
             Cb1 = self.coordinate_transformation_matrix1()
@@ -1061,7 +1091,7 @@ class under:
             cav0 = p.T
 
             # 前视图和俯视图轮廓计算
-            for j in range(199):  # 相当于MATLAB的j=1:199
+            for j in range(self.nc - 1):  # 相当于MATLAB的j=1:199
                 # 前视图计算
                 if j == 0:  # 第一个点
                     angle = CAV[j, 6]  # 空泡截面与弹体纵切面的夹角（舵角）
@@ -1116,6 +1146,7 @@ class under:
             self.plot_pao_up_y = cav1[:, 1]
             self.plot_pao_down_x = cav2[:, 0]
             self.plot_pao_down_y = cav2[:, 1]
+            aaaa = 1
 
 
 
@@ -1314,8 +1345,10 @@ class under:
             Myb = vz_flag * Mz * abs(vz) / speed_2d
 
         # 保存结果到文件
-        with open('test-ts.txt', 'a') as fid:
-            fid.write(f'{t:8.4f} {alphat:8.6f} {Xb:8.6f} {Yb:8.6f} {Zb:8.6f} {Myb:8.6f} {Mzb:8.6f}\n')
+        if self.write1:
+            with open('test-ts.txt', 'a') as fid:
+                fid.write(f'{t:8.4f} {alphat:8.6f} {Xb:8.6f} {Yb:8.6f} {Zb:8.6f} {Myb:8.6f} {Mzb:8.6f}\n')
+                fid.close()
 
         self.Xb = Xb
         self.Yb = Yb

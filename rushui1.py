@@ -580,9 +580,10 @@ class  Entry:
                 kpc = 1
                 pc1 = self.presRec[self.ip - 1, 1] * 1e3 * kpc
                 dp = p8 - pc1
-                if abs(self.posCav[i - 1, 1]) > 5:
+                if abs(self.posCav[i - 1, 1]) > 3:
                     dp = p8 - pv
                 self.sgm = dp / (0.5 * self.rho * vk ** 2)
+
 
                 if self.posCav[i - 1, 4] > 0:
                     # 如果空泡尚未闭合，计算空泡截面扩张率
@@ -591,6 +592,7 @@ class  Entry:
                     # 空泡截面已闭合，退出循环，不再更新
                     self.posCav[i - 1, 4] = 0
                     self.posCav[i - 1, 3] = 0
+                aa = 1
 
             # 数组元素依次后移一位
             for i in range(self.ic + 1, 1, -1):  # 从 ic+1 递减到 2
@@ -1053,6 +1055,11 @@ class  Entry:
             Alpha = np.vstack([Alpha, alphay])
             Sgm = np.vstack([Sgm, self.sgm])
             Apc = np.vstack([Apc, pc])
+
+            # if abs(y[5] - 0) * self.rtd < 1 and abs(y[6] - 0) * self.rtd < 1:
+            #     print('稳定')
+            #     print(t)
+            #     break
 
             # if t > 0.0112:
             #     sgfakjhfs = 0

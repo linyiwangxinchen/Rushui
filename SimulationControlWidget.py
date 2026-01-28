@@ -344,6 +344,7 @@ class SimulationControlWidget(QWidget):
             self.rushui.total.Jyy = model_data['Jyy']  # 转动惯量 Jyy (kg·m²)
             self.rushui.total.Jzz = model_data['Jzz']  # 转动惯量 Jzz (kg·m²)
             self.rushui.total.T = model_data['T']  # 推力 (N)
+            self.rushui.dan_type = self.dan_type.currentIndex()
 
             # 空泡仿真参数 (直接赋值到实例)
             self.rushui.lk = model_data['lk']  # 空化器距重心距离 (m)

@@ -23,6 +23,7 @@ plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
 class Dan:
     def __init__(self):
         # ——————————画图参量——————————
+        self.dan_type = None
         self.plot_pao_down_y = None
         self.plot_pao_down_x = None
         self.plot_pao_up_y = None
@@ -410,18 +411,20 @@ class Dan:
         N.yb1 = np.zeros_like(self.yb)
         N.zb1 = self.yb
 
-        N.L = self.total.L
+        # === 弹体总体相关参数 === #
+        N.L =  self.total.L
         N.S = self.total.S
         N.V = self.total.V
-        N.m = self.total.m
-        N.xc = self.total.xc
-        N.yc = self.total.yc
-        N.zc = self.total.zc
+        N.m =  self.total.m
+        N.xc =  self.total.xc
+        N.yc =  self.total.yc
+        N.zc =  self.total.zc
         N.Jxx = self.total.Jxx
         N.Jyy = self.total.Jyy
         N.Jzz = self.total.Jzz
         N.LK = self.lk
         N.RK = self.rk
+        N.dan_type = self.dan_type
 
         N.P = self.P
         N.P_list = self.P_list
