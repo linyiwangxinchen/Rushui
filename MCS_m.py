@@ -173,6 +173,17 @@ class MSC:
             Dani.time_sequence = time_data
             Dani.thrust_sequence = thrust_data
 
+            if self.model_data['dan_type'] == 0:
+                Dani.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
+                Dani.yb = np.array(
+                    [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
+                Dani.zb = Dani.yb
+            elif self.model_data['dan_type'] == 1:
+                Dani.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0]) / 213 * 324
+                Dani.yb = np.array(
+                    [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0]) / 213 * 324
+                Dani.zb = Dani.yb
+
             Dani.ship_x = self.ship_x
             Dani.v_ship_0 = self.v_ship_0
             Dani.v_max = self.v_max

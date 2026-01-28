@@ -23,6 +23,7 @@ plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
 class Dan:
     def __init__(self):
         # ——————————画图参量——————————
+        self.dan_type = None
         self.plot_pao_down_y = None
         self.plot_pao_down_x = None
         self.plot_pao_up_y = None
@@ -382,6 +383,7 @@ class Dan:
         N.Jzz = self.total.Jzz
         N.LK = self.lk
         N.RK = self.rk
+        N.dan_type = self.dan_type
 
         self.N = N
         self.N.main()

@@ -7,11 +7,11 @@
 %single V  FLT %
 0
 %end%
-%single dan_type  FLT %
-0
-%end%
 %single m  FLT %
 114.7
+%end%
+%single dan_type  FLT %
+0
 %end%
 %single xc  FLT %
 -0.0188
@@ -92,7 +92,7 @@
 0
 %end%
 %single tend  FLT %
-1
+0.5
 %end%
 %single dt  FLT %
 0.0002
@@ -146,7 +146,7 @@
 0.312
 %end%
 %single tend_under  FLT %
-3.41
+5
 %end%
 %single T1  FLT %
 25080.6
@@ -182,7 +182,7 @@
 0
 %end%
 %single ship_x_x  FLT %
-480
+400
 %end%
 %single ship_x_y  FLT %
 0

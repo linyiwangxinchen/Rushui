@@ -25,7 +25,8 @@ class under:
         self.thrust_sequence = None
         """初始化所有仿真参数"""
         # 上面是预制参数
-        self.nc = 200
+        self.start_tcs = True
+        self.nc = 400
         self.dt = 0.0001
         self.tend = 3.41
         self.RTD = 180 / np.pi  # 弧度到角度转换
@@ -93,7 +94,7 @@ class under:
         self.YCS = -3.45  # 启控深度 (m)
         self.THETACS = -2.5086 / self.RTD  # 启控俯仰角 (rad)
         self.VYCS = -0.01323  # 启控垂向速度 (m/s)
-        self.PSICS = 9.17098 / self.RTD  # 启控偏航角 (rad)
+        self.PSICS = 2.17098 / self.RTD  # 启控偏航角 (rad)
 
         # === 动态数据数组 ===
         self.AF = np.zeros((80, 6))  # 空泡延迟历史数组
@@ -115,6 +116,7 @@ class under:
         self.dthetamax = 5 / RTD
         self.wzmax = 30 / RTD
         self.wxmax = 300 / RTD
+        self.wymax = 30 / RTD
         self.dphimax = 60 / RTD
         self.kth = 4
         self.kps = self.kth
@@ -414,6 +416,8 @@ class under:
         # 解包个毛线
 
         # 变质量参数插值表
+        # q = np.loadtxt('m_interp.txt')
+
         q = np.array([
             [0, 114.7, 1732.8, 0.63140684, 57.06970864, 57.07143674],
             [0.16, 112.9, 1731.3, 0.623028517, 56.86812779, 56.86986447],
@@ -429,10 +433,8 @@ class under:
             [3.6, 101.6, 1732.4, 0.587238036, 56.48086209, 56.4827153],
             [3.61, 101.6, 1732.4, 0.587236388, 56.47912611, 56.48097931]
         ])
-
         # 插值获取当前时刻的参数
         m = np.interp(t, q[:, 0], q[:, 1])
-        m = self.m
         xc_interp = np.interp(t, q[:, 0], q[:, 2])
         xc = 1.714 - 0.001 * xc_interp
         Jxx = np.interp(t, q[:, 0], q[:, 3])
@@ -494,7 +496,18 @@ class under:
         # 控制周期判断
         if (t - self.TP) >= cc and t > tcs:
             # --------------俯仰通道控制--------------
+            if self.start_tcs:
+                self.start_tcs = False
+                self.h0_start = YCS
+                self.t0_start = t
+
+            h1 = (-2.5 - self.h0_start) / (3 - self.t0_start) * (
+                        t - self.t0_start) + self.h0_start
             h0 = -2.5
+            if h1 < h0:
+                h0 = (h0 + h1) / 2
+            else:
+                h0 = h0
 
             # 深度偏差
             deltay = h0 + (YCS - h0) * np.exp(-(t - tcs) / 0.2) - y0
@@ -519,6 +532,12 @@ class under:
 
             # --------------偏航通道（简化）--------------
             dv = 0
+            los_psi = 0
+            dpsi = psi - los_psi
+            wy = np.sign(wy) * min(abs(wy), self.wymax)
+            dv = self.kps * dpsi + self.kwy * wy
+            dv = dv / 10
+            dv = np.sign(dv) * min(abs(dv), dvmax)
 
             # --------------横滚通道--------------
             if t < 1.5:
@@ -541,6 +560,9 @@ class under:
             # --------------舵角分配--------------
             ds = dd + dv
             dx = -dd + dv
+            if abs(ds) >= dvmax or abs(dx) >= dvmax:
+                ds = dd
+                dx = -dd
             ds = np.sign(ds) * min(abs(ds), dvmax)
             dx = np.sign(dx) * min(abs(dx), dvmax)
 
