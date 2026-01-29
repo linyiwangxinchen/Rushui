@@ -27,6 +27,7 @@ class under:
         self.thrust_sequence = None
         """初始化所有仿真参数"""
         # 上面是预制参数
+        self.start_tcs = True
         self.write1 = False
         self.dan_type = 213
         self.nc = 200
@@ -658,7 +659,18 @@ class under:
                 dx = np.sign(dx) * min(abs(dx), dvmax)
             else:
                 # --------------俯仰通道控制--------------
+                if self.start_tcs:
+                    self.start_tcs = False
+                    self.h0_start = YCS
+                    self.t0_start = t
+
+                h1 = (-2.5 - self.h0_start) / (3 - self.t0_start) * (
+                        t - self.t0_start) + self.h0_start
                 h0 = -2.5
+                if h1 < h0:
+                    h0 = (h0 + h1) / 2
+                else:
+                    h0 = h0
 
                 # 深度偏差
                 deltay = h0 + (YCS - h0) * np.exp(-(t - tcs) / 0.2) - y0
@@ -682,7 +694,34 @@ class under:
                 dk = np.clip(dk, dkmin, dkmax)
 
                 # --------------偏航通道（简化）--------------
+                h0 = 0
+                # 深度偏差
+                deltaz = h0 + (ZCS - h0) * np.exp(-(t - tcs) / 0.2) - z0
+                deltaz = np.sign(deltaz) * min(abs(deltaz), deltaymax)
+
+                # 垂向速度偏差
+                deltavz = (VZCS - 0) * np.exp(-(t - tcs) / 0.2) - vz
+                deltavz = np.sign(deltavz) * min(abs(deltavz), deltavymax)
+
+                # 俯仰角控制目标
+                psic = ((PSICS * RTD) * np.exp(-(t - tcs) / 0.2) +
+                        (0.02 * deltaz + 0.003 * deltavz) * RTD) / RTD
+                psic = -psic
+                dpsi = psi - psic
+                dpsi = np.sign(dpsi) * min(abs(dpsi), dthetamax)
+
                 dv = 0
+                # los_psi = 0
+                # dpsi = psi - los_psi
+                dpsi = dpsi
+                # if self.dan_type == 213:
+                #     dpsi = psi - 0
+                # else:
+                #     dpsi = dpsi
+                wy = np.sign(wy) * min(abs(wy), self.wymax)
+                dv = self.kps * dpsi + self.kwy * wy
+                # dv = dv / 2
+                dv = np.sign(dv) * min(abs(dv), dvmax)
 
                 # --------------横滚通道--------------
                 if t < 1.5:
@@ -703,8 +742,12 @@ class under:
                 dd = np.sign(dd) * min(abs(dd), ddmax)
 
                 # --------------舵角分配--------------
+                dd = 0
                 ds = dd + dv
                 dx = -dd + dv
+                # if abs(ds) >= dvmax or abs(dx) >= dvmax:
+                #     ds = dd
+                #     dx = -dd
                 ds = np.sign(ds) * min(abs(ds), dvmax)
                 dx = np.sign(dx) * min(abs(dx), dvmax)
 

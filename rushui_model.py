@@ -574,9 +574,9 @@ class under:
             if t < 1.5:
                 phic = 0 / RTD
             elif t < 2:
-                phic = (t - 1.5) / 0.5 * 12 * (psi - PSICS)
+                phic = (t - 1.5) / 0.5 * 12 * (psi - psic)
             else:
-                phic = 12 * (psi - PSICS)
+                phic = 12 * (psi - psic)
 
             # 横滚偏差限幅
             dphi = phi - phic
@@ -2214,6 +2214,14 @@ class under:
                         'datas': {
                             'ts': self.ts,
                             'ys': self.ys
+                        },
+                        'ship_datas': {
+                            'ship_x': [0, 0, 0]
+                        },
+                        'Duo': {
+                            'ds': self.ds,
+                            'dx': self.dx,
+                            'dk': self.dk,
                         },
                         'Pi': self.P,
                         'P_list': np.array(self.P_list)

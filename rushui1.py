@@ -1105,6 +1105,14 @@ class  Entry:
                             'ys': Y
 
                         },
+                        'ship_datas': {
+                            'ship_x': [0, 0, 0]
+                        },
+                        'Duo': {
+                            'ds': 0,
+                            'dx': 0,
+                            'dk': self.dk,
+                        },
                         'Pi': self.P,
                         'P_list': np.array(self.P_list)
                     }
