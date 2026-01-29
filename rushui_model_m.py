@@ -27,6 +27,8 @@ class under:
         self.thrust_sequence = None
         """初始化所有仿真参数"""
         # 上面是预制参数
+        self.write1 = False
+        self.dan_type = 213
         self.nc = 200
         self.dt = 0.0001
         self.tend = 3.41
@@ -96,6 +98,8 @@ class under:
         self.THETACS = -2.5086 / self.RTD  # 启控俯仰角 (rad)
         self.VYCS = -0.01323  # 启控垂向速度 (m/s)
         self.PSICS = 9.17098 / self.RTD  # 启控偏航角 (rad)
+        self.ZCS = 0
+        self.VZCS = 0
 
         # === 末端导引参数 ===
         self.x_aim = 0.0  # 目标点x坐标
@@ -533,19 +537,24 @@ class under:
         dxf = np.sign(dxf) * min(abs(dxf), ddmax)
 
         # 控制律
-        cc = 0.01  # 控制周期
+        cc = 0.001  # 控制周期
         tcs = 0.36  # 启控时间
-        tcs = 0.02
+        tcs = 0.002
         YCS = self.YCS
         VYCS = self.VYCS
         THETACS = self.THETACS
         PSICS = self.PSICS
+        ZCS = self.ZCS
+        VZCS = self.VZCS
 
         # 在启控时间之前记录初始条件
         if tcs - 0.001 <= t <= tcs:
             YCS = y0
+            ZCS = z0
             THETACS = theta
+            PHICS = phi
             VYCS = vy
+            VZCS = vz
             PSICS = psi
 
         # 控制周期判断
@@ -562,7 +571,7 @@ class under:
 
             if self.guidance_model == True and self.aim_change == True:
                 # --------------俯仰通道控制--------------
-                h1 = (self.y_aim - self.start_guidance_point[1])/(self.aim_guidance_t - self.start_guidance_t) * (t - self.start_guidance_t) + self.start_guidance_point[1]
+                h1 = (self.z_aim - self.start_guidance_point[1])/(self.aim_guidance_t - self.start_guidance_t) * (t - self.start_guidance_t) + self.start_guidance_point[1]
                 h0 = -2.5
                 # if h1 > h0:
                 #     h0 = h1
@@ -591,16 +600,34 @@ class under:
 
                 # --------------偏航通道（简化）--------------
 
-                dv = 0
-                dx = self.x_aim - x0
-                dy = self.z_aim - z0  # 横向偏差 (z轴)
-                los_psi = np.arctan2(dy, dx) if dx != 0 else 0  # 水平面视线角
-                dpsi = psi - los_psi
+                # dv = 0
+                # dx = self.x_aim - x0
+                # dy = self.z_aim - z0  # 横向偏差 (z轴)
+                # los_psi = np.arctan2(dy, dx) if dx != 0 else 0  # 水平面视线角
+                # dpsi = psi - los_psi
+                h0 = (self.y_aim - self.start_guidance_point[2]) / (self.aim_guidance_t - self.start_guidance_t) * (
+                            t - self.start_guidance_t) + self.start_guidance_point[2]
+                if t >= self.aim_guidance_t:
+                    h0 = 0
+                # 深度偏差
+                deltaz = h0 + (ZCS - h0) * np.exp(-(t - tcs) / 0.2) - z0
+                deltaz = np.sign(deltaz) * min(abs(deltaz), deltaymax)
 
+                # 垂向速度偏差
+                deltavz = (VZCS - 0) * np.exp(-(t - tcs) / 0.2) - vz
+                deltavz = np.sign(deltavz) * min(abs(deltavz), deltavymax)
+
+                # 俯仰角控制目标
+                psic = ((PSICS * RTD) * np.exp(-(t - tcs) / 0.2) +
+                        (0.02 * deltaz + 0.003 * deltavz) * RTD) / RTD
+                psic = -psic
+                dpsi = psi - psic
+                dpsi = dpsi
+                dpsi = np.sign(dpsi) * min(abs(dpsi), dthetamax)
 
                 wy = np.sign(wy) * min(abs(wy), self.wymax)
                 dv = self.kps * dpsi + self.kwy * wy
-                dv = dv / 10
+
                 dv = np.sign(dv) * min(abs(dv), dvmax)
                 # dv = 0
 
@@ -623,11 +650,10 @@ class under:
                 dd = np.sign(dd) * min(abs(dd), ddmax)
 
                 # --------------舵角分配--------------
+                dd = 0
                 ds = dd + dv
                 dx = -dd + dv
-                if abs(ds) >= dvmax or abs(dx) >= dvmax:
-                    ds = dd
-                    dx = -dd
+
                 ds = np.sign(ds) * min(abs(ds), dvmax)
                 dx = np.sign(dx) * min(abs(dx), dvmax)
             else:
@@ -685,9 +711,11 @@ class under:
             self.TP = t  # 更新时间
 
             # 保存舵角历史
-            with open('rudder.txt', 'a') as f:
-                f.write(f'{t:8.3f} {dk * RTD:8.6f} {ds * RTD:8.6f} {dx * RTD:8.6f} '
-                        f'{dkf * RTD:8.6f} {dsf * RTD:8.6f} {dxf * RTD:8.6f}\n')
+            if self.write1:
+                with open('rudder.txt', 'a') as f:
+                    f.write(f'{t:8.3f} {dk * RTD:8.6f} {ds * RTD:8.6f} {dx * RTD:8.6f} '
+                            f'{dkf * RTD:8.6f} {dsf * RTD:8.6f} {dxf * RTD:8.6f}\n')
+                    f.close()
 
             y[0], y[1], y[2] = vx, vy, vz
             y[3], y[4], y[5] = wx, wy, wz
@@ -1182,9 +1210,11 @@ class under:
                     CAV[i, 7] = 0.0  # 空泡已闭合
 
             # 保存空泡数据
-            with open('cavity.txt', 'a') as f:
-                f.write(f'{t:5.3f} {x0:8.3f} {y0:8.3f} {z0:8.3f} '
-                        f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
+            if self.write1:
+                with open('cavity.txt', 'a') as f:
+                    f.write(f'{t:5.3f} {x0:8.3f} {y0:8.3f} {z0:8.3f} '
+                            f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
+                    f.close()
 
             # 获取弹体位置 - 从弹体系转到地系
             Cb1 = self.coordinate_transformation_matrix1()
@@ -1455,8 +1485,10 @@ class under:
             Myb = vz_flag * Mz * abs(vz) / speed_2d
 
         # 保存结果到文件
-        with open('test-ts.txt', 'a') as fid:
-            fid.write(f'{t:8.4f} {alphat:8.6f} {Xb:8.6f} {Yb:8.6f} {Zb:8.6f} {Myb:8.6f} {Mzb:8.6f}\n')
+        if self.write1:
+            with open('test-ts.txt', 'a') as fid:
+                fid.write(f'{t:8.4f} {alphat:8.6f} {Xb:8.6f} {Yb:8.6f} {Zb:8.6f} {Myb:8.6f} {Mzb:8.6f}\n')
+                fid.close()
 
         self.Xb = Xb
         self.Yb = Yb
@@ -2213,6 +2245,8 @@ class under:
         dydt[12] = np.sign(dk - dkf) * wdk  # 空化器舵角变化率
         dydt[13] = np.sign(ds - dsf) * wds  # 上舵舵角变化率
         dydt[14] = np.sign(dx - dxf) * wdx  # 下舵舵角变化率
+        dydt[3] = 0
+        dydt[8] = 0
         aaa = dydt[:, np.newaxis]
         # print(t)
         y = y0
@@ -2380,6 +2414,14 @@ class under:
                         'datas': {
                             'ts': self.ts,
                             'ys': self.ys
+                        },
+                        'ship_datas': {
+                            'ship_x': self.ship_x_list[-1, :]
+                        },
+                        'Duo': {
+                                'ds': self.ds,
+                                'dx': self.dx,
+                                'dk': self.dk,
                         },
                         'Pi': self.P,
                         'P_list': np.array(self.P_list)

@@ -7,11 +7,11 @@
 %single V  FLT %
 0
 %end%
+%single write1  FLT %
+0
+%end%
 %single m  FLT %
 114.7
-%end%
-%single dan_type  FLT %
-0
 %end%
 %single xc  FLT %
 -0.0188
@@ -76,9 +76,6 @@
 %single dvmax  FLT %
 5
 %end%
-%single write1  FLT %
-0
-%end%
 %single dthetamax  FLT %
 5
 %end%
@@ -140,16 +137,16 @@
 4
 %end%
 %single k_ph  FLT %
-0.08
+0.03
 %end%
 %single k_wx  FLT %
-0.001656
+0.03
 %end%
 %single k_wy  FLT %
 0.312
 %end%
 %single tend_under  FLT %
-5
+50
 %end%
 %single T1  FLT %
 25080.6
@@ -162,6 +159,9 @@
 %end%
 %single thrust_sequence  STR %
 25080.6, 25080.6, 8971.4, 8971.4
+%end%
+%single dan_type  FLT %
+0
 %end%
 %single ship_L  FLT %
 315.773

@@ -161,7 +161,6 @@ class MSC:
 
             # ——————————特殊关联参数——————————
             # Dan类中kps默认等于kth，但UI提供独立控制，此处显式同步
-            Dani.kps = Dani.kth  # 确保姿态同步增益与俯仰增益一致
             Dani.tend_under = tend_under
             Dani.T1 = model_data['T1']
             Dani.T2 = model_data['T2']
@@ -172,17 +171,20 @@ class MSC:
             thrust_data = [float(t.strip()) for t in thrust_str.split(',') if t.strip()]
             Dani.time_sequence = time_data
             Dani.thrust_sequence = thrust_data
+            Dani.write1 = model_data['write1']
 
             if self.model_data['dan_type'] == 0:
                 Dani.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
                 Dani.yb = np.array(
                     [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
                 Dani.zb = Dani.yb
+                Dani.dan_type = 213
             elif self.model_data['dan_type'] == 1:
                 Dani.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0]) / 213 * 324
                 Dani.yb = np.array(
                     [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0]) / 213 * 324
                 Dani.zb = Dani.yb
+                Dani.dan_type = 213
 
             Dani.ship_x = self.ship_x
             Dani.v_ship_0 = self.v_ship_0

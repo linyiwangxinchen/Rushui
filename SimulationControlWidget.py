@@ -62,6 +62,15 @@ class SimulationControlWidget(QWidget):
         self.dan_type.setCurrentIndex(0)
         entry_layout.addWidget(self.dan_type, 11, 1)
 
+        entry_layout.addWidget(QLabel("是否写入文件:"), 12, 0)
+        self.write1 = QComboBox()
+        self.write1.addItems([
+            "否",
+            "是"
+        ])
+        self.write1.setCurrentIndex(0)
+        entry_layout.addWidget(self.write1, 12, 1)
+
         entry_group.setLayout(entry_layout)
 
         # ——————————控制参数——————————
@@ -328,10 +337,12 @@ class SimulationControlWidget(QWidget):
                 self.rushui.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
                 self.rushui.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
                 self.rushui.zb = self.rushui.yb
+                self.rushui.dan_type = 213
             elif self.dan_type.currentIndex() == 1:
                 self.rushui.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])/213*324
                 self.rushui.yb = np.array([0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])/213*324
                 self.rushui.zb = self.rushui.yb
+                self.rushui.dan_type = 324
 
             self.rushui.total.L = model_data['L']  # 长度 (m)
             self.rushui.total.S = model_data['S']  # 横截面积 (m²)
@@ -345,6 +356,7 @@ class SimulationControlWidget(QWidget):
             self.rushui.total.Jzz = model_data['Jzz']  # 转动惯量 Jzz (kg·m²)
             self.rushui.total.T = model_data['T']  # 推力 (N)
             self.rushui.dan_type = self.dan_type.currentIndex()
+            self.rushui.write1 = self.write1.currentIndex()
 
             # 空泡仿真参数 (直接赋值到实例)
             self.rushui.lk = model_data['lk']  # 空化器距重心距离 (m)

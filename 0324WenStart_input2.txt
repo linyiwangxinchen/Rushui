@@ -1,26 +1,26 @@
 %single L  FLT %
-3.195
+4.86
 %end%
 %single S  FLT %
-0.0356
+0.08237
 %end%
 %single V  FLT %
 0
 %end%
 %single m  FLT %
-114.7
+500
 %end%
-%single dan_type  FLT %
+%single write1  FLT %
 0
 %end%
 %single xc  FLT %
--0.0188
+-0.028597
 %end%
 %single yc  FLT %
--0.0017
+-0.002585
 %end%
 %single zc  FLT %
-0.0008
+0.001216
 %end%
 %single Jxx  FLT %
 0.631407
@@ -35,10 +35,10 @@
 0
 %end%
 %single lk  FLT %
-1.714
+2.60721
 %end%
 %single rk  FLT %
-0.021
+0.0319
 %end%
 %single sgm  FLT %
 0
@@ -50,19 +50,19 @@
 0.018
 %end%
 %single LW  FLT %
-0.021
+0.031943
 %end%
 %single LH  FLT %
 0
 %end%
 %single dkmax  FLT %
-0
+3
 %end%
 %single dkmin  FLT %
--4
+-3
 %end%
 %single dk0  FLT %
--2.61917
+-0.4
 %end%
 %single deltaymax  FLT %
 10
@@ -75,9 +75,6 @@
 %end%
 %single dvmax  FLT %
 5
-%end%
-%single write1  FLT %
-0
 %end%
 %single dthetamax  FLT %
 5
@@ -95,7 +92,7 @@
 0
 %end%
 %single tend  FLT %
-0.5
+0.2546
 %end%
 %single dt  FLT %
 0.0002
@@ -131,10 +128,10 @@
 0.022
 %end%
 %single kwz  FLT %
-0.312
+0.1
 %end%
 %single ktheta  FLT %
-4
+1
 %end%
 %single k_ps  FLT %
 4
@@ -143,13 +140,13 @@
 0.08
 %end%
 %single k_wx  FLT %
-0.001656
+0.03
 %end%
 %single k_wy  FLT %
-0.312
+0.1
 %end%
 %single tend_under  FLT %
-5
+50
 %end%
 %single T1  FLT %
 25080.6
@@ -161,7 +158,10 @@
 0, 0.56, 0.57, 100
 %end%
 %single thrust_sequence  STR %
-25080.6, 25080.6, 8971.4, 8971.4
+58030, 58030, 20824, 20824
+%end%
+%single dan_type  FLT %
+1
 %end%
 %single ship_L  FLT %
 315.773

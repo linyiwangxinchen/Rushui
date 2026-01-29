@@ -105,30 +105,31 @@ class SimulationDiveWidget(QWidget):
         dan_guide_layout.setContentsMargins(5, 5, 5, 5)
         dan_guide_layout.setSpacing(5)
 
-        dan_guide_layout.addWidget(QLabel("是否开启电磁制导:"), 4, 0)
-        self.dan_aim_tpye = QComboBox()
-        self.dan_aim_tpye.addItems([
-            "否",
-            "是"
-        ])
-
-        self.dan_aim_tpye.setCurrentIndex(0)
-        dan_guide_layout.addWidget(self.dan_aim_tpye, 4, 1)
-
-        self.add_labeled_input(dan_guide_layout, "无制导起爆距离 (m):", 5, 0, 0, 1000, 10, 1.0, "dan_L_input")
-
-        dan_guide_layout.addWidget(QLabel("是否开启末端导引:"), 6, 0)
+        dan_guide_layout.addWidget(QLabel("是否开启末端导引:"), 0, 0)
         self.dan_guide_type = QComboBox()
         self.dan_guide_type.addItems([
             "否",
             "是"
         ])
         self.dan_guide_type.setCurrentIndex(1)
-        dan_guide_layout.addWidget(self.dan_guide_type, 6, 1)
-        self.add_labeled_input(dan_guide_layout, "开启末端导引距离 (m):", 7, 0, 0, 10000, 2000, 1.0, "guidance_distance_input")
+        dan_guide_layout.addWidget(self.dan_guide_type, 0, 1)
+        self.add_labeled_input(dan_guide_layout, "开启末端导引距离 (m):", 1, 0, 0, 10000, 2000, 1.0, "guidance_distance_input")
 
+
+        dan_guide_layout.addWidget(QLabel("起爆方式:"), 2, 0)
+        self.dan_aim_tpye = QComboBox()
+        self.dan_aim_tpye.addItems([
+            "定距起爆",
+            "最近点起爆"
+        ])
+
+        self.dan_aim_tpye.setCurrentIndex(0)
+        dan_guide_layout.addWidget(self.dan_aim_tpye, 2, 1)
+
+        self.add_labeled_input(dan_guide_layout, "无制导起爆距离 (m):", 3, 0, 0, 1000, 10, 1.0, "dan_L_input")
 
         dan_guide_group.setLayout(dan_guide_layout)
+
 
         # 控制按钮
         control_layout = QHBoxLayout()
@@ -198,6 +199,79 @@ class SimulationDiveWidget(QWidget):
 
         self.setLayout(main_layout)
 
+    def write_mcs_data(self, filename='MCS_data.txt'):
+        """
+        将 self.stab.point_dict 中的轨迹数据写入 MCS_data.txt 文件
+
+        数据结构说明:
+            self.stab.point_dict: list of dict, 长度为 N (轨迹点数量)
+            每个 dict 包含 5 个键，对应 numpy 数组:
+                'ship_x_list'  : 船舶位置序列 (time_steps × 3)
+                'ship_v_list'  : 船舶速度序列 (time_steps × 3)
+                'dan_line'     : 弹道位置序列 (time_steps × 3)
+                'dan_v_list '  : 弹体速度序列 (time_steps × 3) - 注意尾部空格
+                't_list'       : 时间序列 (time_steps,)
+
+        输出格式:
+            - 首先写入 single 类型的 point_num (INT) 表示轨迹点总数
+            - 每个轨迹点的 5 个数组按固定顺序写入，参数名格式: {clean_key}_{index}
+            - 一维数组使用 array1 格式，二维数组使用 array2 格式
+            - 所有数值使用 %-.6g 格式化
+        """
+        # 定义标准键顺序（清理空格后）
+        keys_order = ['ship_x_list', 'ship_v_list', 'dan_line', 'dan_v_list', 't_list']
+
+        try:
+            with open(filename, 'w', encoding='utf-8') as fid:
+                # 1. 写入轨迹点总数 (single INT)
+                point_num = len(self.stab.point_dict)
+                fid.write('%%single point_num  INT %%\n')
+                fid.write('%d\n' % point_num)
+                fid.write('%end%\n\n')
+
+                # 2. 遍历每个轨迹点
+                for i, point_data in enumerate(self.stab.point_dict):
+                    # 清理键名：移除所有空格（处理 'dan_v_list ' 等异常键名）
+                    clean_point_data = {
+                        key.replace(' ', ''): value
+                        for key, value in point_data.items()
+                    }
+
+                    # 3. 按固定顺序写入5个数组
+                    for key in keys_order:
+                        if key not in clean_point_data:
+                            raise KeyError(
+                                f"轨迹点 {i} 缺少必需键 '{key}'。可用键: {list(clean_point_data.keys())}"
+                            )
+
+                        array = clean_point_data[key]
+                        param_name = f"{key}_{i}"
+
+                        # 处理一维数组 (array1)
+                        if array.ndim == 1:
+                            fid.write(f'%%array1 {param_name}  FLT {array.shape[0]} %%\n')
+                            for val in array:
+                                fid.write('%-.6g ' % val)
+                            fid.write('\n%end%\n\n')
+
+                        # 处理二维数组 (array2)
+                        elif array.ndim == 2:
+                            fid.write(f'%%array2 {param_name}  FLT {array.shape[0]} {array.shape[1]} %%\n')
+                            for row in array:
+                                for val in row:
+                                    fid.write('%-.6g ' % val)
+                                fid.write('\n')
+                            fid.write('%end%\n\n')
+
+                        # 不支持的维度
+                        else:
+                            raise ValueError(
+                                f"轨迹点 {i} 的 '{key}' 数组维度 {array.ndim} 不受支持 (仅支持1D/2D)"
+                            )
+
+        except Exception as e:
+            raise IOError(f"写入 MCS_data.txt 失败: {str(e)}") from e
+
     def show_line_plot(self):
         """展示推力-时间曲线"""
         try:
@@ -205,7 +279,7 @@ class SimulationDiveWidget(QWidget):
             if not hasattr(self.stab, 'point_dict'):
                 QMessageBox.warning(self, "提示", "无仿真数据可供展示")
                 return
-
+            self.write_mcs_data()
             traj_window = TrajectoryPlotWindow(self.stab.point_dict, parent=self)
             traj_window.exec_()  # 模态对话框
 
@@ -287,6 +361,7 @@ class SimulationDiveWidget(QWidget):
                 self.stab.dian_L = self.dan_L_input.value()
                 self.stab.before_time = self.air_t_input.value()
                 self.stab.before_L = self.air_L_input.value()
+                self.stab.write1 = self.model_data['write1']
 
             else:
                 self.stab = MSC_M()
@@ -306,6 +381,7 @@ class SimulationDiveWidget(QWidget):
                 self.stab.dian_L = self.dan_L_input.value()
                 self.stab.before_time = self.air_t_input.value()
                 self.stab.before_L = self.air_L_input.value()
+                self.stab.write1 = self.model_data['write1']
                 # 由于将舰船移动放进去了，这里要额外进行一些赋值
 
             self.stab.min_callback_interval = self.rushui.min_callback_interval1

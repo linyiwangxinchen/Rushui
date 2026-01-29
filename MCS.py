@@ -158,6 +158,7 @@ class MSC:
             Dani.kwy = k_wy  # 垂向控制增益
             Dani.kwz = kwz  # 偏航角速度增益 (深度控制)
             Dani.kth = ktheta  # 俯仰角增益 (深度控制)
+            Dani.write1 = model_data['write1']
 
             # ——————————特殊关联参数——————————
             # Dan类中kps默认等于kth，但UI提供独立控制，此处显式同步
@@ -178,11 +179,13 @@ class MSC:
                 Dani.yb = np.array(
                     [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
                 Dani.zb = Dani.yb
+                Dani.dan_type = 213
             elif self.model_data['dan_type'] == 1:
                 Dani.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0]) / 213 * 324
                 Dani.yb = np.array(
                     [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0]) / 213 * 324
                 Dani.zb = Dani.yb
+                Dani.dan_type = 324
 
             Dani._recalculate_update_input()
             Dani.update_callback = self.update_callback
@@ -324,7 +327,7 @@ class MSC:
                 'ship_x_list': self.ship_x_list,
                 'ship_v_list': self.ship_v_list,
                 'dan_line': self.dan_line,
-                'dan_v_list ': self.dan_v_list ,
+                'dan_v_list ': self.dan_v_list,
                 't_list': self.dan_t
             }
             self.point_dict.append(dicti)

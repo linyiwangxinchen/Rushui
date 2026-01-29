@@ -1,1 +1,1 @@
-%single point_dict  FLT %
+%array1 point_dict  STR 3 %
