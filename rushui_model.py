@@ -26,7 +26,8 @@ class under:
         """初始化所有仿真参数"""
         # 上面是预制参数
         self.start_tcs = True
-        self.write1 = True
+        self.write1 = False
+        self.dan_type = 213
         self.nc = 200
         self.dt = 0.0001
         self.tend = 3.41
@@ -97,6 +98,8 @@ class under:
         self.THETACS = -2.5086 / self.RTD  # 启控俯仰角 (rad)
         self.VYCS = -0.01323  # 启控垂向速度 (m/s)
         self.PSICS = 2.17098 / self.RTD  # 启控偏航角 (rad)
+        self.ZCS = 0
+        self.VZCS = 0
 
         # === 动态数据数组 ===
         self.AF = np.zeros((80, 6))  # 空泡延迟历史数组
@@ -487,12 +490,17 @@ class under:
         VYCS = self.VYCS
         THETACS = self.THETACS
         PSICS = self.PSICS
+        ZCS = self.ZCS
+        VZCS = self.VZCS
 
         # 在启控时间之前记录初始条件
         if tcs - 0.001 <= t <= tcs:
             YCS = y0
+            ZCS = z0
             THETACS = theta
+            PHICS = phi
             VYCS = vy
+            VZCS = vz
             PSICS = psi
 
         # 控制周期判断
@@ -533,12 +541,29 @@ class under:
             dk = np.clip(dk, dkmin, dkmax)
 
             # --------------偏航通道（简化）--------------
+            h0 = 0
+            # 深度偏差
+            deltaz = h0 + (ZCS - h0) * np.exp(-(t - tcs) / 0.2) - z0
+            deltaz = np.sign(deltaz) * min(abs(deltaz), deltaymax)
+
+            # 垂向速度偏差
+            deltavz = (VZCS - 0) * np.exp(-(t - tcs) / 0.2) - vz
+            deltavz = np.sign(deltavz) * min(abs(deltavz), deltavymax)
+
+            # 俯仰角控制目标
+            psic = ((PSICS * RTD ) * np.exp(-(t - tcs) / 0.2) +
+                      (0.02 * deltaz + 0.003 * deltavz) * RTD) / RTD
+            psic = -psic
+            dpsi = psi - psic
+            dpsi = np.sign(dpsi) * min(abs(dpsi), dthetamax)
+
             dv = 0
-            los_psi = 0
-            dpsi = psi - los_psi
+            # los_psi = 0
+            # dpsi = psi - los_psi
+            dpsi = dpsi
             wy = np.sign(wy) * min(abs(wy), self.wymax)
             dv = self.kps * dpsi + self.kwy * wy
-            dv = dv / 10
+            # dv = dv / 2
             dv = np.sign(dv) * min(abs(dv), dvmax)
 
             # --------------横滚通道--------------
@@ -2147,6 +2172,7 @@ class under:
             y0 = self.y.copy()
             self.overall_fluid_dynamic_calculation()
             self.y = y0 + self.dydt * dt
+
             self.t = self.t + dt
             current_time = time.time()
             if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:

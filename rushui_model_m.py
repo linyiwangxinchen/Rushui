@@ -27,6 +27,8 @@ class under:
         self.thrust_sequence = None
         """初始化所有仿真参数"""
         # 上面是预制参数
+        self.write1 = False
+        self.dan_type = 213
         self.nc = 200
         self.dt = 0.0001
         self.tend = 3.41
@@ -685,9 +687,11 @@ class under:
             self.TP = t  # 更新时间
 
             # 保存舵角历史
-            with open('rudder.txt', 'a') as f:
-                f.write(f'{t:8.3f} {dk * RTD:8.6f} {ds * RTD:8.6f} {dx * RTD:8.6f} '
-                        f'{dkf * RTD:8.6f} {dsf * RTD:8.6f} {dxf * RTD:8.6f}\n')
+            if self.write1:
+                with open('rudder.txt', 'a') as f:
+                    f.write(f'{t:8.3f} {dk * RTD:8.6f} {ds * RTD:8.6f} {dx * RTD:8.6f} '
+                            f'{dkf * RTD:8.6f} {dsf * RTD:8.6f} {dxf * RTD:8.6f}\n')
+                    f.close()
 
             y[0], y[1], y[2] = vx, vy, vz
             y[3], y[4], y[5] = wx, wy, wz
@@ -1182,9 +1186,11 @@ class under:
                     CAV[i, 7] = 0.0  # 空泡已闭合
 
             # 保存空泡数据
-            with open('cavity.txt', 'a') as f:
-                f.write(f'{t:5.3f} {x0:8.3f} {y0:8.3f} {z0:8.3f} '
-                        f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
+            if self.write1:
+                with open('cavity.txt', 'a') as f:
+                    f.write(f'{t:5.3f} {x0:8.3f} {y0:8.3f} {z0:8.3f} '
+                            f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
+                    f.close()
 
             # 获取弹体位置 - 从弹体系转到地系
             Cb1 = self.coordinate_transformation_matrix1()
@@ -1455,8 +1461,10 @@ class under:
             Myb = vz_flag * Mz * abs(vz) / speed_2d
 
         # 保存结果到文件
-        with open('test-ts.txt', 'a') as fid:
-            fid.write(f'{t:8.4f} {alphat:8.6f} {Xb:8.6f} {Yb:8.6f} {Zb:8.6f} {Myb:8.6f} {Mzb:8.6f}\n')
+        if self.write1:
+            with open('test-ts.txt', 'a') as fid:
+                fid.write(f'{t:8.4f} {alphat:8.6f} {Xb:8.6f} {Yb:8.6f} {Zb:8.6f} {Myb:8.6f} {Mzb:8.6f}\n')
+                fid.close()
 
         self.Xb = Xb
         self.Yb = Yb

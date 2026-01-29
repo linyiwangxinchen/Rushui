@@ -245,7 +245,7 @@ class CompactParameterDisplayWidget(QWidget):
                     self.vel_label.setText(
                         f"Vx = {motion['y'][0]:.4f} m/s, Vy = {motion['y'][1]:.4f} m/s, Vz = {motion['y'][2]:.4f} m/s")
                     self.angle_label.setText(
-                        f"Theta = {motion['y'][6] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7] * self.rushui.RTD:.4f}°, {motion['y'][8] * self.rushui.RTD:.4f}°")
+                        f"Theta = {motion['y'][6] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7] * self.rushui.RTD:.4f}°, Phi = {motion['y'][8] * self.rushui.RTD:.4f}°")
                     self.omega_label.setText(
                         f"wx = {motion['y'][3] * self.rushui.RTD:.4f} °/s, wy = {motion['y'][4] * self.rushui.RTD:.4f} °/s, wz = {motion['y'][5] * self.rushui.RTD:.4f} °/s")
 

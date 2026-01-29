@@ -287,6 +287,7 @@ class SimulationDiveWidget(QWidget):
                 self.stab.dian_L = self.dan_L_input.value()
                 self.stab.before_time = self.air_t_input.value()
                 self.stab.before_L = self.air_L_input.value()
+                self.stab.write1 = self.model_data['write1']
 
             else:
                 self.stab = MSC_M()
@@ -306,6 +307,7 @@ class SimulationDiveWidget(QWidget):
                 self.stab.dian_L = self.dan_L_input.value()
                 self.stab.before_time = self.air_t_input.value()
                 self.stab.before_L = self.air_L_input.value()
+                self.stab.write1 = self.model_data['write1']
                 # 由于将舰船移动放进去了，这里要额外进行一些赋值
 
             self.stab.min_callback_interval = self.rushui.min_callback_interval1

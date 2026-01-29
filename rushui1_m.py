@@ -30,6 +30,7 @@ class  Entry:
         self.progress_callback = None
         self.min_callback_interval = 0.05
         # ——————————基本常量——————————
+        self.write1 = False
         self.rtd = 180 / np.pi
         self.g = 9.8
         self.rho = 1000
@@ -609,8 +610,10 @@ class  Entry:
             self.tp = t
 
             # 保存空泡轴线到文件
-            with open('cavity.txt', 'a') as fid:
-                fid.write(f'{t:5.3f}{self.posCav[0, 0]:8.3f}{self.posCav[0, 1]:8.3f}\n')
+            if self.write1:
+                with open('cavity.txt', 'a') as fid:
+                    fid.write(f'{t:5.3f}{self.posCav[0, 0]:8.3f}{self.posCav[0, 1]:8.3f}\n')
+                    fid.close()
 
             # 将空泡轴线坐标转化为雷体坐标系下
             cav = np.zeros((self.nc, 3))
