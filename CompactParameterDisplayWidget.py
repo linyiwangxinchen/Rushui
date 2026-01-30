@@ -291,8 +291,8 @@ class CompactParameterDisplayWidget(QWidget):
         if 'ship_datas' in data:
             ship_datas = data['ship_datas']
             self.n_contacts_label.setText(f"{ship_datas['ship_x'][0]:.4f} m")
-            self.h2_label.setText(f"{ship_datas['ship_x'][1]:.4f} m")
-            self.sigma_label.setText(f"{ship_datas['ship_x'][2]:.4f} m")
+            self.h2_label.setText(f"{ship_datas['ship_x'][2]:.4f} m")
+            self.sigma_label.setText(f"{ship_datas['ship_x'][1]:.4f} m")
 
         if 'Duo' in data:
             Duo = data['Duo']

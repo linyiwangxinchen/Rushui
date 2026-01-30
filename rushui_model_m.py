@@ -606,10 +606,11 @@ class under:
                 # dy = self.z_aim - z0  # 横向偏差 (z轴)
                 # los_psi = np.arctan2(dy, dx) if dx != 0 else 0  # 水平面视线角
                 # dpsi = psi - los_psi
-                h0 = (self.y_aim - self.start_guidance_point[2]) / (self.aim_guidance_t - self.start_guidance_t) * (
-                            t - self.start_guidance_t) + self.start_guidance_point[2]
-                if t >= self.aim_guidance_t:
-                    h0 = 0
+                # h0 = (self.y_aim - self.start_guidance_point[2]) / (self.aim_guidance_t - self.start_guidance_t) * (
+                #             10 * tcs) + self.start_guidance_point[2]
+                h0 = (self.y_aim + self.start_guidance_point[2]) / 2
+                if x0 >= self.x_aim:
+                    h0 = self.start_guidance_point[2]
                 # 深度偏差
                 deltaz = h0 + (ZCS - h0) * np.exp(-(t - tcs) / 0.2) - z0
                 deltaz = np.sign(deltaz) * min(abs(deltaz), deltaymax)
@@ -2408,8 +2409,14 @@ class under:
                 x_dan = self.y[9:12]
                 v_s = ship_v_list[-1, :]
                 x_s = ship_x_list[-1, :]
-                x_s_min, t_min = self.closest_point_position(v_dan, x_dan, v_s, x_s)
-                self.aim_guidance_t = t_min
+                v_s1 = v_s.copy()
+                x_s1 = x_s.copy()
+                v_s1[1] = v_s[2]
+                v_s1[2] = v_s[1]
+                x_s1[1] = x_s[2]
+                x_s1[2] = x_s[1]
+                x_s_min, t_min = self.closest_point_position(v_dan, x_dan, v_s1, x_s1)
+                self.aim_guidance_t = t_min + t
                 self.x_aim = x_s_min[0]
                 self.y_aim = x_s_min[1]
                 self.z_aim = x_s_min[2]
@@ -2419,7 +2426,14 @@ class under:
                 x_dan = self.y[9:12]
                 v_s = ship_v_list[-1, :]
                 x_s = ship_x_list[-1, :]
+                v_s1 = v_s.copy()
+                x_s1 = x_s.copy()
+                v_s1[1] = v_s[2]
+                v_s1[2] = v_s[1]
+                x_s1[1] = x_s[2]
+                x_s1[2] = x_s[1]
                 x_s_min, t_min = self.closest_point_position(v_dan, x_dan, v_s, x_s)
+                self.aim_guidance_t = t_min + t
                 self.x_aim = x_s_min[0]
                 self.y_aim = x_s_min[1]
                 self.z_aim = x_s_min[2]
