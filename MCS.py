@@ -44,12 +44,12 @@ class MSC:
 
     def _change_data(self):
         dict1 = {'ship_L': 315.7728, 'ship_M': 78000000, 'ship_B': 76.8096, 'ship_T': 10.8966}
-        # 萨拉托加
-        dict2 = {'ship_L': 324.0024, 'ship_M': 78000000, 'ship_B': 76.8096, 'ship_T': 11.2776}
-        # 游骑兵
-        dict3 = {'ship_L': 318.8208, 'ship_M': 78000000, 'ship_B': 76.0476, 'ship_T': 11.2776}
-        # 独立
-        dict4 = {'ship_L': 318.8208, 'ship_M': 78000000, 'ship_B': 76.0476, 'ship_T': 11.2776}
+        # 美国 阿利·伯克级
+        dict2 = {'ship_L': 155, 'ship_M': 9000000, 'ship_B': 20.4, 'ship_T': 6.2}
+        # 美国 朱姆沃尔特级
+        dict3 = {'ship_L': 184, 'ship_M': 15279500, 'ship_B': 24.6, 'ship_T': 8.4}
+        # 日本 爱宕级
+        dict4 = {'ship_L': 165, 'ship_M': 10000000, 'ship_B': 21, 'ship_T': 6.2}
         ships = [dict1, dict2, dict3, dict4]
         if self.ifship:
             self.dict_shipi = ships[self.ship_kind]
@@ -158,6 +158,7 @@ class MSC:
             Dani.kwy = k_wy  # 垂向控制增益
             Dani.kwz = kwz  # 偏航角速度增益 (深度控制)
             Dani.kth = ktheta  # 俯仰角增益 (深度控制)
+            Dani.write1 = model_data['write1']
 
             # ——————————特殊关联参数——————————
             # Dan类中kps默认等于kth，但UI提供独立控制，此处显式同步
@@ -178,11 +179,13 @@ class MSC:
                 Dani.yb = np.array(
                     [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
                 Dani.zb = Dani.yb
+                Dani.dan_type = 213
             elif self.model_data['dan_type'] == 1:
                 Dani.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0]) / 213 * 324
                 Dani.yb = np.array(
                     [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0]) / 213 * 324
                 Dani.zb = Dani.yb
+                Dani.dan_type = 324
 
             Dani._recalculate_update_input()
             Dani.update_callback = self.update_callback
@@ -320,14 +323,23 @@ class MSC:
                     # 调用回调函数
                     self.update_callback(data)
 
+            ship_x_list = self.ship_x_list
+            ship_v_list = self.ship_v_list
+            dan_line = self.dan_line
+            dan_v_list = self.dan_v_list
+            t_list = self.dan_t
+            ship_x_list = np.array([ship_x_list[:, 0], ship_x_list[:, 2], ship_x_list[:, 1]]).T
+            ship_v_list = np.array([ship_v_list[:, 0], ship_v_list[:, 2], ship_v_list[:, 1]]).T
+
             dicti = {
-                'ship_x_list': self.ship_x_list,
-                'ship_v_list': self.ship_v_list,
-                'dan_line': self.dan_line,
-                'dan_v_list ': self.dan_v_list ,
+                'ship_x_list': ship_x_list,
+                'ship_v_list': ship_v_list,
+                'dan_line': dan_line,
+                'dan_v_list ': dan_v_list ,
                 't_list': self.dan_t
             }
             self.point_dict.append(dicti)
+
 
 
 

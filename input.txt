@@ -76,6 +76,9 @@
 %single dvmax  FLT %
 5
 %end%
+%single write1  FLT %
+0
+%end%
 %single dthetamax  FLT %
 5
 %end%

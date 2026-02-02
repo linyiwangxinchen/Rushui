@@ -6,7 +6,7 @@ if __name__ == '__main__':
         'MainWindow.py',
         '--onefile',
         '--noconsole',
-        '--name=Amphoreus',
+        '--name=Amphoreus1',
         '--clean',  # 添加清理选项
     ]
 

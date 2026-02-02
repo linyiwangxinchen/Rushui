@@ -26,7 +26,9 @@ class under:
         """初始化所有仿真参数"""
         # 上面是预制参数
         self.start_tcs = True
-        self.nc = 400
+        self.write1 = False
+        self.dan_type = 213
+        self.nc = 200
         self.dt = 0.0001
         self.tend = 3.41
         self.RTD = 180 / np.pi  # 弧度到角度转换
@@ -55,6 +57,7 @@ class under:
         self.T1 = 25080.6  # 推力
         self.T2 = 6971.4
         self.TC = self.t0  # 空泡计算时刻
+
 
         # === 弹体总体相关参数 === #
         self.L = 3.195  # 总长
@@ -95,6 +98,8 @@ class under:
         self.THETACS = -2.5086 / self.RTD  # 启控俯仰角 (rad)
         self.VYCS = -0.01323  # 启控垂向速度 (m/s)
         self.PSICS = 2.17098 / self.RTD  # 启控偏航角 (rad)
+        self.ZCS = 0
+        self.VZCS = 0
 
         # === 动态数据数组 ===
         self.AF = np.zeros((80, 6))  # 空泡延迟历史数组
@@ -478,19 +483,24 @@ class under:
         dxf = np.sign(dxf) * min(abs(dxf), ddmax)
 
         # 控制律
-        cc = 0.01  # 控制周期
+        cc = 0.001  # 控制周期
         tcs = 0.36  # 启控时间
-        tcs = 0.02
+        tcs = 0.002
         YCS = self.YCS
         VYCS = self.VYCS
         THETACS = self.THETACS
         PSICS = self.PSICS
+        ZCS = self.ZCS
+        VZCS = self.VZCS
 
         # 在启控时间之前记录初始条件
         if tcs - 0.001 <= t <= tcs:
             YCS = y0
+            ZCS = z0
             THETACS = theta
+            PHICS = phi
             VYCS = vy
+            VZCS = vz
             PSICS = psi
 
         # 控制周期判断
@@ -531,21 +541,42 @@ class under:
             dk = np.clip(dk, dkmin, dkmax)
 
             # --------------偏航通道（简化）--------------
+            h0 = 0
+            # 深度偏差
+            deltaz = h0 + (ZCS - h0) * np.exp(-(t - tcs) / 0.2) - z0
+            deltaz = np.sign(deltaz) * min(abs(deltaz), deltaymax)
+
+            # 垂向速度偏差
+            deltavz = (VZCS - 0) * np.exp(-(t - tcs) / 0.2) - vz
+            deltavz = np.sign(deltavz) * min(abs(deltavz), deltavymax)
+
+            # 俯仰角控制目标
+            psic = ((PSICS * RTD ) * np.exp(-(t - tcs) / 0.2) +
+                      (0.02 * deltaz + 0.003 * deltavz) * RTD) / RTD
+            psic = -psic
+            dpsi = psi - psic
+            dpsi = np.sign(dpsi) * min(abs(dpsi), dthetamax)
+
             dv = 0
-            los_psi = 0
-            dpsi = psi - los_psi
+            # los_psi = 0
+            # dpsi = psi - los_psi
+            dpsi = dpsi
+            # if self.dan_type == 213:
+            #     dpsi = psi - 0
+            # else:
+            #     dpsi = dpsi
             wy = np.sign(wy) * min(abs(wy), self.wymax)
             dv = self.kps * dpsi + self.kwy * wy
-            dv = dv / 10
+            # dv = dv / 2
             dv = np.sign(dv) * min(abs(dv), dvmax)
 
             # --------------横滚通道--------------
             if t < 1.5:
                 phic = 0 / RTD
             elif t < 2:
-                phic = (t - 1.5) / 0.5 * 12 * (psi - PSICS)
+                phic = (t - 1.5) / 0.5 * 12 * (psi - psic)
             else:
-                phic = 12 * (psi - PSICS)
+                phic = 12 * (psi - psic)
 
             # 横滚偏差限幅
             dphi = phi - phic
@@ -558,20 +589,22 @@ class under:
             dd = np.sign(dd) * min(abs(dd), ddmax)
 
             # --------------舵角分配--------------
+            dd = 0
             ds = dd + dv
             dx = -dd + dv
-            if abs(ds) >= dvmax or abs(dx) >= dvmax:
-                ds = dd
-                dx = -dd
+            # if abs(ds) >= dvmax or abs(dx) >= dvmax:
+            #     ds = dd
+            #     dx = -dd
             ds = np.sign(ds) * min(abs(ds), dvmax)
             dx = np.sign(dx) * min(abs(dx), dvmax)
 
             self.TP = t  # 更新时间
-
-            # 保存舵角历史
-            with open('rudder.txt', 'a') as f:
-                f.write(f'{t:8.3f} {dk * RTD:8.6f} {ds * RTD:8.6f} {dx * RTD:8.6f} '
-                        f'{dkf * RTD:8.6f} {dsf * RTD:8.6f} {dxf * RTD:8.6f}\n')
+            if self.write1:
+                # 保存舵角历史
+                with open('rudder.txt', 'a') as f:
+                    f.write(f'{t:8.3f} {dk * RTD:8.6f} {ds * RTD:8.6f} {dx * RTD:8.6f} '
+                            f'{dkf * RTD:8.6f} {dsf * RTD:8.6f} {dxf * RTD:8.6f}\n')
+                    f.close()
 
             y[0], y[1], y[2] = vx, vy, vz
             y[3], y[4], y[5] = wx, wy, wz
@@ -582,9 +615,9 @@ class under:
             self.dx = dx
             self.dk = dk
         else:
+            dk = self.dk
             ds = self.ds
             dx = self.dx
-            dk = self.dk
         self.m = m
         self.xc = xc
         self.dm = dm
@@ -1066,9 +1099,11 @@ class under:
                     CAV[i, 7] = 0.0  # 空泡已闭合
 
             # 保存空泡数据
-            with open('cavity.txt', 'a') as f:
-                f.write(f'{t:5.3f} {x0:8.3f} {y0:8.3f} {z0:8.3f} '
-                        f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
+            if self.write1:
+                with open('cavity.txt', 'a') as f:
+                    f.write(f'{t:5.3f} {x0:8.3f} {y0:8.3f} {z0:8.3f} '
+                            f'{xn:8.3f} {yn:8.3f} {zn:8.3f} {RK:8.3f}\n')
+                    f.close()
 
             # 获取弹体位置 - 从弹体系转到地系
             Cb1 = self.coordinate_transformation_matrix1()
@@ -1340,8 +1375,10 @@ class under:
             Myb = vz_flag * Mz * abs(vz) / speed_2d
 
         # 保存结果到文件
-        with open('test-ts.txt', 'a') as fid:
-            fid.write(f'{t:8.4f} {alphat:8.6f} {Xb:8.6f} {Yb:8.6f} {Zb:8.6f} {Myb:8.6f} {Mzb:8.6f}\n')
+        if self.write1:
+            with open('test-ts.txt', 'a') as fid:
+                fid.write(f'{t:8.4f} {alphat:8.6f} {Xb:8.6f} {Yb:8.6f} {Zb:8.6f} {Myb:8.6f} {Mzb:8.6f}\n')
+                fid.close()
 
         self.Xb = Xb
         self.Yb = Yb
@@ -2101,6 +2138,8 @@ class under:
         aaa = dydt[:, np.newaxis]
         # print(t)
         y = y0
+        dydt[3] = 0
+        dydt[8] = 0
         self.dydt = dydt
         # return dydt
 
@@ -2140,6 +2179,7 @@ class under:
             y0 = self.y.copy()
             self.overall_fluid_dynamic_calculation()
             self.y = y0 + self.dydt * dt
+
             self.t = self.t + dt
             current_time = time.time()
             if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:
@@ -2174,6 +2214,14 @@ class under:
                         'datas': {
                             'ts': self.ts,
                             'ys': self.ys
+                        },
+                        'ship_datas': {
+                            'ship_x': [0, 0, 0]
+                        },
+                        'Duo': {
+                            'ds': self.ds,
+                            'dx': self.dx,
+                            'dk': self.dk,
                         },
                         'Pi': self.P,
                         'P_list': np.array(self.P_list)

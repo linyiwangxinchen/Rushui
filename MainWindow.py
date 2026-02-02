@@ -22,7 +22,6 @@ import os
 from CustomExportDialog import CustomExportDialog
 from MinCallbackIntervalDialog import MinCallbackIntervalDialog
 import math
-
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -268,6 +267,7 @@ class MainWindow(QMainWindow):
                 'time_sequence': self.sim_control_widget.time_sequence_input.text(),
                 'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text(),
                 'dan_type': self.sim_control_widget.dan_type.currentIndex(),
+                'write1': self.sim_control_widget.write1.currentIndex(),
             }
 
             dive_params = {
@@ -432,6 +432,7 @@ class MainWindow(QMainWindow):
                 'time_sequence': self.sim_control_widget.time_sequence_input.text(),
                 'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text(),
                 'dan_type': self.sim_control_widget.dan_type.currentIndex(),
+                'write1': self.sim_control_widget.write1.currentIndex(),
             }
 
             dive_params = {
@@ -595,6 +596,7 @@ class MainWindow(QMainWindow):
                 self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
                 self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
                 self.sim_control_widget.dan_type.setCurrentIndex(int(sp.get('dan_type', None)))
+                self.sim_control_widget.write1.setCurrentIndex(int(sp.get('write1', None)))
 
             if "dive_params" in config:
                 mmp = config['dive_params']
@@ -714,6 +716,7 @@ class MainWindow(QMainWindow):
             wxmax, _, _ = read_data(filename, 'wxmax')
             dphimax, _, _ = read_data(filename, 'dphimax')
             dan_type, _, _ = read_data(filename, 'dan_type')
+            write1, _, _ = read_data(filename, 'write1')
 
             ship_L, _, _ = read_data(filename, 'ship_L')
             ship_M, _, _ = read_data(filename, 'ship_M')
@@ -795,6 +798,7 @@ class MainWindow(QMainWindow):
                 'wxmax': wxmax,
                 'dphimax': dphimax,
                 'dan_type': dan_type,
+                'write1': write1,
                 'ship_L': ship_L,
                 'ship_M': ship_M,
                 'ship_B': ship_B,
@@ -881,6 +885,7 @@ class MainWindow(QMainWindow):
             self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
             self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
             self.sim_control_widget.dan_type.setCurrentIndex(int(sp.get('dan_type', None)))
+            self.sim_control_widget.write1.setCurrentIndex(int(sp.get('write1', None)))
 
             mmp = laptop_datas
             self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))
@@ -1115,6 +1120,7 @@ class MainWindow(QMainWindow):
                 wxmax, _, _ = read_data('input.txt', 'wxmax')
                 dphimax, _, _ = read_data('input.txt', 'dphimax')
                 dan_type, _, _ = read_data('input.txt', 'dan_type')
+                write1, _, _ = read_data('input.txt', 'write1')
 
                 ship_L, _, _ = read_data('input.txt', 'ship_L')
                 ship_M, _, _ = read_data('input.txt', 'ship_M')
@@ -1196,6 +1202,7 @@ class MainWindow(QMainWindow):
                     'wxmax': wxmax,
                     'dphimax': dphimax,
                     'dan_type': dan_type,
+                    'write1': write1,
                     'ship_L': ship_L,
                     'ship_M': ship_M,
                     'ship_B': ship_B,
@@ -1292,6 +1299,7 @@ class MainWindow(QMainWindow):
                 self.sim_control_widget.time_sequence_input.setText(sp.get('time_sequence', None)),
                 self.sim_control_widget.thrust_sequence_input.setText(sp.get('thrust_sequence', None))
                 self.sim_control_widget.dan_type.setCurrentIndex(int(sp.get('dan_type', None)))
+                self.sim_control_widget.write1.setCurrentIndex(int(sp.get('write1', None)))
 
                 mmp = laptop_datas
                 self.sim_dive_widget.ship_L_input.setValue(mmp.get('ship_L', None))
@@ -1427,6 +1435,7 @@ class MainWindow(QMainWindow):
             'time_sequence': self.sim_control_widget.time_sequence_input.text(),
             'thrust_sequence': self.sim_control_widget.thrust_sequence_input.text(),
             'dan_type': self.sim_control_widget.dan_type.currentIndex(),
+            'write1': self.sim_control_widget.write1.currentIndex(),
 
 
             'ship_L': self.sim_dive_widget.ship_L_input.value(),

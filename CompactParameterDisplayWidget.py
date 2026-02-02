@@ -157,7 +157,7 @@ class CompactParameterDisplayWidget(QWidget):
         layout.addWidget(force_group)
 
     def create_contact_group(self, layout):
-        contact_group = QGroupBox("接触与应力信息")
+        contact_group = QGroupBox("舰船与舵角信息")
         group_layout = QGridLayout()
         group_layout.setContentsMargins(5, 8, 5, 5)
         group_layout.setSpacing(2)
@@ -169,33 +169,33 @@ class CompactParameterDisplayWidget(QWidget):
         group_layout.addWidget(QLabel("值"), 0, 3)
 
         # 第一行
-        group_layout.addWidget(QLabel("接触次数:"), 1, 0)
-        self.n_contacts_label = QLabel("0")
+        group_layout.addWidget(QLabel("船 x:"), 1, 0)
+        self.n_contacts_label = QLabel("0.0000 m")
         self.n_contacts_label.setMinimumWidth(50)
         group_layout.addWidget(self.n_contacts_label, 1, 1)
 
-        group_layout.addWidget(QLabel("水压扰动:"), 1, 2)
-        self.pressure_label = QLabel("0.0000 MPa")
+        group_layout.addWidget(QLabel("dk:"), 1, 2)
+        self.pressure_label = QLabel("0.0000")
         self.pressure_label.setMinimumWidth(80)
         group_layout.addWidget(self.pressure_label, 1, 3)
 
         # 第二行
-        group_layout.addWidget(QLabel("上间隙:"), 2, 0)
-        self.h2_label = QLabel("-0.0000 mm")
+        group_layout.addWidget(QLabel("船 y:"), 2, 0)
+        self.h2_label = QLabel("0.0000 m")
         group_layout.addWidget(self.h2_label, 2, 1)
 
-        group_layout.addWidget(QLabel("下间隙:"), 2, 2)
-        self.h1_label = QLabel("-0.0000 mm")
+        group_layout.addWidget(QLabel("dx:"), 2, 2)
+        self.h1_label = QLabel("0.0000")
         group_layout.addWidget(self.h1_label, 2, 3)
 
         # 第三行
-        group_layout.addWidget(QLabel("正应力:"), 3, 0)
-        self.sigma_label = QLabel("0.00 MPa")
+        group_layout.addWidget(QLabel("船 z:"), 3, 0)
+        self.sigma_label = QLabel("0.0000 m")
         self.sigma_label.setMinimumWidth(60)
         group_layout.addWidget(self.sigma_label, 3, 1)
 
-        group_layout.addWidget(QLabel("切应力:"), 3, 2)
-        self.tau_label = QLabel("0.00 MPa")
+        group_layout.addWidget(QLabel("ds:"), 3, 2)
+        self.tau_label = QLabel("0.0000")
         self.tau_label.setMinimumWidth(60)
         group_layout.addWidget(self.tau_label, 3, 3)
 
@@ -245,7 +245,7 @@ class CompactParameterDisplayWidget(QWidget):
                     self.vel_label.setText(
                         f"Vx = {motion['y'][0]:.4f} m/s, Vy = {motion['y'][1]:.4f} m/s, Vz = {motion['y'][2]:.4f} m/s")
                     self.angle_label.setText(
-                        f"Theta = {motion['y'][6] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7] * self.rushui.RTD:.4f}°, {motion['y'][8] * self.rushui.RTD:.4f}°")
+                        f"Theta = {motion['y'][6] * self.rushui.RTD:.4f}°, Psi = {motion['y'][7] * self.rushui.RTD:.4f}°, Phi = {motion['y'][8] * self.rushui.RTD:.4f}°")
                     self.omega_label.setText(
                         f"wx = {motion['y'][3] * self.rushui.RTD:.4f} °/s, wy = {motion['y'][4] * self.rushui.RTD:.4f} °/s, wz = {motion['y'][5] * self.rushui.RTD:.4f} °/s")
 
@@ -288,3 +288,14 @@ class CompactParameterDisplayWidget(QWidget):
                 else:
                     self.tau_label.setStyleSheet("")
 
+        if 'ship_datas' in data:
+            ship_datas = data['ship_datas']
+            self.n_contacts_label.setText(f"{ship_datas['ship_x'][0]:.4f} m")
+            self.h2_label.setText(f"{ship_datas['ship_x'][2]:.4f} m")
+            self.sigma_label.setText(f"{ship_datas['ship_x'][1]:.4f} m")
+
+        if 'Duo' in data:
+            Duo = data['Duo']
+            self.pressure_label.setText(f"{Duo['dk']:.4f} ")
+            self.h1_label.setText(f"{Duo['dx']:.4f} ")
+            self.tau_label.setText(f"{Duo['ds']:.4f} ")

@@ -371,7 +371,7 @@ class TrajectoryPlotWindow(QDialog):
             # Y轴智能范围
             y_center = np.mean(all_y)
             display_half_range = max(config['display_y_range'] / 2, 9.0)
-            ax.set_ylim(y_center - display_half_range, y_center + display_half_range)
+            ax.set_ylim(np.min(all_y) - 10, np.max(all_y) + 10)
 
             # 水平参考线
             y_min, y_max = ax.get_ylim()

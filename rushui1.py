@@ -30,6 +30,7 @@ class  Entry:
         self.progress_callback = None
         self.min_callback_interval = 0.05
         # ——————————基本常量——————————
+        self.write1 = False
         self.rtd = 180 / np.pi
         self.g = 9.8
         self.rho = 1000
@@ -615,8 +616,10 @@ class  Entry:
             self.tp = t
 
             # 保存空泡轴线到文件
-            with open('cavity.txt', 'a') as fid:
-                fid.write(f'{t:5.3f}{self.posCav[0, 0]:8.3f}{self.posCav[0, 1]:8.3f}\n')
+            if self.write1:
+                with open('cavity.txt', 'a') as fid:
+                    fid.write(f'{t:5.3f}{self.posCav[0, 0]:8.3f}{self.posCav[0, 1]:8.3f}\n')
+                    fid.close()
 
             # 将空泡轴线坐标转化为雷体坐标系下
             cav = np.zeros((self.nc, 3))
@@ -1056,6 +1059,11 @@ class  Entry:
             Sgm = np.vstack([Sgm, self.sgm])
             Apc = np.vstack([Apc, pc])
 
+            # if abs(y[5] - 0) * self.rtd < 1 and abs(y[6] - 0) * self.rtd < 1:
+            #     print('稳定')
+            #     print(t)
+            #     break
+
             # if t > 0.0112:
             #     sgfakjhfs = 0
 
@@ -1096,6 +1104,14 @@ class  Entry:
                             'ts': T,
                             'ys': Y
 
+                        },
+                        'ship_datas': {
+                            'ship_x': [0, 0, 0]
+                        },
+                        'Duo': {
+                            'ds': 0,
+                            'dx': 0,
+                            'dk': self.dk,
                         },
                         'Pi': self.P,
                         'P_list': np.array(self.P_list)

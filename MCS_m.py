@@ -44,12 +44,12 @@ class MSC:
 
     def _change_data(self):
         dict1 = {'ship_L': 315.7728, 'ship_M': 78000000, 'ship_B': 76.8096, 'ship_T': 10.8966}
-        # 萨拉托加
-        dict2 = {'ship_L': 324.0024, 'ship_M': 78000000, 'ship_B': 76.8096, 'ship_T': 11.2776}
-        # 游骑兵
-        dict3 = {'ship_L': 318.8208, 'ship_M': 78000000, 'ship_B': 76.0476, 'ship_T': 11.2776}
-        # 独立
-        dict4 = {'ship_L': 318.8208, 'ship_M': 78000000, 'ship_B': 76.0476, 'ship_T': 11.2776}
+        # 美国 阿利·伯克级
+        dict2 = {'ship_L': 155, 'ship_M': 9000000, 'ship_B': 20.4, 'ship_T': 6.2}
+        # 美国 朱姆沃尔特级
+        dict3 = {'ship_L': 184, 'ship_M': 15279500, 'ship_B': 24.6, 'ship_T': 8.4}
+        # 日本 爱宕级
+        dict4 = {'ship_L': 165, 'ship_M': 10000000, 'ship_B': 21, 'ship_T': 6.2}
         ships = [dict1, dict2, dict3, dict4]
         if self.ifship:
             self.dict_shipi = ships[self.ship_kind]
@@ -161,7 +161,6 @@ class MSC:
 
             # ——————————特殊关联参数——————————
             # Dan类中kps默认等于kth，但UI提供独立控制，此处显式同步
-            Dani.kps = Dani.kth  # 确保姿态同步增益与俯仰增益一致
             Dani.tend_under = tend_under
             Dani.T1 = model_data['T1']
             Dani.T2 = model_data['T2']
@@ -172,17 +171,20 @@ class MSC:
             thrust_data = [float(t.strip()) for t in thrust_str.split(',') if t.strip()]
             Dani.time_sequence = time_data
             Dani.thrust_sequence = thrust_data
+            Dani.write1 = model_data['write1']
 
             if self.model_data['dan_type'] == 0:
                 Dani.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0])
                 Dani.yb = np.array(
                     [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0])
                 Dani.zb = Dani.yb
+                Dani.dan_type = 213
             elif self.model_data['dan_type'] == 1:
                 Dani.xb = np.array([0, 0, 1.3, 2.6, 2.6, 3.1, 3.1, 2.6, 2.6, 1.3, 0, 0]) / 213 * 324
                 Dani.yb = np.array(
                     [0, 0.021, 0.1065, 0.1065, 0.08, 0.08, -0.08, -0.08, -0.1065, -0.1065, -0.021, 0]) / 213 * 324
                 Dani.zb = Dani.yb
+                Dani.dan_type = 213
 
             Dani.ship_x = self.ship_x
             Dani.v_ship_0 = self.v_ship_0
@@ -243,7 +245,6 @@ class MSC:
         ship_x_list = Dani.ship_x_list
         ship_v_list = Dani.ship_v_list
 
-
         self.ship_x_list = ship_x_list
         self.ship_v_list = ship_v_list
         self.dan_line = dan_line
@@ -291,13 +292,9 @@ class MSC:
                                                      dicti['ship_B'], dicti['ship_T'], dan_x_final1[0, :], Dani.total.m/5,
                                                      dan_v)
         P = damage_results['P_sink']
-        # if P < 0.85:
-        #     P = 0.85 + random.random() * 0.15
+        if P > 0.85:
+            P = P * (0.85 + 0.15 * random.random())
         return P
-
-    def burn_two(self):
-
-        return
 
     def main(self):
         N = int(self.N_burn)
@@ -328,11 +325,19 @@ class MSC:
 
                     # 调用回调函数
                     self.update_callback(data)
+            ship_x_list = self.ship_x_list
+            ship_v_list = self.ship_v_list
+            dan_line = self.dan_line
+            dan_v_list = self.dan_v_list
+            t_list = self.dan_t
+            ship_x_list = np.array([ship_x_list[:, 0], ship_x_list[:, 2], ship_x_list[:, 1]]).T
+            ship_v_list = np.array([ship_v_list[:, 0], ship_v_list[:, 2], ship_v_list[:, 1]]).T
+
             dicti = {
-                'ship_x_list': self.ship_x_list,
-                'ship_v_list': self.ship_v_list,
-                'dan_line': self.dan_line,
-                'dan_v_list ': self.dan_v_list ,
+                'ship_x_list': ship_x_list,
+                'ship_v_list': ship_v_list,
+                'dan_line': dan_line,
+                'dan_v_list ': dan_v_list ,
                 't_list': self.dan_t
             }
             self.point_dict.append(dicti)

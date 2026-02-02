@@ -31,6 +31,10 @@ def underwater_explosion_damage(
     返回:
     damage_results: dict, 包含毁伤评估结果
     """
+    ship_pos1 = ship_pos.copy()
+    ship_pos1[1] = ship_pos[2]
+    ship_pos1[2] = ship_pos[1]
+    ship_pos = ship_pos1.copy()
 
     # 物理常数 (国际标准值，NRL标准)
     c_water = 1500.0  # 水中声速 (m/s)
@@ -43,6 +47,7 @@ def underwater_explosion_damage(
 
     # 毁伤判据经验系数 (基于NRL实爆试验数据)
     probit_params = {
+        # 'sink': [-10.1, 2.2],  # 沉没: k1, k2 (重校准)
         'sink': [-10.1, 2.2],  # 沉没: k1, k2 (重校准)
         'mission_kill': [-14.3, 2.6],  # 丧失战斗力
         'mobility_kill': [-17.5, 3.0]  # 丧失机动能力
@@ -272,17 +277,34 @@ def underwater_explosion_damage(
 
 if __name__ == "__main__":
     # 极端测试案例：舰底正下方2m深度爆炸
-    ship_pos = [0, 0, 0]  # 舰艇中心位置
-    ship_L = 150.0  # 舰长 (m)
-    ship_M = 8000e3  # 质量 (kg)
-    ship_v = [0, 0]  # 静止舰艇
-    ship_B = 18.0  # 舰宽 (m)
-    ship_T = 6.0  # 吃水 (m)
+    ship_pos = np.array([444.51139411,   0.        ,   3.46127631])  # 舰艇中心位置
+    ship_L = 315.7728  # 舰长 (m)
+    ship_M = 78000000  # 质量 (kg)
+    ship_v = np.array([12.69796515,  0.96097934,  0.        ])  # 静止舰艇
+    ship_B = 76.8096  # 舰宽 (m)
+    ship_T = 10.8966  # 吃水 (m)
 
     # 战斗部在舰底正下方2m处爆炸
-    warhead_pos = [20, 20, -2]  # 舰底正下方2m
-    warhead_M = 300  # 300kg TNT
-    warhead_v = [0, 0, 0]  # 静止爆炸
+    warhead_pos = np.array([435.23741398,   3.74379788,  -2.81448009])  # 舰底正下方2m
+    warhead_M = 22.94  # 300kg TNT
+    warhead_M = 100  # 300kg TNT
+    warhead_v = np.array([92.69882631, -0.72879219, -0.53628875])  # 静止爆炸
+
+    # # 看下五公里
+    # ship_pos = np.array([5768.97, 0, -1.06878])  # 舰艇中心位置
+    # ship_L = 315.7728  # 舰长 (m)
+    # ship_M = 78000000  # 质量 (kg)
+    # ship_v = np.array([12.6939, -0.0130299, 0 ])  # 静止舰艇
+    # ship_B = 76.8096  # 舰宽 (m)
+    # ship_T = 10.8966  # 吃水 (m)
+    #
+    # # 战斗部在舰底正下方2m处爆炸
+    # warhead_pos = np.array([5768.96, -1.15024, -2.48925 ])  # 舰底正下方2m
+    # warhead_M = 100  # 300kg TNT
+    # warhead_v = np.array([93.9166, 1.71972, -1.03887 ])  # 静止爆炸
+    #
+
+    # (ship_pos, ship_L, ship_M, ship_v, ship_B, ship_T, warhead_pos, warhead_M, warhead_v) = (np.array([4.41325124e+02, 0.00000000e+00, 1.23857643e-01]), 315.7728, 78000000, np.array([12.67903825, 0.06225243, 0.]), 76.8096, 10.8966, np.array([3.86905303e+02, 2.46404300e-01, -3.96493608e+00]), 100.0, np.array([94.00779743, -1.17770565, -0.51568122]))
 
     # 调用修正版函数
     results = underwater_explosion_damage(
@@ -307,4 +329,5 @@ if __name__ == "__main__":
     print(f'毁伤等级: {results["damage_level"]} ({damage_level_str[results["damage_level"]]})')
     print(f'沉没概率: {results["P_sink"] * 100:.1f}%')
     print(f'丧失战斗力概率: {results["P_mission_kill"] * 100:.1f}%')
+    print(results)
 
