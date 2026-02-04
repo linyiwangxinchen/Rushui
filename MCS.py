@@ -319,7 +319,6 @@ class MSC:
                         'P_list': np.array(Ps)
                         }
 
-
                     # 调用回调函数
                     self.update_callback(data)
 

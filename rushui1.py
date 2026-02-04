@@ -8,8 +8,12 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from scipy.linalg import solve
 import matplotlib
-matplotlib.use('Agg')
+# matplotlib.use('Agg')
 import math
+from matplotlib.patches import Polygon, FancyBboxPatch
+from matplotlib.collections import LineCollection
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.patheffects as path_effects
 
 # 设置字体和解决负号问题 # 以及相关中文乱码的问题
 plt.rcParams["font.sans-serif"] = ["SimHei"]  # 使用黑体
@@ -29,6 +33,15 @@ class  Entry:
         self.update_callback = None
         self.progress_callback = None
         self.min_callback_interval = 0.05
+        # 存储回调
+        self.plot_pao_down_y_list = []
+        self.plot_pao_down_x_list = []
+        self.plot_pao_up_y_list = []
+        self.plot_pao_up_x_list = []
+        self.plot_zhou_y_list = []
+        self.plot_zhou_x_list = []
+        self.plot_dan_y_list = []
+        self.plot_dan_x_list = []
         # ——————————基本常量——————————
         self.write1 = False
         self.rtd = 180 / np.pi
@@ -1070,6 +1083,18 @@ class  Entry:
 
             # 绘制Apc关于t的曲线//估计是压力曲线
             current_time = time.time()
+
+            self.plot_dan_x_list.append(self.plot_dan_x)
+            self.plot_dan_y_list.append(self.plot_dan_y)
+            self.plot_zhou_x_list.append(self.plot_zhou_x)
+            self.plot_zhou_y_list.append(self.plot_zhou_y)
+            self.plot_pao_up_x_list.append(self.plot_pao_up_x)
+            self.plot_pao_up_y_list.append(self.plot_pao_up_y)
+            self.plot_pao_down_x_list.append(self.plot_pao_down_x)
+            self.plot_pao_down_y_list.append(self.plot_pao_down_y)
+
+
+
 
             if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:
                 last_callback_time = current_time

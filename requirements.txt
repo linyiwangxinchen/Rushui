@@ -1,0 +1,8 @@
+PyQt5
+numpy
+matplotlib
+tqdm
+pandas
+pyqtgraph
+scipy
+pyinstaller

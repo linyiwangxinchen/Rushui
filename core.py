@@ -11,10 +11,14 @@ import copy
 from scipy.interpolate import interp1d
 from scipy.linalg import solve
 import matplotlib
-matplotlib.use('Agg')
+# matplotlib.use('Agg')
 import math
 from rushui1 import Entry
 from rushui_model import under
+from matplotlib.patches import Polygon, FancyBboxPatch
+from matplotlib.collections import LineCollection
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.patheffects as path_effects
 
 # 设置字体和解决负号问题 # 以及相关中文乱码的问题
 plt.rcParams["font.sans-serif"] = ["SimHei"]  # 使用黑体
@@ -37,6 +41,15 @@ class Dan:
         self.min_callback_interval = 0.05
         self.P = 0
         self.P_list = [0]
+        # 存储回调
+        self.plot_pao_down_y_list = []
+        self.plot_pao_down_x_list = []
+        self.plot_pao_up_y_list = []
+        self.plot_pao_up_x_list = []
+        self.plot_zhou_y_list = []
+        self.plot_zhou_x_list = []
+        self.plot_dan_y_list = []
+        self.plot_dan_x_list = []
         # 写文件
         self.write1 = False
 
@@ -241,6 +254,27 @@ class Dan:
         M.plot_dan_x = self.plot_dan_x
         M.update_callback = self.update_callback
         M.progress_callback = self.progress_callback
+
+        # 存储回调
+        M.plot_pao_down_y_list = self.plot_pao_down_y_list
+        M.plot_pao_down_x_list = self.plot_pao_down_x_list
+        M.plot_pao_up_y_list = self.plot_pao_up_y_list
+        M.plot_pao_up_x_list = self.plot_pao_up_x_list
+        M.plot_zhou_y_list = self.plot_zhou_y_list
+        M.plot_zhou_x_list = self.plot_zhou_x_list
+        M.plot_dan_y_list = self.plot_dan_y_list
+        M.plot_dan_x_list = self.plot_dan_x_list
+
+        # self.plot_pao_down_y_list
+        # self.plot_pao_down_x_list
+        # self.plot_pao_up_y_list
+        # self.plot_pao_up_x_list
+        # self.plot_zhou_y_list
+        # self.plot_zhou_x_list
+        # self.plot_dan_y_list
+        # self.plot_dan_x_list
+
+
         M.P = self.P
         M.P_list = self.P_list
         M.write1 = self.write1
@@ -365,6 +399,19 @@ class Dan:
         N.plot_dan_x = self.plot_dan_x
         N.update_callback = self.update_callback
         N.progress_callback = self.progress_callback
+
+        # 存储回调新增
+        N.plot_pao_down_y_list = M.plot_pao_down_y_list
+        N.plot_pao_down_x_list = M.plot_pao_down_x_list
+        N.plot_pao_up_y_list = M.plot_pao_up_y_list
+        N.plot_pao_up_x_list = M.plot_pao_up_x_list
+        N.plot_zhou_y_list = M.plot_zhou_y_list
+        N.plot_zhou_x_list = M.plot_zhou_x_list
+        N.plot_dan_y_list = M.plot_dan_y_list
+        N.plot_dan_x_list = M.plot_dan_x_list
+
+
+
         N.xb = self.lk - self.xb
         N.yb = self.yb
         N.zb = self.zb
@@ -392,6 +439,14 @@ class Dan:
         self.N = N
         self.N.main()
         N = self.N
+        self.plot_pao_down_y_list = N.plot_pao_down_y_list
+        self.plot_pao_down_x_list = N.plot_pao_down_x_list
+        self.plot_pao_up_y_list = N.plot_pao_up_y_list
+        self.plot_pao_up_x_list = N.plot_pao_up_x_list
+        self.plot_zhou_y_list = N.plot_zhou_y_list
+        self.plot_zhou_x_list = N.plot_zhou_x_list
+        self.plot_dan_y_list = N.plot_dan_y_list
+        self.plot_dan_x_list = N.plot_dan_x_list
         return t_entry, y_entry, N.ts, N.ys
 
         # N = xxx
@@ -400,4 +455,6 @@ class Dan:
 
 if __name__ == "__main__":
     dan = Dan()
-    dan.main()
+    t_entry, y_entry, ts, ys = dan.main()
+
+

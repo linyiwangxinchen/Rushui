@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QMessageBox, QDoubleSpinBox, QLabel, QProgressBar, Q
 
 from CalculationThread import CalculationThread
 from ThrustPlotWindow import ThrustPlotWindow
+from FigurePlotWindows import FigurePlotWindows
 
 
 class SimulationControlWidget(QWidget):
@@ -171,6 +172,20 @@ class SimulationControlWidget(QWidget):
         self.progress_label.setAlignment(Qt.AlignCenter)
         self.progress_label.setStyleSheet("font-weight: bold;")
 
+        result_group = QGroupBox("Datas")
+        # 结果显示区域
+        result_layout = QGridLayout()
+        result_layout.setContentsMargins(5, 5, 5, 5)
+        result_layout.setSpacing(3)
+
+        self.plot_datas_btn = QPushButton("展示详细")
+        self.plot_datas_btn.setStyleSheet("background-color: #2196F3; color: white;")
+        self.plot_datas_btn.clicked.connect(self.show_datas)
+        result_layout.addWidget(self.plot_datas_btn, 5, 0, 1, 2, Qt.AlignCenter)
+
+        result_group.setLayout(result_layout)
+
+
         # 组合布局
         main_layout.addWidget(entry_group)
         main_layout.addWidget(control_group)
@@ -178,9 +193,22 @@ class SimulationControlWidget(QWidget):
         main_layout.addLayout(control_layout)
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.progress_label)
+        main_layout.addWidget(result_group)
         main_layout.addStretch()
 
         self.setLayout(main_layout)
+
+    def show_datas(self):
+        """展示推力-时间曲线"""
+        try:
+
+            traj_window = FigurePlotWindows(self.rushui, parent=self)
+            traj_window.exec_()  # 模态对话框
+
+        except:
+            logging.exception("绘制曲线时出错")
+            QMessageBox.critical(self, "错误", f"无法绘制曲线")
+
 
     def show_thrust_plot(self):
         """展示推力-时间曲线"""
