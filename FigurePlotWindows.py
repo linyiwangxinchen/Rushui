@@ -185,10 +185,10 @@ class FigurePlotWindows(QDialog):
             'Vx(m/s)',
             'Vy(m/s)',
             'Vz(m/s)',
-            'Wy(rad/s)',
-            'Wz(rad/s)',
-            'Theta(rad)',
-            'Psi(rad)',
+            'Wy(deg/s)',
+            'Wz(deg/s)',
+            'Theta(deg)',
+            'Psi(deg)',
             'X(m)',
             'Y(m)',
             'Z(m)',
@@ -251,8 +251,8 @@ class FigurePlotWindows(QDialog):
             config = plot_configs
             xlabeli = xlabels[i]
             ylabeli = ylabels[i]
-            ax.plot(xs, ys, color='k', linestyle='-', linewidth=0.2,
-                    label='船', alpha=0.97, zorder=3)
+            ax.plot(xs, ys, color='k', linestyle='-', linewidth=1,
+                    label='船', alpha=1, zorder=3)
 
             # === 坐标轴设置 ===
             all_x = xs
@@ -309,18 +309,6 @@ class FigurePlotWindows(QDialog):
                            pad=6,
                            colors='#263238')
 
-
-
-
-
-
-
-
-
-        # # 绘制每个子图
-        # for idx, (ax_row, sim_data, config) in enumerate(zip(axes, self.sim_data_list, plot_configs)):
-        #     ax = ax_row[0]
-        #     self._plot_single_trajectory(ax, sim_data, idx + 1, n_sim, config)
 
         # 画布包装（关键：设置最小高度+边框）
         canvas = FigureCanvas(self.figure)
