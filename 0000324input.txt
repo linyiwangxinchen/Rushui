@@ -1,0 +1,231 @@
+%single L  FLT %
+4.86
+%end%
+%single S  FLT %
+0.08237
+%end%
+%single V  FLT %
+0
+%end%
+%single m  FLT %
+500
+%end%
+%single xc  FLT %
+-0.028597
+%end%
+%single yc  FLT %
+-0.002585
+%end%
+%single zc  FLT %
+0.001216
+%end%
+%single Jxx  FLT %
+0.631407
+%end%
+%single Jyy  FLT %
+57.0697
+%end%
+%single Jzz  FLT %
+57.0714
+%end%
+%single T  FLT %
+0
+%end%
+%single lk  FLT %
+2.60721
+%end%
+%single rk  FLT %
+0.0319
+%end%
+%single sgm  FLT %
+0
+%end%
+%single dyc  FLT %
+0
+%end%
+%single SGM  FLT %
+0.018
+%end%
+%single LW  FLT %
+0.031943
+%end%
+%single LH  FLT %
+0
+%end%
+%single dkmax  FLT %
+3
+%end%
+%single dkmin  FLT %
+-3
+%end%
+%single dk0  FLT %
+-0.4
+%end%
+%single deltaymax  FLT %
+10
+%end%
+%single deltavymax  FLT %
+10
+%end%
+%single ddmax  FLT %
+10
+%end%
+%single dvmax  FLT %
+5
+%end%
+%single dthetamax  FLT %
+5
+%end%
+%single wzmax  FLT %
+30
+%end%
+%single wxmax  FLT %
+300
+%end%
+%single dphimax  FLT %
+60
+%end%
+%single t0  FLT %
+0
+%end%
+%single tend  FLT %
+0.2546
+%end%
+%single dt  FLT %
+0.0002
+%end%
+%single v0  FLT %
+300
+%end%
+%single theta0  FLT %
+-10
+%end%
+%single psi0  FLT %
+0
+%end%
+%single phi0  FLT %
+0
+%end%
+%single alpha0  FLT %
+0.03138
+%end%
+%single wx0  FLT %
+0
+%end%
+%single wy0  FLT %
+0
+%end%
+%single wz0  FLT %
+6.63
+%end%
+%single k_wz  FLT %
+0.09
+%end%
+%single k_theta  FLT %
+0.022
+%end%
+%single kwz  FLT %
+0.06
+%end%
+%single ktheta  FLT %
+0.1
+%end%
+%single k_ps  FLT %
+4
+%end%
+%single k_ph  FLT %
+0.08
+%end%
+%single k_wx  FLT %
+0.0015
+%end%
+%single k_wy  FLT %
+0.312
+%end%
+%single tend_under  FLT %
+50
+%end%
+%single T1  FLT %
+25080.6
+%end%
+%single T2  FLT %
+6971.4
+%end%
+%single time_sequence  STR %
+0, 0.56, 0.57, 100
+%end%
+%single thrust_sequence  STR %
+58030, 58030, 20824, 20824
+%end%
+%single dan_type  FLT %
+1
+%end%
+%single ship_L  FLT %
+315.773
+%end%
+%single ship_M  FLT %
+7.8e+07
+%end%
+%single ship_B  FLT %
+76.8096
+%end%
+%single ship_T  FLT %
+10.8966
+%end%
+%single burn_N  FLT %
+3
+%end%
+%single ship_if  FLT %
+0
+%end%
+%single ship_tpye  FLT %
+0
+%end%
+%single ship_x_x  FLT %
+400
+%end%
+%single ship_x_y  FLT %
+0
+%end%
+%single ship_x_z  FLT %
+0
+%end%
+%single ship_v_max  FLT %
+46
+%end%
+%single ship_a_max  FLT %
+2
+%end%
+%single air_t  FLT %
+699.53
+%end%
+%single air_L  FLT %
+519.822
+%end%
+%single air_theta  FLT %
+-10.1
+%end%
+%single air_v  FLT %
+273.63
+%end%
+%single ship_v_x  FLT %
+12.7
+%end%
+%single ship_v_y  FLT %
+0
+%end%
+%single ship_v_z  FLT %
+0
+%end%
+%single guidance_distance  FLT %
+2000
+%end%
+%single dan_aim_tpye  FLT %
+0
+%end%
+%single dan_L  FLT %
+10
+%end%
+%single dan_guide_type  FLT %
+1
+%end%
