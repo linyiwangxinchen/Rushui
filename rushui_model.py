@@ -2192,14 +2192,15 @@ class under:
             self.t = self.t + dt
             current_time = time.time()
 
-            self.plot_dan_x_list.append(self.plot_dan_x)
-            self.plot_dan_y_list.append(self.plot_dan_y)
-            self.plot_zhou_x_list.append(self.plot_zhou_x)
-            self.plot_zhou_y_list.append(self.plot_zhou_y)
-            self.plot_pao_up_x_list.append(self.plot_pao_up_x)
-            self.plot_pao_up_y_list.append(self.plot_pao_up_y)
-            self.plot_pao_down_x_list.append(self.plot_pao_down_x)
-            self.plot_pao_down_y_list.append(self.plot_pao_down_y)
+            if self.plot_pao_down_y is not None and self.plot_pao_down_x is not None and self.plot_pao_up_y is not None and self.plot_pao_up_x is not None and self.plot_zhou_y is not None and self.plot_zhou_x is not None and self.plot_dan_y is not None and self.plot_dan_x is not None:
+                self.plot_dan_x_list.append(self.plot_dan_x)
+                self.plot_dan_y_list.append(self.plot_dan_y)
+                self.plot_zhou_x_list.append(self.plot_zhou_x)
+                self.plot_zhou_y_list.append(self.plot_zhou_y)
+                self.plot_pao_up_x_list.append(self.plot_pao_up_x)
+                self.plot_pao_up_y_list.append(self.plot_pao_up_y)
+                self.plot_pao_down_x_list.append(self.plot_pao_down_x)
+                self.plot_pao_down_y_list.append(self.plot_pao_down_y)
 
             if hasattr(self, 'update_callback') and current_time - last_callback_time > self.min_callback_interval:
                 last_callback_time = current_time

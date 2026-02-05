@@ -4,11 +4,15 @@ import logging
 import numpy as np
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QDoubleSpinBox, QLabel, QProgressBar, QPushButton, QHBoxLayout, QComboBox, \
-    QGridLayout, QGroupBox, QVBoxLayout, QWidget, QLineEdit
+    QGridLayout, QGroupBox, QVBoxLayout, QWidget, QLineEdit, QSpinBox
 
 from CalculationThread import CalculationThread
 from ThrustPlotWindow import ThrustPlotWindow
 from FigurePlotWindows import FigurePlotWindows
+# ======== 视频生成相关导入 ========
+from VideoGenerationThread import VideoGenerationThread
+from VideoGenerationDialog import VideoGenerationDialog
+import os
 
 
 class SimulationControlWidget(QWidget):
@@ -21,6 +25,9 @@ class SimulationControlWidget(QWidget):
         super().__init__(parent)
         self.rushui = stab_instance
         self.calc_thread = None
+        self.video_thread = None
+        self.video_dialog = None
+
         self.init_ui()
         a = 1
 
@@ -185,6 +192,57 @@ class SimulationControlWidget(QWidget):
 
         result_group.setLayout(result_layout)
 
+        # ======== 视频生成控制 ========
+        video_control_layout = QHBoxLayout()
+        video_control_layout.setSpacing(10)
+
+        # 帧率设置
+        fps_label = QLabel("视频帧率:")
+        fps_label.setStyleSheet("font-weight: bold;")
+        video_control_layout.addWidget(fps_label)
+
+        self.fps_input = QSpinBox()
+        self.fps_input.setRange(5, 120)
+        self.fps_input.setValue(30)
+        self.fps_input.setSuffix(" fps")
+        self.fps_input.setFixedWidth(100)
+        self.fps_input.setStyleSheet("""
+            QSpinBox {
+                padding: 4px;
+                border: 2px solid #2196F3;
+                border-radius: 4px;
+            }
+        """)
+        video_control_layout.addWidget(self.fps_input)
+
+        # 生成视频按钮
+        self.generate_video_btn = QPushButton("🎥 生成视频")
+        self.generate_video_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FF9800; 
+                color: white; 
+                border: none;
+                border-radius: 4px;
+                padding: 6px 15px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #F57C00;
+            }
+            QPushButton:disabled {
+                background-color: #bdbdbd;
+            }
+        """)
+        self.generate_video_btn.clicked.connect(self.generate_video)
+        self.generate_video_btn.setEnabled(False)  # 初始禁用
+        video_control_layout.addWidget(self.generate_video_btn)
+
+        # 添加伸缩空间
+        video_control_layout.addStretch(1)
+
+        # 添加到主布局（放在result_group之前）
+
+
 
         # 组合布局
         main_layout.addWidget(entry_group)
@@ -194,6 +252,7 @@ class SimulationControlWidget(QWidget):
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.progress_label)
         main_layout.addWidget(result_group)
+        main_layout.addLayout(video_control_layout)
         main_layout.addStretch()
 
         self.setLayout(main_layout)
@@ -492,6 +551,81 @@ class SimulationControlWidget(QWidget):
             logging.exception("启动仿真时出错")
             QMessageBox.critical(self, "错误", f"无法启动仿真: {str(e)}")
 
+    def generate_video(self):
+        """启动视频生成 - 弹出独立窗口"""
+        if not hasattr(self.rushui, 'plot_dan_x_list') or len(self.rushui.plot_dan_x_list) == 0:
+            QMessageBox.warning(self, "⚠ 警告", "无仿真数据！请先运行仿真。")
+            return
+
+        # 创建并显示独立视频窗口
+        self.video_dialog = VideoGenerationDialog(self)
+        self.video_dialog.cancelled.connect(self.cancel_video_generation)
+        self.video_dialog.show()
+
+        # 禁用生成按钮防止重复点击
+        self.generate_video_btn.setEnabled(False)
+        self.generate_video_btn.setText("⏳ 生成中...")
+
+        # 创建视频生成线程
+        fps = self.fps_input.value()
+        self.video_thread = VideoGenerationThread(self.rushui, fps=fps)
+        self.video_thread.progress.connect(self.update_video_progress)
+        self.video_thread.finished.connect(self.video_generation_finished)
+        self.video_thread.error.connect(self.video_generation_error)
+
+        self.video_thread.start()
+        logging.info(f"开始生成视频，帧率: {fps} fps")
+
+    def update_video_progress(self, percent, message):
+        """更新视频生成进度"""
+        if self.video_dialog and self.video_dialog.isVisible():
+            self.video_dialog.update_progress(percent, message)
+
+    def cancel_video_generation(self):
+        """取消视频生成"""
+        if self.video_thread and self.video_thread.isRunning():
+            self.video_thread.stop()
+            self.video_thread.wait(2000)
+            if self.video_thread.isRunning():
+                self.video_thread.terminate()
+                self.video_thread.wait()
+
+        self.generate_video_btn.setEnabled(True)
+        self.generate_video_btn.setText("🎥 生成视频")
+        QMessageBox.information(self, "ℹ 已取消", "视频生成已取消。")
+        logging.info("视频生成已取消")
+
+    def video_generation_finished(self, video_path):
+        """视频生成完成"""
+        self.generate_video_btn.setEnabled(True)
+        self.generate_video_btn.setText("🎥 生成视频")
+
+        if not os.path.exists(video_path):
+            QMessageBox.critical(self, "❌ 错误", f"视频文件未生成: {video_path}")
+            return
+
+        # 在独立窗口中加载并播放视频
+        if self.video_dialog:
+            self.video_dialog.show_video(video_path)
+            self.video_dialog.update_progress(100, "✅ 视频生成完成！")
+
+        QMessageBox.information(self, "✅ 完成",
+                                f"🎬 视频已生成并可在独立窗口中播放！\n\n"
+                                f"📁 保存路径: {video_path}\n"
+                                f"💾 大小: {os.path.getsize(video_path) // 1024 // 1024} MB")
+        logging.info(f"视频生成完成: {video_path}")
+
+    def video_generation_error(self, error_message):
+        """视频生成出错"""
+        self.generate_video_btn.setEnabled(True)
+        self.generate_video_btn.setText("🎥 生成视频")
+
+        if self.video_dialog:
+            self.video_dialog.update_progress(0, "❌ 生成失败")
+
+        QMessageBox.critical(self, "❌ 视频生成错误", error_message)
+        logging.error(f"视频生成错误: {error_message}")
+
     def update_progress(self, percent, message):
         """更新进度显示"""
         self.progress_bar.setValue(percent)
@@ -503,17 +637,18 @@ class SimulationControlWidget(QWidget):
             self.realtime_update.emit(data)
 
     def simulation_finished(self, results):
-        """仿真完成处理"""
+        """仿真完成处理 - 启用视频生成按钮"""
         self.start_button.setEnabled(True)
         self.pause_button.setEnabled(False)
         self.stop_button.setEnabled(False)
 
         if results is not None:
-            self.progress_label.setText("仿真完成!")
-            QMessageBox.information(self, "完成", "仿真计算已完成！")
+            self.progress_label.setText("✅ 仿真完成! 可生成视频")
+            self.generate_video_btn.setEnabled(True)  # 启用视频生成按钮
             logging.info("仿真计算成功完成")
         else:
-            self.progress_label.setText("仿真已中止")
+            self.progress_label.setText("⚠ 仿真已中止")
+            self.generate_video_btn.setEnabled(False)
         self.calc_thread = None
 
     def handle_error(self, error_message):
